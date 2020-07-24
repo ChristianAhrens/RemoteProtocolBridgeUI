@@ -34,7 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "NodeComponent.h"
 
-#include "MainComponent.h"
+#include "MainRemoteProtocolBridgeComponent.h"
 #include "ProtocolComponent.h"
 #include "ConfigComponents/ObjectHandlingConfigComponents.h"
 
@@ -262,7 +262,7 @@ NodeId NodeComponent::GetNodeId()
  *
  * @param listener	The parent listener object to be used to invoke public methods from ('callback')
  */
-void NodeComponent::AddListener(MainComponent* listener)
+void NodeComponent::AddListener(MainRemoteProtocolBridgeComponent* listener)
 {
     m_parentComponent = listener;
 }

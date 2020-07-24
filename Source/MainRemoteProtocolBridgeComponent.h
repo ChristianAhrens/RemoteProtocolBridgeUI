@@ -34,29 +34,29 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 #include "Common.h"
 #include "ProcessingEngine.h"
 
 // Fwd. Declarations
-class MainComponent;
+class MainRemoteProtocolBridgeComponent;
 class GlobalConfigWindow;
 class LoggingWindow;
 class NodeComponent;
 
 
 /**
- * Class MainComponent is the central component within our application window 
+ * Class MainRemoteProtocolBridgeComponent is the central component within our application window 
  * containing everything else regarding ui elements.
  */
-class MainComponent   : public Component,
+class MainRemoteProtocolBridgeComponent   : public Component,
 						public Button::Listener
 {
 public:
     //==============================================================================
-    MainComponent();
-    ~MainComponent();
+    MainRemoteProtocolBridgeComponent();
+    ~MainRemoteProtocolBridgeComponent();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -93,5 +93,5 @@ private:
 	void buttonClicked(Button* button) override;
 
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainRemoteProtocolBridgeComponent)
 };

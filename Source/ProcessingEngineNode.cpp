@@ -50,7 +50,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 ProcessingEngineNode::ProcessingEngineNode()
 {
-	m_parent		= 0;
 	m_dataHandling	= 0;
 }
 
@@ -59,10 +58,11 @@ ProcessingEngineNode::ProcessingEngineNode()
  *
  * @param parentEngine	The engine object to be used as internal parent
  */
-ProcessingEngineNode::ProcessingEngineNode(ProcessingEngine* parentEngine)
+ProcessingEngineNode::ProcessingEngineNode(ProcessingEngineNode::NodeListener* parentListener)
 	: ProcessingEngineNode()
 {
-	m_parent = parentEngine;
+	if(parentListener)
+		m_listeners.push_back(parentListener);
 }
 
 /**
@@ -240,9 +240,9 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
  */
 void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessor_Abstract* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData)
 {
-	// log message traffic in parent engine
-	if (m_parent)
-		m_parent->LogInput(this, receiver, id, msgData);
+	// broadcast received data to all listeners
+	for (auto listener : m_listeners)
+		listener->HandleNodeData(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData);
 	
 	if (m_dataHandling)
 		m_dataHandling->OnReceivedMessageFromProtocol(receiver->GetId(), id, msgData);

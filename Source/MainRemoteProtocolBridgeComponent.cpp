@@ -32,7 +32,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ===============================================================================
 */
 
-#include "MainComponent.h"
+#include "MainRemoteProtocolBridgeComponent.h"
 
 #include "Common.h"
 #include "NodeComponent.h"
@@ -42,12 +42,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 // **************************************************************************************
-//    class MainComponent
+//    class MainRemoteProtocolBridgeComponent
 // **************************************************************************************
 /**
  * Constructor
  */
-MainComponent::MainComponent()
+MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 {
     m_config.InitConfiguration();
     
@@ -120,7 +120,7 @@ MainComponent::MainComponent()
 /**
  * Destructor
  */
-MainComponent::~MainComponent()
+MainRemoteProtocolBridgeComponent::~MainRemoteProtocolBridgeComponent()
 {
 	if (m_engine.IsRunning())
 		m_engine.Stop();
@@ -135,7 +135,7 @@ MainComponent::~MainComponent()
  * first shot looks like.
  * A fix node is created with a hardcoded id, as is done for both protocols of this node.
  */
-void MainComponent::DumpUItoConfig()
+void MainRemoteProtocolBridgeComponent::DumpUItoConfig()
 {
     Array<NodeId> NIds = m_config.GetNodeIds();
     for (int i = 0; i < NIds.size(); ++i)
@@ -151,7 +151,7 @@ void MainComponent::DumpUItoConfig()
 /**
  * Method to set up ui elements according to configuration contents.
  */
-void MainComponent::RefreshUIfromConfig()
+void MainRemoteProtocolBridgeComponent::RefreshUIfromConfig()
 {
     Array<NodeId> NIds = m_config.GetNodeIds();
 
@@ -217,7 +217,7 @@ void MainComponent::RefreshUIfromConfig()
  *
  * @return	Reference to the internal config object
  */
-ProcessingEngineConfig* MainComponent::GetConfig()
+ProcessingEngineConfig* MainRemoteProtocolBridgeComponent::GetConfig()
 {
 	return &m_config;
 }
@@ -227,7 +227,7 @@ ProcessingEngineConfig* MainComponent::GetConfig()
  *
  * @return	Reference to the internal engine object
  */
-ProcessingEngine* MainComponent::GetEngine()
+ProcessingEngine* MainRemoteProtocolBridgeComponent::GetEngine()
 {
 	return &m_engine;
 }
@@ -237,7 +237,7 @@ ProcessingEngine* MainComponent::GetEngine()
  *
  * @param g	Graphics painting object to use for filling background
  */
-void MainComponent::paint (Graphics& g)
+void MainRemoteProtocolBridgeComponent::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
@@ -246,7 +246,7 @@ void MainComponent::paint (Graphics& g)
 /**
  * Overloaded method to resize contents
  */
-void MainComponent::resized()
+void MainRemoteProtocolBridgeComponent::resized()
 {
 	Component::resized();
 
@@ -291,7 +291,7 @@ void MainComponent::resized()
  *
  * @param button	The button object that has been clicked
  */
-void MainComponent::buttonClicked(Button* button)
+void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 {
 	if (button == m_AddNodeButton.get())
 	{
@@ -435,7 +435,7 @@ void MainComponent::buttonClicked(Button* button)
  *
  * @param childWindow	The DialogWindow object that has been triggered to close
  */
-void MainComponent::childWindowCloseTriggered(DialogWindow* childWindow)
+void MainRemoteProtocolBridgeComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 {
 	if (childWindow == m_ConfigDialog.get())
 	{
