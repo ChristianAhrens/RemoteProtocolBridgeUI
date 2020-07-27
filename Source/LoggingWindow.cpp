@@ -36,7 +36,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "LoggingTarget_Interface.h"
 #include "MainRemoteProtocolBridgeComponent.h"
-#include "Common.h"
+#include "RemoteProtocolBridgeCommon.h"
 
 #include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
 #include "ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"

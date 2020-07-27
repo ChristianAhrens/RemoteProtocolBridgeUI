@@ -35,7 +35,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolConfigComponents.h"
 
 #include "../ProtocolComponent.h"
-#include "../Common.h"
+#include "../RemoteProtocolBridgeCommon.h"
 
 //==============================================================================
 // Class ProtocolConfigComponent_Abstract

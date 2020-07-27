@@ -36,7 +36,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include "../Common.h"
+#include "../RemoteProtocolBridgeCommon.h"
 #include "../ProcessingEngine.h"
 
 // Fwd. Declarations

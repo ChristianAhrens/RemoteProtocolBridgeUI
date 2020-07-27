@@ -34,9 +34,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
-#include "../Common.h"
+#include "../RemoteProtocolBridgeCommon.h"
 #include "../ProcessingEngine.h"
 
 // Fwd. Declarations

@@ -36,7 +36,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProcessingEngineConfig.h"
 #include "ProcessingEngineNode.h"
-#include "Common.h"
+#include "RemoteProtocolBridgeCommon.h"
 
 #include <JuceHeader.h>
 
