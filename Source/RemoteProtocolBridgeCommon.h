@@ -172,6 +172,11 @@ struct RemoteObject
 {
 	RemoteObjectIdentifier	Id;		/**< The remote object id for the object. */
 	RemoteObjectAddressing	Addr;	/**< The remote object addressings (channel/record) for the object. */
+
+	bool operator==(const RemoteObject& rhs) const
+	{
+		return (Id == rhs.Id && Addr.first == rhs.Addr.first && Addr.second == rhs.Addr.second);
+	};
 };
 
 /**
