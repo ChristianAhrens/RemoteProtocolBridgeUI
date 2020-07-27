@@ -58,11 +58,10 @@ ProcessingEngineNode::ProcessingEngineNode()
  *
  * @param parentEngine	The engine object to be used as internal parent
  */
-ProcessingEngineNode::ProcessingEngineNode(ProcessingEngineNode::NodeListener* parentListener)
+ProcessingEngineNode::ProcessingEngineNode(ProcessingEngineNode::NodeListener* listener)
 	: ProcessingEngineNode()
 {
-	if(parentListener)
-		m_listeners.push_back(parentListener);
+	AddListener(listener);
 }
 
 /**
@@ -71,6 +70,16 @@ ProcessingEngineNode::ProcessingEngineNode(ProcessingEngineNode::NodeListener* p
 ProcessingEngineNode::~ProcessingEngineNode()
 {
 	Stop();
+}
+
+/**
+ * Method to register a listener object to be called when the node has received the respective data via a node protocol.
+ * @param listener	The listener object to add to the internal list of listeners
+ */
+void ProcessingEngineNode::AddListener(ProcessingEngineNode::NodeListener* listener)
+{
+	if (listener)
+		m_listeners.push_back(listener);
 }
 
 /**

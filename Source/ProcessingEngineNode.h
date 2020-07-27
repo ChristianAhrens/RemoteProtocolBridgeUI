@@ -67,8 +67,10 @@ public:
 
 public:
 	ProcessingEngineNode();
-	ProcessingEngineNode(ProcessingEngineNode::NodeListener* parentListener);
+	ProcessingEngineNode(ProcessingEngineNode::NodeListener* listener);
 	~ProcessingEngineNode();
+
+	void AddListener(ProcessingEngineNode::NodeListener* listener);
 
 	NodeId GetId();
 
