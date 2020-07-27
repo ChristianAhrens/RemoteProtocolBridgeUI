@@ -99,8 +99,8 @@ NodeId ProcessingEngineNode::GetId()
  */
 bool ProcessingEngineNode::Start()
 {
-	bool successfullyStartedA = m_typeAProtocols.size()>0;
-	bool successfullyStartedB = m_typeBProtocols.size()>0;
+	bool successfullyStartedA = m_typeAProtocols.size() > 0;
+	bool successfullyStartedB = true;
 
 	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>::iterator paiter = m_typeAProtocols.begin(); successfullyStartedA && paiter != m_typeAProtocols.end(); ++paiter)
 		successfullyStartedA = successfullyStartedA && paiter->second->Start();
@@ -146,6 +146,8 @@ bool ProcessingEngineNode::Stop()
  */
 void ProcessingEngineNode::SetNodeConfiguration(const ProcessingEngineConfig& config, NodeId NId)
 {
+	Stop();
+
 	m_nodeId = NId;
 
 	m_dataHandling = std::unique_ptr<ObjectDataHandling_Abstract>(CreateObjectDataHandling(config.GetObjectHandlingData(m_nodeId).Mode));
@@ -191,6 +193,8 @@ void ProcessingEngineNode::SetNodeConfiguration(const ProcessingEngineConfig& co
 				m_dataHandling->AddProtocolBId(*PBId);
 		}
 	}
+
+	Start();
 }
 
 /**
