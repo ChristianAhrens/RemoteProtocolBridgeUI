@@ -65,8 +65,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Constructor of abstract class ProtocolProcessor_Abstract.
  */
-ProtocolProcessor_Abstract::ProtocolProcessor_Abstract()
+ProtocolProcessor_Abstract::ProtocolProcessor_Abstract(const NodeId& parentNodeId)
 {
+	m_parentNodeId = parentNodeId;
 	m_type = ProtocolType::PT_Invalid;
 	m_IsRunning = false;
 	m_messageListener = nullptr;
@@ -88,7 +89,7 @@ ProtocolProcessor_Abstract::~ProtocolProcessor_Abstract()
 void ProtocolProcessor_Abstract::AddListener(Listener *messageListener)
 {
 	m_messageListener = messageListener;
-}
+}	
 
 /**
  * Sets the configuration data for the protocol processor object.
@@ -98,17 +99,49 @@ void ProtocolProcessor_Abstract::AddListener(Listener *messageListener)
  * @param NId			The node id of the parent node this protocol processing object is child of (needed to access data from config)
  * @param PId			The protocol id of this protocol processing object (needed to access data from config)
  */
-void ProtocolProcessor_Abstract::SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData& protocolData, const Array<RemoteObject>& activeObjs, NodeId NId, ProtocolId PId)
+bool ProtocolProcessor_Abstract::setStateXml(XmlElement* stateXml)
 {
-	m_parentNodeId = NId;
-	m_protocolProcessorId = PId;
+	if (!stateXml)
+		return false;
 
-	m_ipAddress = protocolData.IpAddress;
-	m_clientPort = protocolData.ClientPort;
-	m_hostPort = protocolData.HostPort;
+	auto isProtocolTypeA = stateXml->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA);
+	auto isProtocolTypeB = stateXml->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB);
 
-	if (protocolData.UsesActiveRemoteObjects)
-		SetRemoteObjectsActive(activeObjs);
+	if (!isProtocolTypeA && !isProtocolTypeB)
+		return false;
+
+	m_protocolProcessorRole = stateXml->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) ? ProtocolRole::PR_A : ProtocolRole::PR_B;
+
+	m_protocolProcessorId = stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+
+	auto ipAdressXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::IPADDRESS));
+	if (ipAdressXmlElement)
+		m_ipAddress = ipAdressXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS));
+	else
+		return false;
+
+	auto clientPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
+	if (clientPortXmlElement)
+		m_clientPort = clientPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+	else
+		return false;
+
+	auto hostPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	if (hostPortXmlElement)
+		m_hostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+	else
+		return false;
+
+	if (stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1)
+	{
+		auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+		if (activeObjsXmlElement)
+			SetRemoteObjectsActive(activeObjsXmlElement);
+		else
+			return false;
+	}
+
+	return true;
 }
 
 /**
@@ -129,4 +162,14 @@ ProtocolType ProtocolProcessor_Abstract::GetType()
 ProtocolId ProtocolProcessor_Abstract::GetId()
 {
 	return m_protocolProcessorId;
+}
+
+/**
+ * Getter for the role of this protocol processing object
+ *
+ * @return The role of this protocol processing object
+ */
+ProtocolRole ProtocolProcessor_Abstract::GetRole()
+{
+	return m_protocolProcessorRole;
 }

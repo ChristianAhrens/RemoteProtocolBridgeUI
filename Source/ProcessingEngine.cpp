@@ -34,6 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProcessingEngine.h"
 
+#include "ProcessingEngineConfig.h"
 #include "LoggingTarget_Interface.h"
 
 #include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
@@ -70,15 +71,8 @@ bool ProcessingEngine::Start()
 {
 	bool startSuccess = true;
 
-	Array<unsigned int> NodeIds = m_configuration.GetNodeIds();
-	for (int i = 0; i < NodeIds.size(); ++i)
-	{
-		ProcessingEngineNode* node = new ProcessingEngineNode(this);
-		node->SetNodeConfiguration(m_configuration, NodeIds[i]);
-		startSuccess = startSuccess && node->Start();
-
-		m_ProcessingNodes[NodeIds[i]] = std::unique_ptr<ProcessingEngineNode>(node);
-	}
+	for(auto const & node : m_ProcessingNodes)
+		startSuccess = startSuccess && node.second->Start();
 
 	if (startSuccess)
 		m_IsRunning = true;
@@ -89,12 +83,56 @@ bool ProcessingEngine::Start()
 /**
  * Shuts down the engine and clears the running flag.
  * This includes shutting down the child nodes as well.
+ *
+ * @return	True if stopping was successful, otherwise false
  */
-void ProcessingEngine::Stop()
+bool ProcessingEngine::Stop()
 {
-	m_ProcessingNodes.clear();
+	auto stopSuccess = false;
+
+	for (auto const& node : m_ProcessingNodes)
+		stopSuccess = stopSuccess && node.second->Stop();
 
 	m_IsRunning = false;
+
+	return stopSuccess;
+}
+
+std::unique_ptr<XmlElement> ProcessingEngine::createStateXml()
+{
+	return nullptr;
+}
+
+bool ProcessingEngine::setStateXml(XmlElement* stateXml)
+{
+	XmlElement* rootChild = stateXml->getFirstChildElement();
+	while (rootChild != nullptr)
+	{
+
+		if (rootChild->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE))
+		{
+			XmlElement* nodeSectionElement = rootChild;
+			auto nodeId = nodeSectionElement->getIntAttribute("Id", -1);
+
+			if(m_ProcessingNodes.count(nodeId) == 0)
+			{
+				ProcessingEngineNode* node = new ProcessingEngineNode(this);
+				m_ProcessingNodes[nodeId] = std::unique_ptr<ProcessingEngineNode>(node);
+			}
+
+			m_ProcessingNodes.at(nodeId)->setStateXml(nodeSectionElement);
+		}
+		else if (rootChild->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG))
+		{
+			// nothing to be done here, global config is not relevant for engine
+		}
+		else
+			return false;
+
+		rootChild = stateXml->getNextElement();
+	}
+
+	return true;
 }
 
 /**
@@ -105,16 +143,6 @@ void ProcessingEngine::Stop()
 bool ProcessingEngine::IsRunning()
 {
 	return m_IsRunning;
-}
-
-/**
- * Setter for the configuration object that holds app config data
- *
- * @param config		The configuration object to set
- */
-void ProcessingEngine::SetConfig(ProcessingEngineConfig &config)
-{
-	m_configuration = config;
 }
 
 /**
@@ -165,4 +193,11 @@ void ProcessingEngine::HandleNodeData(NodeId nodeId, ProtocolId senderProtocolId
 	{
 		m_logTarget->AddLogData(nodeId, senderProtocolId, senderProtocolType, objectId, msgData);
 	}
+}
+
+void ProcessingEngine::onConfigUpdated()
+{
+	auto config = ProcessingEngineConfig::getInstance();
+	if (config != nullptr)
+		setStateXml(config->getConfigState().get());
 }

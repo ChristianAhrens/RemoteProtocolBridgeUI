@@ -138,63 +138,91 @@ bool ProcessingEngineNode::Stop()
 }
 
 /**
+ *
+ */
+std::unique_ptr<XmlElement> ProcessingEngineNode::createStateXml()
+{
+	auto nodeXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+	nodeXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_nodeId));
+
+	nodeXmlElement->addChildElement(m_dataHandling->createStateXml().release());
+
+
+
+	return std::move(nodeXmlElement);
+}
+
+/**
  * Setter for the configuration of this node object.
  * Includes initializing the internal node id that is used to access relevant config info of the given config object.
  *
  * @param config	The application configuration object to use to access config data
  * @param NId	The node id to use for this node object and to access data from config object
  */
-void ProcessingEngineNode::SetNodeConfiguration(const ProcessingEngineConfig& config, NodeId NId)
+bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 {
 	Stop();
 
-	m_nodeId = NId;
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE))
+		return false;
 
-	m_dataHandling = std::unique_ptr<ObjectDataHandling_Abstract>(CreateObjectDataHandling(config.GetObjectHandlingData(m_nodeId).Mode));
-	if (m_dataHandling)
-		m_dataHandling->SetObjectHandlingConfiguration(config, m_nodeId);
+	auto retVal = true;
 
-	Array<ProtocolId> PAIds = config.GetProtocolAIds(m_nodeId);
-	for (ProtocolId* PAId = PAIds.begin(); PAId != PAIds.end(); ++PAId)
+	m_nodeId = stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+
+	auto objectHandlingStateXml = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING));
+	if (objectHandlingStateXml)
 	{
-		// create the protocol processing objects of correct type as defined in config
-		ProcessingEngineConfig::ProtocolData pdA = config.GetProtocolData(NId, *PAId);
-		ProtocolProcessor_Abstract* protocolA = CreateProtocolProcessor(pdA.Type, pdA.HostPort);
-
-		// set up the protocol processing objects of correct type as defined in config
-		if (protocolA)
-		{
-			protocolA->AddListener(this);
-			protocolA->SetProtocolConfigurationData(pdA, config.GetRemoteObjectsToActivate(NId, *PAId), m_nodeId, *PAId);
-			m_typeAProtocols[*PAId] = std::unique_ptr<ProtocolProcessor_Abstract>(protocolA);
-
-			// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
-			if (m_dataHandling)
-				m_dataHandling->AddProtocolAId(*PAId);
-		}
+		m_dataHandling = std::unique_ptr<ObjectDataHandling_Abstract>(CreateObjectDataHandling(ProcessingEngineConfig::ObjectHandlingModeFromString(objectHandlingStateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)))));
+		if (m_dataHandling)
+			m_dataHandling->setStateXml(objectHandlingStateXml);
+		else
+			retVal = false;
 	}
 
-	Array<ProtocolId> PBIds = config.GetProtocolBIds(m_nodeId);
-	for (ProtocolId* PBId = PBIds.begin(); PBId != PBIds.end(); ++PBId)
+	XmlElement* protocolXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
+	while (protocolXmlElement != nullptr)
 	{
 		// create the protocol processing objects of correct type as defined in config
-		ProcessingEngineConfig::ProtocolData pdB = config.GetProtocolData(NId, *PBId);
-		ProtocolProcessor_Abstract* protocolB = CreateProtocolProcessor(pdB.Type, pdB.HostPort);
+		auto protocolId = protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+		auto protocolType = ProcessingEngineConfig::ProtocolTypeFromString(protocolXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE)));
+		auto hostPort = 0;
+		auto hostPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+		if (hostPortXmlElement)
+			hostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+		else
+			retVal = false;
+
+		ProtocolProcessor_Abstract* protocol = CreateProtocolProcessor(protocolType, hostPort);
 
 		// set up the protocol processing objects of correct type as defined in config
-		if (protocolB)
+		if (protocol)
 		{
-			protocolB->AddListener(this);
-			protocolB->SetProtocolConfigurationData(pdB, config.GetRemoteObjectsToActivate(NId, *PBId), m_nodeId, *PBId);
-			m_typeBProtocols[*PBId] = std::unique_ptr<ProtocolProcessor_Abstract>(protocolB);
+			protocol->AddListener(this);
+			protocol->setStateXml(protocolXmlElement);
+			if (protocol->GetRole() == ProtocolRole::PR_A)
+				m_typeAProtocols[protocolId] = std::unique_ptr<ProtocolProcessor_Abstract>(protocol);
+			else if (protocol->GetRole() == ProtocolRole::PR_B)
+				m_typeBProtocols[protocolId] = std::unique_ptr<ProtocolProcessor_Abstract>(protocol);
 
 			// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
 			if (m_dataHandling)
-				m_dataHandling->AddProtocolBId(*PBId);
+				m_dataHandling->AddProtocolAId(protocolId);
+			else
+				retVal = false;
 		}
+		else
+			retVal = false;
+
+		auto nextProtocolXmlElement = protocolXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
+		if(nextProtocolXmlElement == nullptr)
+			nextProtocolXmlElement = protocolXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
+		protocolXmlElement = nextProtocolXmlElement;
 	}
 
 	Start();
+
+	return retVal;
 }
 
 /**
@@ -209,11 +237,11 @@ ProtocolProcessor_Abstract *ProcessingEngineNode::CreateProtocolProcessor(Protoc
 	switch(type)
 	{
 		case PT_OSCProtocol:
-			return new OSCProtocolProcessor(listenerPortNumber);
+			return new OSCProtocolProcessor(m_nodeId, listenerPortNumber);
 		case PT_OCAProtocol:
-			return new OCAProtocolProcessor();
+			return new OCAProtocolProcessor(m_nodeId);
 		case PT_DummyMidiProtocol:
-			return new MIDIProtocolProcessor();
+			return new MIDIProtocolProcessor(m_nodeId);
 		default:
 			return 0;
 	}

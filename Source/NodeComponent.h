@@ -53,7 +53,8 @@ class ProtocolGroupComponent;
 class NodeComponent   : public GroupComponent,
 						public TextEditor::Listener,
 						public ComboBox::Listener,
-						public Button::Listener
+						public Button::Listener,
+						public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
     //==============================================================================
@@ -67,29 +68,24 @@ public:
 	void childWindowCloseTriggered(DialogWindow* childWindow);
 
 	//==============================================================================
-	void DumpUItoConfig(ProcessingEngineConfig& config);
-    int RefreshUIfromConfig(const ProcessingEngineConfig& config);
 	void ToggleOpenCloseObjectHandlingConfig(Button* button);
-	void TriggerParentConfigDump();
-	void TriggerParentConfigRefresh();
 
 	//==============================================================================
 	bool AddDefaultProtocol(const ProtocolGroupComponent* targetPGC);
-	bool RemoveProtocol(const NodeId& NId, const ProtocolId& PId);
+	bool RemoveProtocol(const ProtocolId& PId);
 
 	//==============================================================================
-	ProcessingEngineConfig* GetConfig();
-	ProcessingEngine* GetEngine();
 	NodeId GetNodeId();
+	int GetCurrentRequiredHeight();
     
     //==============================================================================
     void AddListener(MainRemoteProtocolBridgeComponent* listener);
 
-private:
-    //==============================================================================
-	bool AddDefaultProtocolA();
-	bool AddDefaultProtocolB();
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
+private:
     NodeId											m_NodeId;				/**< Id of the node this component manages configuration for. */
     																		
 	MainRemoteProtocolBridgeComponent*				m_parentComponent;		/**< The parent component that needs to be triggered regarding callbacks. */
@@ -102,6 +98,8 @@ private:
 																			
 	std::unique_ptr<TextButton>						m_OHMConfigEditButton;	/**< Button to invoke extended object handling mode configuration dialog. */
 	std::unique_ptr<ObjectHandlingConfigWindow>		m_OHMConfigDialog;		/**< Member to hold instance of object handling mode config dialog that is created on demand. */
+
+	std::unique_ptr<XmlElement>						m_ohmXmlElement;
 
 	void buttonClicked(Button* button) override;
 	void comboBoxChanged(ComboBox* comboBox) override;

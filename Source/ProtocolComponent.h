@@ -51,38 +51,33 @@ class ProtocolConfigWindow;
  * common role in a node.
  */
 class ProtocolGroupComponent   :	public GroupComponent,
-									public Button::Listener
+									public Button::Listener,
+									public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
     //==============================================================================
-    ProtocolGroupComponent();
+    ProtocolGroupComponent(const ProtocolRole& role);
     ~ProtocolGroupComponent();
 
     //==============================================================================
     void resized() override;
 
 	//==============================================================================
-	void DumpUItoConfig(ProcessingEngineConfig& config);
-	int RefreshUIfromConfig(const NodeId& parentNodeId, const Array<ProtocolId> protocolIds, const ProcessingEngineConfig& config);
-	void TriggerParentConfigDump();
-	void TriggerParentConfigRefresh();
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 	
 	//==============================================================================
-	ProcessingEngineConfig* GetConfig();
-	ProcessingEngine* GetEngine();
 	NodeId GetNodeId();
 	const Array<ProtocolId>& GetProtocolIds();
-    
-    //==============================================================================
-    void AddListener(NodeComponent* listener);
+	int GetCurrentRequiredHeight();
+	void RemoveProtocol(const ProtocolId& PId);
 
 private:
     //==============================================================================
 	NodeId														m_NodeId;				/**< Id of the node this component manages configuration for. */
+	ProtocolRole												m_ProtocolRole;
 	Array<ProtocolId>											m_ProtocolIds;			/**< The protocol id of this protocol config component. */
     
-	NodeComponent*												m_parentComponent;		/**< The parent of this config component for callback delivery. */
-
 	std::unique_ptr<ImageButton>								m_AddProtocolButton;	/**< Button to trigger adding another protocol to this group of protocols. */
 	std::unique_ptr<ImageButton>								m_RemoveProtocolButton;	/**< Button to trigger removing the last protocol of this group of protocols. */
 
@@ -100,14 +95,15 @@ private:
 /**
  * Class constructor.
  */
-class ProtocolComponent : public Component,
-	public TextEditor::Listener,
-	public ComboBox::Listener,
-	public Button::Listener
+class ProtocolComponent :	public Component,
+							public TextEditor::Listener,
+							public ComboBox::Listener,
+							public Button::Listener,
+							public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	//==============================================================================
-	ProtocolComponent(const NodeId& NId, const ProtocolId& PId);
+	ProtocolComponent(const NodeId& NId, const ProtocolId& PId, const ProtocolRole& role);
 	~ProtocolComponent();
 
 	//==============================================================================
@@ -117,20 +113,19 @@ public:
 	void childWindowCloseTriggered(DialogWindow* childWindow);
 
 	//==============================================================================
-	void DumpUItoConfigData(ProcessingEngineConfig::ProtocolData& protocolData);
-	int RefreshUIfromConfigData(const ProcessingEngineConfig::ProtocolData& protocolData);
 	void ToggleOpenCloseProtocolConfig(Button* button);
 	ProtocolId GetProtocolId();
+	int GetCurrentRequiredHeight();
 
 	//==============================================================================
-	void AddListener(ProtocolGroupComponent* listener);
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 private:
 
 	NodeId									m_NodeId;					/**< The parent node id of this protocol config component. */
 	ProtocolId								m_ProtocolId;				/**< The protocol id of this protocol config component. */
-
-	ProtocolGroupComponent*					m_parentComponent;			/**< The parent of this config component for callback delivery. */
+	ProtocolRole							m_Role;
 
 	std::unique_ptr<Label>					m_ProtocolLabel;			/**< Label for a descriptive string for this protocol component. */
 	std::unique_ptr<ComboBox>				m_ProtocolDrop;				/**< Dropdown for protocol type selection for this protocol config component. */
@@ -138,6 +133,8 @@ private:
 
 	std::unique_ptr<TextButton>				m_ProtocolConfigEditButton;	/**< Button to invoke extended protocol configuration editing dialog. */
 	std::unique_ptr<ProtocolConfigWindow>	m_ProtocolConfigDialog;		/**< Extended protocol configuration dialog, created on demand and required as member to be able to trigger closing. */
+
+	std::unique_ptr<XmlElement>				m_protocolXmlElement;
 
 
 	void buttonClicked(Button* button) override;

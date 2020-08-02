@@ -36,98 +36,136 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "RemoteProtocolBridgeCommon.h"
 
+#include "../submodules/JUCE-AppBasics/Source/AppConfigurationBase.h"
+
 #include <JuceHeader.h>
+
 
 /**
  * Class ProcessingEngineConfig is class for managing application runtime configuration.
  * It is used to be passed to different object wihtin application, that can then access it to
  * get specific config infos through its interface methods
  */
-class ProcessingEngineConfig
+class ProcessingEngineConfig : public JUCEAppBasics::AppConfigurationBase
 {
 
 public:
-	/**
-	 * Type to combine generic protocol configuration values
-	 */
-    struct ProtocolData
+	enum TagID
 	{
-		ProtocolId			Id;							/**< The protocol id of a protocol instance. */
-		ProtocolType		Type;						/**< The protocol type of a protocol instance. */
-		String				IpAddress;					/**< The ip address for a protocol instance. */
-		int					ClientPort;					/**< The tcp/udp port to use as client. */
-		int					HostPort;					/**< The tcp/udp port to use as host. */
-		bool				UsesActiveRemoteObjects;    /**< Flag specifying if this protocol is supposed to activly handle specified remote objects. */
-		Array<RemoteObject>	RemoteObjects;				/**< The remote objects actively used by a protocol instance. */
-		int					PollingInterval;			/**< The polling interval in ms. */
+		NODE,
+		OBJECTHANDLING,
+		PROTOCOLACHCNT,
+		PROTOCOLBCHCNT,
+		PROTOCOLA,
+		PROTOCOLB,
+		IPADDRESS,
+		CLIENTPORT,
+		HOSTPORT,
+		POLLINGINTERVAL,
+		ACTIVEOBJECTS,
+		GLOBALCONFIG,
+		TRAFFICLOGGING,
+		ENGINE,
+	};
+	static String getTagName(TagID Id)
+	{
+		switch (Id)
+		{
+		case NODE:
+			return "Node";
+		case OBJECTHANDLING:
+			return "ObjectHandling";
+		case PROTOCOLACHCNT:
+			return "ProtocolAChCnt";
+		case PROTOCOLBCHCNT:
+			return "ProtocolBChCnt";
+		case PROTOCOLA:
+			return "ProtocolA";
+		case PROTOCOLB:
+			return "ProtocolB";
+		case IPADDRESS:
+			return "IpAddress";
+		case CLIENTPORT:
+			return "ClientPort";
+		case HOSTPORT:
+			return "HostPort";
+		case POLLINGINTERVAL:
+			return "PollingInterval";
+		case ACTIVEOBJECTS:
+			return "ActiveObjects";
+		case GLOBALCONFIG:
+			return "GlobalConfig";
+		case TRAFFICLOGGING:
+			return "TrafficLogging";
+		case ENGINE:
+			return "Engine";
+		default:
+			return "INVALID";
+		}
 	};
 
-	/**
-	 * Type to define configuration for how object in a node shall be handled
-	 */
-	struct ObjectHandlingData
+	enum AttributeID
 	{
-		ObjectHandlingMode	Mode;						/**< The mode the node should operate in to handl msg data (defines what internal handling object is created). */
-		int					ACnt;						/**< Channel count configuration value that is to be expected per protocol type A for object handling module. */
-		int					BCnt;						/**< Channel count configuration value that is to be expected per protocol type B for object handling module. */
-		double				Prec;						/**< Data precision value to be used for evaluation of valu changes of incoming data. */
+		MODE,
+		DATAPRECISION,
+		COUNT,
+		ID,
+		TYPE,
+		USESACTIVEOBJ,
+		ADRESS,
+		PORT,
+		INTERVAL,
+		ALLOWED,
+		AUTOSTART
 	};
-
-	/**
-	 * Type to combine generic bridging node configuration values
-	 */
-    struct NodeData
+	static String getAttributeName(AttributeID Id)
 	{
-		NodeId				Id;							/**< The id of a processing node. */
-		ObjectHandlingData	ObjectHandling;				/**< The mode the node should operate in to handl msg data (defines what internal handling object is created). */
-		Array<ProtocolId>	RoleAProtocols;				/**< The role A protocol ids per node. */
-		Array<ProtocolId>	RoleBProtocols;				/**< The role B protocol ids per node. */
+		switch (Id)
+		{
+		case MODE:
+			return "Mode";
+		case DATAPRECISION:
+			return "DataPrecision";
+		case COUNT:
+			return "Count";
+		case ID:
+			return "Id";
+		case TYPE:
+			return "Type";
+		case USESACTIVEOBJ:
+			return "UsesActiveRemoteObjects";
+		case ADRESS:
+			return "Address";
+		case PORT:
+			return "Port";
+		case INTERVAL:
+			return "Interval";
+		case ALLOWED:
+			return "Allowed";
+		case AUTOSTART:
+			return "Autostart";
+		default:
+			return "INVALID";
+		}
 	};
 
 public:
-	ProcessingEngineConfig();
+	ProcessingEngineConfig(const File& file);
 	~ProcessingEngineConfig();
-	ProcessingEngineConfig(const ProcessingEngineConfig&r);
 
-	ProcessingEngineConfig& operator=(const ProcessingEngineConfig& r);
-
-	NodeData			GetNodeData(NodeId NId) const;
-	Array<NodeId>		GetNodeIds() const;
-	ObjectHandlingData	GetObjectHandlingData(NodeId NId) const;
-	bool				SetObjectHandlingData(NodeId NId, const ObjectHandlingData& ohData);
-	int					GetPollingInterval(NodeId NId, ProtocolId PId) const;
-	bool				SetPollingInterval(NodeId NId, ProtocolId PId, int interval);
-	ProtocolData		GetProtocolData(NodeId NId, ProtocolId PId) const;
-	bool				SetProtocolData(NodeId NId, ProtocolId PId, const ProtocolData& data);
-	Array<ProtocolId>	GetProtocolAIds(NodeId NId) const;
-	Array<ProtocolId>	GetProtocolBIds(NodeId NId) const;
-	Array<RemoteObject>	GetRemoteObjectsToActivate(NodeId NId, ProtocolId PId) const;
-	bool				SetRemoteObjectsToActivate(NodeId NId, ProtocolId PId, const Array<RemoteObject>& Objs);
-	bool				GetUseActiveHandling(NodeId NId, ProtocolId PId) const;
-	bool				SetUseActiveHandling(NodeId NId, ProtocolId PId, bool enable);
-	bool				SetProtocolPorts(NodeId NId, ProtocolId PId, const std::pair<int, int>& ports);
-
+	Array<NodeId>		GetNodeIds();
 	bool				IsTrafficLoggingAllowed() const;
 	void				SetTrafficLoggingAllowed(bool allowed = true);
 	bool				IsEngineStartOnAppStart() const;
 	void				SetEngineStartOnAppStart(bool start = true);
-    
-    bool				InitConfiguration();
-	bool				ReadConfiguration();
-	bool				ReadActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject>& RemoteObjects);
-	bool				ReadPollingInterval(XmlElement* ActiveObjectsElement, int& PollingInterval);
-	bool				WriteConfiguration();
-	bool				WriteActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects);
 
-	void				SetNode(NodeId NId, NodeData& node);
-	void				AddDefaultNode();
-	void				RemoveNode(NodeId NId);
+	static std::unique_ptr<XmlElement>	GetDefaultNode();
+	static std::unique_ptr<XmlElement>	GetDefaultProtocol(ProtocolRole role);
+	bool				RemoveNodeOrProtocol(int Id);
 
-	void				AddDefaultProtocolA(NodeId NId);
-	void				AddDefaultProtocolB(NodeId NId);
-	void				RemoveProtocol(NodeId NId, ProtocolId PId);
-
-	void				Clear();
+	static bool			ReadActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject>& RemoteObjects);
+	static bool			ReadPollingInterval(XmlElement* ActiveObjectsElement, int& PollingInterval);
+	static bool			WriteActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects);
 
 	static String				ProtocolTypeToString(ProtocolType pt);
 	static ProtocolType			ProtocolTypeFromString(String type);
@@ -136,17 +174,13 @@ public:
 
 	static String GetObjectDescription(RemoteObjectIdentifier Id);
 
+	// ============================================================
+	bool isValid() override;
+
 private:
     int GetNextUniqueId();
 	int ValidateUniqueId(int uniqueId);
 
-	Array<NodeId>						m_nodeIds;				/**< Array with ids of all nodes for this configuration. */
-	HashMap<NodeId, NodeData>			m_nodeData;				/**< Map combining node ids with actual node configurations. */
-	HashMap<ProtocolId, ProtocolData>	m_protocolData;			/**< The protocols of this node. */
-	
 	bool								m_TrafficLoggingAllowed;/**< Flag defining if the TrafficLogging togglebutton should be available. */
 	bool								m_EngineStartOnAppStart;/**< Flag defining if the engine should be automatically started on app start. */
-
-	String								m_configFilePath;		/**< The path string where the config file should be read from / written to. */
-
 };

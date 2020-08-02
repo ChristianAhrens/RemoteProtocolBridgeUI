@@ -45,12 +45,11 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Constructor
  */
-ProtocolGroupComponent::ProtocolGroupComponent()
+ProtocolGroupComponent::ProtocolGroupComponent(const ProtocolRole& role)
 	: GroupComponent()
 {
-	m_parentComponent = 0;
-
 	m_NodeId = 0;
+	m_ProtocolRole = role;
 
 	/******************************************************/
 	m_AddProtocolButton = std::make_unique<ImageButton>();
@@ -129,17 +128,19 @@ void ProtocolGroupComponent::resized()
  *
  * @param config	The configuration object to be filled with contents from ui elements of this node
  */
-void ProtocolGroupComponent::DumpUItoConfig(ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> ProtocolGroupComponent::createStateXml()
 {
-	for (ProtocolId* PId = m_ProtocolIds.begin(); PId != m_ProtocolIds.end(); ++PId)
+	auto protocolsXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+
+	for (auto PId : m_ProtocolIds)
 	{
-		if (m_ProtocolComponents.count(*PId) && m_ProtocolComponents[*PId])
+		if (m_ProtocolComponents.count(PId) && m_ProtocolComponents[PId])
 		{
-			ProcessingEngineConfig::ProtocolData protocolData = config.GetProtocolData(m_NodeId, *PId);
-			m_ProtocolComponents[*PId]->DumpUItoConfigData(protocolData);
-			config.SetProtocolData(m_NodeId, *PId, protocolData);
+			protocolsXmlElement->addChildElement(m_ProtocolComponents[PId]->createStateXml().release());
 		}
 	}
+
+	return std::move(protocolsXmlElement);
 }
 
 /**
@@ -150,17 +151,31 @@ void ProtocolGroupComponent::DumpUItoConfig(ProcessingEngineConfig& config)
  * @param config		The configuration object to extract the data to show on ui from
  * @return	The calculated theoretically required size for this component
  */
-int ProtocolGroupComponent::RefreshUIfromConfig(const NodeId& parentNodeId, const Array<ProtocolId> protocolIds, const ProcessingEngineConfig& config)
+bool ProtocolGroupComponent::setStateXml(XmlElement* stateXml)
 {
-	m_NodeId = parentNodeId;
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE))
+		return false;
+
+	m_NodeId = stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+
+	auto protocolRoles = std::map<ProtocolId, ProtocolRole>{};
+	auto protocolXmls = std::map<ProtocolId, XmlElement*>{};
+	XmlElement* protocolXmlElement = stateXml->getNextElementWithTagName((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
+	while (protocolXmlElement != nullptr)
+	{
+		protocolRoles.insert(std::make_pair(static_cast<ProtocolId>(protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID))), m_ProtocolRole));
+		protocolXmls.insert(std::make_pair(static_cast<ProtocolId>(protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID))), protocolXmlElement));
+
+		protocolXmlElement = stateXml->getNextElementWithTagName((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
+	}
 
 	// go through current ui node boxes to find out which ones need to be removed/destroyed
 	Array<ProtocolId> PIdsToRemove;
-	for (std::map<ProtocolId, std::unique_ptr<ProtocolComponent>>::iterator protocolIter = m_ProtocolComponents.begin(); protocolIter != m_ProtocolComponents.end(); protocolIter++)
-		if (!protocolIds.contains(protocolIter->first))
-			PIdsToRemove.add(protocolIter->first);
+	for(auto const & protocolComponentKV : m_ProtocolComponents)
+		if (protocolRoles.count(protocolComponentKV.first) == 0)
+			PIdsToRemove.add(protocolComponentKV.first);
 
-	for(const ProtocolId& PId : PIdsToRemove)
+	for (const ProtocolId& PId : PIdsToRemove)
 	{
 		if (m_ProtocolComponents.count(PId))
 		{
@@ -171,72 +186,43 @@ int ProtocolGroupComponent::RefreshUIfromConfig(const NodeId& parentNodeId, cons
 		m_ProtocolIds.removeAllInstancesOf(PId);
 	}
 
+	// now go through all protocol ids currently in config and create those protocols
+	// that do not already exist or simply update those that are present
+	for (auto const& PId : protocolRoles)
+	{
+		if (!m_ProtocolIds.contains(PId.first))
+		{
+			m_ProtocolIds.add(PId.first);
+	
+			ProtocolComponent* Protocol = new ProtocolComponent(m_NodeId, PId.first, PId.second);
+			Protocol->setStateXml(protocolXmls.at(PId.first));
+			addAndMakeVisible(Protocol);
+	
+			m_ProtocolComponents[PId.first] = std::unique_ptr<ProtocolComponent>(Protocol);
+		}
+	}
+
+	return true;
+}
+
+int ProtocolGroupComponent::GetCurrentRequiredHeight()
+{
 	// top margin v space
 	int requiredHeight = UIS_Margin_m;
 
-	// now go through all protocol ids currently in config and create those protocols
-	// that do not already exist or simply update those that are present
-	for (const ProtocolId& PId : protocolIds)
-	{
-		if (!m_ProtocolIds.contains(PId))
-		{
-			m_ProtocolIds.add(PId);
-
-			ProtocolComponent* Protocol = new ProtocolComponent(m_NodeId, PId);
-			Protocol->AddListener(this);
-			addAndMakeVisible(Protocol);
-
-			m_ProtocolComponents[PId] = std::unique_ptr<ProtocolComponent>(Protocol);
-		}
-		
-		if(m_ProtocolIds.contains(PId) && m_ProtocolComponents.count(PId) && m_ProtocolComponents[PId])
-		{
-			requiredHeight += m_ProtocolComponents[PId]->RefreshUIfromConfigData(config.GetProtocolData(m_NodeId, PId));
-		}
-	}
-
+	for(auto const & protocolComponent : m_ProtocolComponents)
+		requiredHeight += protocolComponent.second->GetCurrentRequiredHeight();
+	
 	// margin v space
 	requiredHeight += UIS_Margin_s;
-
+	
 	// reserve some v space for +- buttons
 	requiredHeight += (UIS_ElmSize + UIS_Margin_m);
-
+	
 	// margin v space
 	requiredHeight += UIS_Margin_m;
-
+	
 	return requiredHeight;
-}
-
-/**
- * Method to allow access to internal config.
- *
- * @return	Reference to the internal config object
- */
-ProcessingEngineConfig* ProtocolGroupComponent::GetConfig()
-{
-	if (m_parentComponent)
-		return m_parentComponent->GetConfig();
-	else
-	{
-		jassert(false);
-		return 0;
-	}
-}
-
-/**
- * Method to allow access to internal engine.
- *
- * @return	Reference to the internal engine object
- */
-ProcessingEngine* ProtocolGroupComponent::GetEngine()
-{
-	if (m_parentComponent)
-		return m_parentComponent->GetEngine();
-	else
-	{
-		jassert(false);
-		return 0;
-	}
 }
 
 /**
@@ -260,17 +246,15 @@ const Array<ProtocolId>& ProtocolGroupComponent::GetProtocolIds()
 }
 
 /**
- * Method to add the parent listener to this instance of ProtocolGroupComponent.
- * This can afterwards be used for e.g. callbacks, etc.
- *
- * @param listener	The parent listener object to be used to invoke public methods from ('callback')
+ * 
  */
-void ProtocolGroupComponent::AddListener(NodeComponent* listener)
+void ProtocolGroupComponent::RemoveProtocol(const ProtocolId& PId)
 {
-    m_parentComponent = listener;
-
-	// In case a node id is set (!=0) we require it to be the listeners' node id, otherwise we have a severe misconfiguration!
-	jassert((m_NodeId == 0) || (m_NodeId == listener->GetNodeId()));
+	if (m_ProtocolComponents.count(PId) && m_ProtocolComponents[PId])
+	{
+		m_ProtocolComponents.erase(PId);
+		triggerConfigurationUpdate();
+	}
 }
 
 /**
@@ -282,35 +266,18 @@ void ProtocolGroupComponent::AddListener(NodeComponent* listener)
  */
 void ProtocolGroupComponent::buttonClicked(Button* button)
 {
-	if (m_parentComponent)
+	if (button == m_AddProtocolButton.get())
 	{
-		if (button == m_AddProtocolButton.get())
+		auto currentState = createStateXml();
+		if (currentState)
 		{
-			m_parentComponent->AddDefaultProtocol(this);
-		}
-		else if (button == m_RemoveProtocolButton.get())
-		{
-			m_parentComponent->RemoveProtocol(m_NodeId, m_ProtocolIds.getLast());
+			currentState->addChildElement(ProcessingEngineConfig::GetDefaultProtocol(m_ProtocolRole).release());
 		}
 	}
-}
-
-/**
- * Proxy method to forward triggering parent to start dumping to config
- */
-void ProtocolGroupComponent::TriggerParentConfigDump()
-{
-	if (m_parentComponent)
-		m_parentComponent->TriggerParentConfigDump();
-}
-
-/**
- * Proxy method to forward triggering parent to start refreshing from config
- */
-void ProtocolGroupComponent::TriggerParentConfigRefresh()
-{
-	if (m_parentComponent)
-		m_parentComponent->TriggerParentConfigRefresh();
+	else if (button == m_RemoveProtocolButton.get())
+	{
+		RemoveProtocol(m_ProtocolIds.getLast());
+	}
 }
 
 
@@ -320,13 +287,14 @@ void ProtocolGroupComponent::TriggerParentConfigRefresh()
 /**
  * Constructor
  */
-ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId)
+ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId, const ProtocolRole& role)
 	: Component()
 {
-	m_parentComponent = 0;
-
 	m_NodeId = NId;
 	m_ProtocolId = PId;
+	m_Role = role;
+
+	m_protocolXmlElement = std::make_unique<XmlElement>(m_Role == ProtocolRole::PR_A ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 
 	/******************************************************/
 	m_ProtocolDrop = std::make_unique<ComboBox>();
@@ -398,23 +366,15 @@ void ProtocolComponent::resized()
  */
 void ProtocolComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 {
-	ProcessingEngineConfig* config = m_parentComponent->GetConfig();
-	ProcessingEngine* engine = m_parentComponent->GetEngine();
+	auto config = dynamic_cast<ProcessingEngineConfig*>(ProcessingEngineConfig::getInstance());
 
 	if (childWindow == m_ProtocolConfigDialog.get())
 	{
-		if (config && engine)
+		if (config)
 		{
-			bool EngineIsRunning = engine->IsRunning();
-			if (EngineIsRunning)
-				engine->Stop();
-
-			m_ProtocolConfigDialog->DumpConfig(*config);
-			config->WriteConfiguration();
-			engine->SetConfig(*config);
-
-			if (EngineIsRunning)
-				engine->Start();
+			m_ProtocolConfigDialog->createStateXml();
+			jassertfalse;
+			triggerConfigurationUpdate();
 		}
 
 		if (m_ProtocolConfigEditButton)
@@ -432,14 +392,16 @@ void ProtocolComponent::childWindowCloseTriggered(DialogWindow* childWindow)
  *
  * @param protocolData	The data struct to dump the ui values into
  */
-void ProtocolComponent::DumpUItoConfigData(ProcessingEngineConfig::ProtocolData& protocolData)
+std::unique_ptr<XmlElement> ProtocolComponent::createStateXml()
 {
-	protocolData.Id = m_ProtocolId;
+	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_ProtocolId));
+	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), static_cast<int>(m_ProtocolDrop->getSelectedId()));
 
-	if(m_IpEdit)
-		protocolData.IpAddress = m_IpEdit->getText();
-	if(m_ProtocolDrop)
-		protocolData.Type = (ProtocolType)m_ProtocolDrop->getSelectedId();
+	auto ipAdressEdit = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::IPADDRESS));
+	if (ipAdressEdit)
+		ipAdressEdit->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS), m_IpEdit->getText());
+
+	return std::make_unique<XmlElement>(*m_protocolXmlElement);
 }
 
 /**
@@ -448,17 +410,35 @@ void ProtocolComponent::DumpUItoConfigData(ProcessingEngineConfig::ProtocolData&
  * @param protocolData	The config data structure to use to refresh what the ui displays
  * @return	The calculated theoretically required size for this component
  */
-int ProtocolComponent::RefreshUIfromConfigData(const ProcessingEngineConfig::ProtocolData& protocolData)
+bool ProtocolComponent::setStateXml(XmlElement* stateXml)
 {
-	jassert(m_ProtocolId == protocolData.Id);
+	if (!stateXml || stateXml->getTagName() != ((m_Role == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB)))
+		return false;
 
-	if (m_ProtocolLabel)
-		m_ProtocolLabel->setText("Protocol Id" + String(m_ProtocolId), dontSendNotification);
+	m_ProtocolId = stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+
+	m_protocolXmlElement = std::make_unique<XmlElement>(*stateXml);
+
+	auto protocolType = ProcessingEngineConfig::ProtocolTypeFromString(m_protocolXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE)));
 	if (m_ProtocolDrop)
-		m_ProtocolDrop->setSelectedId(protocolData.Type, dontSendNotification);
-	if (m_IpEdit)
-		m_IpEdit->setText(protocolData.IpAddress);
+		m_ProtocolDrop->setSelectedId(protocolType, dontSendNotification);
+	else
+		return false;
 
+	auto protocolIpAdress = m_protocolXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS));
+	if (m_IpEdit)
+		m_IpEdit->setText(protocolIpAdress);
+	else
+		return false;
+
+	return true;
+}
+
+/**
+ *
+ */
+int ProtocolComponent::GetCurrentRequiredHeight()
+{
 	return UIS_ElmSize;
 }
 
@@ -470,20 +450,6 @@ int ProtocolComponent::RefreshUIfromConfigData(const ProcessingEngineConfig::Pro
 ProtocolId ProtocolComponent::GetProtocolId()
 {
 	return m_ProtocolId;
-}
-
-/**
- * Method to add the parent listener to this instance of ProtocolComponent.
- * This can afterwards be used for e.g. callbacks, etc.
- *
- * @param listener	The parent listener object to be used to invoke public methods from ('callback')
- */
-void ProtocolComponent::AddListener(ProtocolGroupComponent* listener)
-{
-	m_parentComponent = listener;
-
-	// In case a node id is set (!=0) we require it to be the listeners' node id, otherwise we have a severe misconfiguration!
-	jassert((m_NodeId == 0) || (m_NodeId == listener->GetNodeId()));
 }
 
 /**
@@ -511,8 +477,9 @@ void ProtocolComponent::comboBoxChanged(ComboBox* comboBox)
 {
 	ignoreUnused(comboBox);
 
-	if (m_parentComponent)
-		m_parentComponent->TriggerParentConfigDump();
+	auto config = ProcessingEngineConfig::getInstance();
+	if (config)
+		config->triggerConfigurationDump();
 }
 
 /**
@@ -536,8 +503,9 @@ void ProtocolComponent::textEditorReturnKeyPressed(TextEditor& textEdit)
 {
 	ignoreUnused(textEdit);
 
-	if (m_parentComponent)
-		m_parentComponent->TriggerParentConfigDump();
+	auto config = ProcessingEngineConfig::getInstance();
+	if (config)
+		config->triggerConfigurationDump();
 }
 
 /**
@@ -570,28 +538,17 @@ void ProtocolComponent::textEditorFocusLost(TextEditor& textEdit)
 void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
 {
 	jassert(button);
-	if (!m_parentComponent || !button)
+	if (!button)
 		return;
-
-	ProcessingEngineConfig* config = m_parentComponent->GetConfig();
-	ProcessingEngine* engine = m_parentComponent->GetEngine();
 
 	// if the config dialog exists, this is a uncheck (close) click,
 	// which means we have to process edited data
 	if (m_ProtocolConfigDialog)
 	{
-		if (config && engine)
+		if (m_protocolXmlElement)
 		{
-			bool EngineIsRunning = engine->IsRunning();
-			if (EngineIsRunning)
-				engine->Stop();
-
-			m_ProtocolConfigDialog->DumpConfig(*config);
-			config->WriteConfiguration();
-			engine->SetConfig(*config);
-
-			if (EngineIsRunning)
-				engine->Start();
+			m_protocolXmlElement = m_ProtocolConfigDialog->createStateXml();
+			triggerConfigurationUpdate();
 		}
 
 		button->setColour(TextButton::buttonColourId, Colours::dimgrey);
@@ -602,18 +559,18 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
 	// otherwise we have to create the dialog and show it
 	else
 	{
-		if (config && engine)
+		if (m_protocolXmlElement)
 		{
-			ProtocolType protocolType = config->GetProtocolData(m_NodeId, m_ProtocolId).Type;
+			ProtocolType protocolType = static_cast<ProtocolType>(m_protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE)));
 
 			String dialogTitle = ProcessingEngineConfig::ProtocolTypeToString(protocolType) + " protocol configuration (Node Id" + String(m_NodeId) + ", Protocol Id" + String(m_ProtocolId) + ")";
 
-			m_ProtocolConfigDialog = std::make_unique<ProtocolConfigWindow>(dialogTitle, Colours::dimgrey, false, m_NodeId, m_ProtocolId, protocolType);
+			m_ProtocolConfigDialog = std::make_unique<ProtocolConfigWindow>(dialogTitle, Colours::dimgrey, false, m_NodeId, m_ProtocolId, m_Role, protocolType);
 			m_ProtocolConfigDialog->AddListener(this);
 			m_ProtocolConfigDialog->setResizable(true, true);
 			m_ProtocolConfigDialog->setUsingNativeTitleBar(true);
 			m_ProtocolConfigDialog->setVisible(true);
-			m_ProtocolConfigDialog->SetConfig(*config);
+			m_ProtocolConfigDialog->setStateXml(m_protocolXmlElement.get());
 #if defined JUCE_IOS ||  defined JUCE_ANDROID
             m_ProtocolConfigDialog->setFullScreen(true);
 #else

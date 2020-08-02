@@ -34,7 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 /**
  * Unique, therefor static, counter for id generation
@@ -64,6 +64,17 @@ enum ProtocolType
 	PT_DummyMidiProtocol,	/**< Dummy midi protocol type value. */
 	PT_UserMAX				/**< Value to mark enum max; For iteration purpose. */
 };
+
+/**
+ * Known Protocol Processor Roles
+ */
+enum ProtocolRole
+{
+	PR_Invalid = 0,	/**< Invalid protocol role value. */
+	PR_A,			/**< role A value. */
+	PR_B,			/**< role B value. */
+	PR_UserMax		/**< Value to mark enum max; For iteration purpose. */
+};					
 
 /**
  * Known ObjectHandling modes

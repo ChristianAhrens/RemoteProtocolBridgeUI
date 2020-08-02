@@ -43,8 +43,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Derived OCA remote protocol processing class
  */
-OCAProtocolProcessor::OCAProtocolProcessor()
-	: ProtocolProcessor_Abstract()
+OCAProtocolProcessor::OCAProtocolProcessor(const NodeId& parentNodeId)
+	: ProtocolProcessor_Abstract(parentNodeId)
 {
 	m_type = ProtocolType::PT_OCAProtocol;
 }
@@ -75,15 +75,25 @@ bool OCAProtocolProcessor::Stop()
 }
 
 /**
+ * 
+ */
+bool OCAProtocolProcessor::setStateXml(XmlElement* stateXml)
+{
+	ignoreUnused(stateXml);
+
+	return false;
+}
+
+/**
  * Setter for remote object to specifically activate.
  * For OCA processing this is used to initialize OCA Object Subscriptions
  * NOT YET IMPLEMENTED
  *
  * @param Objs	The list of RemoteObjects that shall be activated
  */
-void OCAProtocolProcessor::SetRemoteObjectsActive(const Array<RemoteObject>& Objs)
+void OCAProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElement)
 {
-	ignoreUnused(Objs);
+	ignoreUnused(activeObjsXmlElement);
 }
 
 /**

@@ -67,8 +67,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Class constructor.
  */
-ProtocolConfigComponent_Abstract::ProtocolConfigComponent_Abstract()
+ProtocolConfigComponent_Abstract::ProtocolConfigComponent_Abstract(ProtocolRole role)
 {
+	m_ProtocolRole = role;
 	m_parentListener	= 0;
 
 	m_Headline = std::make_unique<Label>();
@@ -193,13 +194,31 @@ void ProtocolConfigComponent_Abstract::SetActiveHandlingUsed(bool active)
  * @param config	The global configuration object to dump data to
  * @return	True on success
  */
-bool ProtocolConfigComponent_Abstract::DumpConfig(NodeId NId, ProtocolId PId, ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> ProtocolConfigComponent_Abstract::createStateXml()
 {
-	config.SetProtocolPorts(NId, PId, DumpProtocolPorts());
-	config.SetUseActiveHandling(NId, PId, DumpActiveHandlingUsed());
-	config.SetRemoteObjectsToActivate(NId, PId, DumpActiveRemoteObjects());
+	auto protocolXmlElement = std::make_unique<XmlElement>((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 
-	return true;
+	auto ports = DumpProtocolPorts();
+	auto activeHandlingUsed = DumpActiveHandlingUsed();
+	auto activeObjects = DumpActiveRemoteObjects();
+
+	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
+
+	auto clientPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
+	if (clientPortXmlElement)
+		clientPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.first);
+
+	auto hostPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	if (hostPortXmlElement)
+		hostPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.second);
+	
+	auto activeObjsXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	if (activeObjsXmlElement)
+	{
+		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement, activeObjects);
+	}
+
+	return std::move(protocolXmlElement);
 }
 
 /**
@@ -210,12 +229,28 @@ bool ProtocolConfigComponent_Abstract::DumpConfig(NodeId NId, ProtocolId PId, Pr
  * @param NId The id of the protocol to set the config for
  * @param config	The global configuration object.
  */
-void ProtocolConfigComponent_Abstract::SetConfig(NodeId NId, ProtocolId PId, const ProcessingEngineConfig& config)
+bool ProtocolConfigComponent_Abstract::setStateXml(XmlElement* stateXml)
 {
-	std::pair<int, int> ports(config.GetProtocolData(NId, PId).ClientPort, config.GetProtocolData(NId, PId).HostPort);
+	if (!stateXml || stateXml->getTagName() != ((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB)))
+		return false;
+
+	SetActiveHandlingUsed(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1);
+
+	std::pair<int, int> ports{ 0, 0 };
+	auto clientPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
+	if (clientPortXmlElement)
+		ports.first = clientPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+	auto hostPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	if (hostPortXmlElement)
+		ports.second = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
 	FillProtocolPorts(ports);
-	SetActiveHandlingUsed(config.GetUseActiveHandling(NId, PId));
-	FillActiveRemoteObjects(config.GetRemoteObjectsToActivate(NId, PId));
+
+	Array<RemoteObject> activeObjects;
+	auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, activeObjects);
+	FillActiveRemoteObjects(activeObjects);
+
+	return true;
 }
 
 
@@ -225,7 +260,8 @@ void ProtocolConfigComponent_Abstract::SetConfig(NodeId NId, ProtocolId PId, con
 /**
  * Class constructor.
  */
-BasicProtocolConfigComponent::BasicProtocolConfigComponent()
+BasicProtocolConfigComponent::BasicProtocolConfigComponent(ProtocolRole role)
+	: ProtocolConfigComponent_Abstract(role)
 {
 	m_UseActiveHandlingCheck = std::make_unique<ToggleButton>();
 	addAndMakeVisible(m_UseActiveHandlingCheck.get());
@@ -587,7 +623,8 @@ const std::pair<int, int> BasicProtocolConfigComponent::GetSuggestedSize()
 /**
  * Class constructor.
  */
-OSCProtocolConfigComponent::OSCProtocolConfigComponent()
+OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
+	: ProtocolConfigComponent_Abstract(role)
 {
 	m_Headline->setText("Objects enabled for polling:", dontSendNotification);
 
@@ -1005,11 +1042,13 @@ const std::pair<int, int> OSCProtocolConfigComponent::GetSuggestedSize()
  * @param config	The global configuration object to dump data to
  * @return	True on success
  */
-bool OSCProtocolConfigComponent::DumpConfig(NodeId NId, ProtocolId PId, ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
 {
-	config.SetPollingInterval(NId, PId, DumpPollingInterval());
+	auto protocolStateXml = ProtocolConfigComponent_Abstract::createStateXml();
+	auto pollingIntervalXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
+	pollingIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), DumpPollingInterval());
 
-	return ProtocolConfigComponent_Abstract::DumpConfig(NId, PId, config);
+	return std::move(protocolStateXml);
 }
 
 /**
@@ -1020,11 +1059,13 @@ bool OSCProtocolConfigComponent::DumpConfig(NodeId NId, ProtocolId PId, Processi
  * @param NId The id of the protocol to set the config for
  * @param config	The global configuration object.
  */
-void OSCProtocolConfigComponent::SetConfig(NodeId NId, ProtocolId PId, const ProcessingEngineConfig& config)
+bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 {
-	ProtocolConfigComponent_Abstract::SetConfig(NId, PId, config);
+	auto pollingIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
+	if(pollingIntervalXmlElement)
+		FillPollingInterval(pollingIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL)));
 
-	FillPollingInterval(config.GetProtocolData(NId, PId).PollingInterval);
+	return ProtocolConfigComponent_Abstract::setStateXml(stateXml);
 }
 
 
@@ -1042,7 +1083,7 @@ void OSCProtocolConfigComponent::SetConfig(NodeId NId, ProtocolId PId, const Pro
  * @param type							Type of the protocol this object is used to configure.
  * @param addToDesktop					Flag value to define if window is to be standalone or embedded in other content
  */
-ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour backgroundColour, bool escapeKeyTriggersCloseButton, NodeId NId, ProtocolId PId, ProtocolType type, bool addToDesktop)
+ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour backgroundColour, bool escapeKeyTriggersCloseButton, NodeId NId, ProtocolId PId, ProtocolRole role, ProtocolType type, bool addToDesktop)
 	: DialogWindow(name, backgroundColour, escapeKeyTriggersCloseButton, addToDesktop)
 {
 	m_parentListener = 0;
@@ -1053,7 +1094,7 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	switch (type)
 	{
 	case ProtocolType::PT_OSCProtocol:
-		m_configComponent = std::make_unique<OSCProtocolConfigComponent>();
+		m_configComponent = std::make_unique<OSCProtocolConfigComponent>(role);
 		break;
 	case ProtocolType::PT_OCAProtocol:
 		// intentionally no break to run into default
@@ -1062,7 +1103,7 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	case ProtocolType::PT_Invalid:
 		// intentionally no break to run into default
 	default:
-		m_configComponent = std::make_unique<BasicProtocolConfigComponent>();
+		m_configComponent = std::make_unique<BasicProtocolConfigComponent>(role);
 		break;
 	}
 
@@ -1107,11 +1148,9 @@ void ProtocolConfigWindow::AddListener(ProtocolComponent* listener)
  * @param config	The global configuration object to dump data to
  * @return	True on success
  */
-bool ProtocolConfigWindow::DumpConfig(ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> ProtocolConfigWindow::createStateXml()
 {
-	m_configComponent->DumpConfig(m_NId, m_PId, config);
-
-	return true;
+	return m_configComponent->createStateXml();
 }
 
 /**
@@ -1120,9 +1159,9 @@ bool ProtocolConfigWindow::DumpConfig(ProcessingEngineConfig& config)
  *
  * @param config	The global configuration object.
  */
-void ProtocolConfigWindow::SetConfig(const ProcessingEngineConfig& config)
+bool ProtocolConfigWindow::setStateXml(XmlElement* stateXml)
 {
-	m_configComponent->SetConfig(m_NId, m_PId, config);
+	return m_configComponent->setStateXml(stateXml);
 }
 
 /**

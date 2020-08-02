@@ -44,8 +44,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Derived OSC remote protocol processing class
  */
-OSCProtocolProcessor::OSCProtocolProcessor(int listenerPortNumber)
-	: ProtocolProcessor_Abstract(), m_oscReceiver(listenerPortNumber)
+OSCProtocolProcessor::OSCProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber)
+	: ProtocolProcessor_Abstract(parentNodeId), m_oscReceiver(listenerPortNumber)
 {
 	m_type = ProtocolType::PT_OSCProtocol;
 	m_oscMsgRate = ET_DefaultPollingRate;
@@ -113,11 +113,21 @@ bool OSCProtocolProcessor::Stop()
  * @param NId			The node id of the parent node this protocol processing object is child of (needed to access data from config)
  * @param PId			The protocol id of this protocol processing object (needed to access data from config)
  */
-void OSCProtocolProcessor::SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData& protocolData, const Array<RemoteObject>& activeObjs, NodeId NId, ProtocolId PId)
+bool OSCProtocolProcessor::setStateXml(XmlElement *stateXml)
 {
-	m_oscMsgRate = protocolData.PollingInterval;
-
-	ProtocolProcessor_Abstract::SetProtocolConfigurationData(protocolData, activeObjs, NId, PId);
+	if (!ProtocolProcessor_Abstract::setStateXml(stateXml))
+		return false;
+	else
+	{
+		auto pollingIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
+		if (pollingIntervalXmlElement)
+		{
+			m_oscMsgRate = pollingIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL));
+			return true;
+		}
+		else
+			return false;
+	}
 }
 
 /**
@@ -129,19 +139,17 @@ void OSCProtocolProcessor::SetProtocolConfigurationData(const ProcessingEngineCo
  *
  * @param Objs	The list of RemoteObjects that shall be activated
  */
-void OSCProtocolProcessor::SetRemoteObjectsActive(const Array<RemoteObject>& Objs)
+void OSCProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElement)
 {
-	// Start timer callback if objects are to be polled
-	if (Objs.size() > 0)
-	{
-		m_activeRemoteObjects = Objs;
+	ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, m_activeRemoteObjects);
 
+	// Start timer callback if objects are to be polled
+	if (m_activeRemoteObjects.size() > 0)
+	{
 		startTimer(m_oscMsgRate);
 	}
 	else
 	{
-		m_activeRemoteObjects.clear();
-
 		stopTimer();
 	}
 }

@@ -69,18 +69,25 @@ ObjectDataHandling_Abstract::~ObjectDataHandling_Abstract()
 }
 
 /**
+ *
+ */
+std::unique_ptr<XmlElement> ObjectDataHandling_Abstract::createStateXml()
+{
+	return nullptr;
+}
+
+/**
  * Sets the configuration for the protocol processor object.
  * 
  * @param config	The overall configuration object that can be used to query protocol specific config data from
  * @param NId		The node id of the parent node this protocol processing object is child of (needed to access data from config)
  */
-void ObjectDataHandling_Abstract::SetObjectHandlingConfiguration(const ProcessingEngineConfig& config, NodeId NId)
+bool ObjectDataHandling_Abstract::setStateXml(XmlElement* stateXml)
 {
-	if (m_parentNode && m_parentNode->GetId() != NId)
-		jassertfalse;
-
-	ignoreUnused(config);
-
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
+		return false;
+	else
+		return true;
 }
 
 /**
@@ -356,12 +363,27 @@ Mux_nA_to_mB::~Mux_nA_to_mB()
  * @param config	The overall configuration object that can be used to query config data from
  * @param NId		The node id of the parent node this data handling object is child of (needed to access data from config)
  */
-void Mux_nA_to_mB::SetObjectHandlingConfiguration(const ProcessingEngineConfig& config, NodeId NId)
+bool Mux_nA_to_mB::setStateXml(XmlElement* stateXml)
 {
-	ObjectDataHandling_Abstract::SetObjectHandlingConfiguration(config, NId);
+	if (!ObjectDataHandling_Abstract::setStateXml(stateXml))
+		return false;
 
-	m_protoChCntA = config.GetObjectHandlingData(NId).ACnt;
-	m_protoChCntB = config.GetObjectHandlingData(NId).BCnt;
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Mux_nA_to_mB))
+		return false;
+
+	auto protoChCntAElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (protoChCntAElement)
+		m_protoChCntA = protoChCntAElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT));
+	else
+		return false;
+
+	auto protoChCntBElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
+	if (protoChCntBElement)
+		m_protoChCntB = protoChCntBElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT));
+	else
+		return false;
+
+	return true;
 }
 
 /**
@@ -445,11 +467,17 @@ Forward_only_valueChanges::~Forward_only_valueChanges()
  * @param config	The overall configuration object that can be used to query config data from
  * @param NId		The node id of the parent node this data handling object is child of (needed to access data from config)
  */
-void Forward_only_valueChanges::SetObjectHandlingConfiguration(const ProcessingEngineConfig& config, NodeId NId)
+bool Forward_only_valueChanges::setStateXml(XmlElement* stateXml)
 {
-	ObjectDataHandling_Abstract::SetObjectHandlingConfiguration(config, NId);
+	if (!ObjectDataHandling_Abstract::setStateXml(stateXml))
+		return false;
 
-	m_precision = config.GetObjectHandlingData(NId).Prec;
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Forward_only_valueChanges))
+		return false;
+
+	m_precision = stateXml->getDoubleAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
+
+	return true;
 }
 
 /**

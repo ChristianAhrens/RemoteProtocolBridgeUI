@@ -37,7 +37,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../RemoteProtocolBridgeCommon.h"
 #include "../ProtocolProcessor_Abstract.h"
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 
 /**
@@ -48,12 +48,16 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class OCAProtocolProcessor : public ProtocolProcessor_Abstract
 {
 public:
-	OCAProtocolProcessor();
+	OCAProtocolProcessor(const NodeId& parentNodeId);
 	~OCAProtocolProcessor();
+
+	bool setStateXml(XmlElement* stateXml) override;
 
 	bool Start() override;
 	bool Stop() override;
-	void SetRemoteObjectsActive(const Array<RemoteObject>& Objs) override;
+
+	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
+
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 	static String GetRemoteObjectString(RemoteObjectIdentifier id);

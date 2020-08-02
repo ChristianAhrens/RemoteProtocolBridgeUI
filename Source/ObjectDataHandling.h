@@ -36,29 +36,34 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "RemoteProtocolBridgeCommon.h"
 
+#include "ProcessingEngineConfig.h"
+
 #include <JuceHeader.h>
 
 // Fwd. declarations
 class ProcessingEngineNode;
-class ProcessingEngineConfig;
 
 /**
  * Class ObjectDataHandling_Abstract is an abstract interfacing base class for .
  */
-class ObjectDataHandling_Abstract
+class ObjectDataHandling_Abstract : ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	ObjectDataHandling_Abstract(ProcessingEngineNode* parentNode);
 	virtual ~ObjectDataHandling_Abstract();
 
-	virtual void SetObjectHandlingConfiguration(const ProcessingEngineConfig& config, NodeId NId);
 	ObjectHandlingMode GetMode();
 
 	void AddProtocolAId(ProtocolId PAId);
 	void AddProtocolBId(ProtocolId PBId);
 	void ClearProtocolIds();
 
+	//==============================================================================
 	virtual bool OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
+
+	//==============================================================================
+	virtual std::unique_ptr<XmlElement> createStateXml() override;
+	virtual bool setStateXml(XmlElement* stateXml) override;
 
 protected:
 	ProcessingEngineNode*	m_parentNode;			/**< The parent node object. Needed for e.g. triggering receive notifications. */
@@ -126,7 +131,7 @@ public:
 	Mux_nA_to_mB(ProcessingEngineNode* parentNode);
 	~Mux_nA_to_mB();
 
-	void SetObjectHandlingConfiguration(const ProcessingEngineConfig& config, NodeId NId) override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	bool OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
 
@@ -146,7 +151,7 @@ public:
 	Forward_only_valueChanges(ProcessingEngineNode* parentNode);
 	~Forward_only_valueChanges();
 
-	void SetObjectHandlingConfiguration(const ProcessingEngineConfig& config, NodeId NId) override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	bool OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
 

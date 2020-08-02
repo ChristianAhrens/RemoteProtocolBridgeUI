@@ -51,14 +51,16 @@ class OSCProtocolProcessor : public SenderAwareOSCReceiver::SAOListener<OSCRecei
 	private Timer
 {
 public:
-	OSCProtocolProcessor(int listenerPortNumber);
+	OSCProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber);
 	~OSCProtocolProcessor();
 
-	void SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData& protocolData, const Array<RemoteObject>& activeObjs, NodeId NId, ProtocolId PId) override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	bool Start() override;
 	bool Stop() override;
-	void SetRemoteObjectsActive(const Array<RemoteObject>& Objs) override;
+
+	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
+
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 	static String GetRemoteObjectString(RemoteObjectIdentifier id);

@@ -215,6 +215,41 @@ const std::pair<int, int> GlobalConfigComponent::GetSuggestedSize()
 	return std::pair<int, int>(width, height);
 }
 
+std::unique_ptr<XmlElement> GlobalConfigComponent::createStateXml()
+{
+	auto globalConfigXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG));
+
+	auto trafficLoggingXmlElement = globalConfigXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::TRAFFICLOGGING));
+	if (trafficLoggingXmlElement)
+		trafficLoggingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ALLOWED), DumpTrafficLoggingAllowed() ? 1 : 0);
+
+	auto engineXmlElement = globalConfigXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ENGINE));
+	if (engineXmlElement)
+		engineXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::AUTOSTART), DumpEngineStartOnAppStart() ? 1 : 0);
+
+	return std::move(globalConfigXmlElement);
+}
+
+bool GlobalConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG))
+		return false;
+
+	auto trafficLoggingXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::TRAFFICLOGGING));
+	if (trafficLoggingXmlElement)
+		SetTrafficLoggingAllowed(trafficLoggingXmlElement->getBoolAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ALLOWED)));
+	else
+		return false;
+
+	auto engineXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ENGINE));
+	if (engineXmlElement)
+		SetEngineStartOnAppStart(engineXmlElement->getBoolAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::AUTOSTART)));
+	else
+		return false;
+
+	return true;
+}
+
 
 // **************************************************************************************
 //    class GlobalConfigWindow
@@ -275,13 +310,9 @@ void GlobalConfigWindow::AddListener(MainRemoteProtocolBridgeComponent* listener
  * @param config	The global configuration object to dump data to
  * @return	True on success
  */
-bool GlobalConfigWindow::DumpConfig(ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> GlobalConfigWindow::createStateXml()
 {
-	//config.SetRemoteObjectsToActivate(m_configComponent->DumpActiveRemoteObjects());
-	config.SetEngineStartOnAppStart(m_configComponent->DumpEngineStartOnAppStart());
-	config.SetTrafficLoggingAllowed(m_configComponent->DumpTrafficLoggingAllowed());
-
-	return true;
+	return m_configComponent->createStateXml();
 }
 
 /**
@@ -290,11 +321,9 @@ bool GlobalConfigWindow::DumpConfig(ProcessingEngineConfig& config)
  *
  * @param config	The global configuration object.
  */
-void GlobalConfigWindow::SetConfig(const ProcessingEngineConfig& config)
+bool GlobalConfigWindow::setStateXml(XmlElement* stateXml)
 {
-	//m_configComponent->FillActiveRemoteObjects(config.GetRemoteObjectsToActivate());
-	m_configComponent->SetEngineStartOnAppStart(config.IsEngineStartOnAppStart());
-	m_configComponent->SetTrafficLoggingAllowed(config.IsTrafficLoggingAllowed());
+	return m_configComponent->setStateXml(stateXml);
 }
 
 /**

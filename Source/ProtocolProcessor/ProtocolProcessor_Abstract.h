@@ -36,7 +36,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../RemoteProtocolBridgeCommon.h"
 #include "../ProcessingEngineConfig.h"
-#include "../JuceLibraryCode/JuceHeader.h"
+
+#include <JuceHeader.h>
 
 
 /**
@@ -45,7 +46,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * implements in a derived object. Its parent node object provides a handler method to processed
  * received protocol message data.
  */
-class ProtocolProcessor_Abstract
+class ProtocolProcessor_Abstract : public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	/**
@@ -65,17 +66,23 @@ public:
 	};
 
 public:
-	ProtocolProcessor_Abstract();
+	ProtocolProcessor_Abstract(const NodeId& parentNodeId);
 	virtual ~ProtocolProcessor_Abstract();
 
 	void AddListener(Listener *messageReceiver);
 	ProtocolType GetType();
 	ProtocolId GetId();
-	virtual void SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData& protocolData, const Array<RemoteObject>& activeObjs, NodeId NId, ProtocolId PId);
+	ProtocolRole GetRole();
 
 	virtual bool Start() = 0;
 	virtual bool Stop() = 0;
-	virtual void SetRemoteObjectsActive(const Array<RemoteObject>& Objs) = 0;
+
+	virtual void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) = 0;
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override { return nullptr; };
+	virtual bool setStateXml(XmlElement* stateXml) override;
+
 	virtual bool SendMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
 
 protected:
@@ -83,6 +90,7 @@ protected:
 	ProtocolType			m_type;					/**< Processor type regarding the protocol being handled */
 	NodeId					m_parentNodeId;			/**< The id of the objects' parent node. */
 	ProtocolId				m_protocolProcessorId;	/**< The id of the processor object itself. */
+	ProtocolRole			m_protocolProcessorRole;
 
 	String					m_ipAddress;			/**< IP Address where messages will be sent to / received from. */
 	int						m_clientPort;			/**< TCP/UDP port where messages will be received from. */

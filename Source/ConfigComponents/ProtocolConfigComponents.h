@@ -39,6 +39,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../RemoteProtocolBridgeCommon.h"
 #include "../ProcessingEngine.h"
 
+#include "../ProcessingEngineConfig.h"
+
 // Fwd. Declarations
 class ProtocolComponent;
 class ProtocolConfigWindow;
@@ -46,22 +48,23 @@ class ProtocolConfigWindow;
 /**
  * Class ProtocolConfigComponent_Abstract is a container used to hold the GUI controls for modifying the app configuration.
  */
-class ProtocolConfigComponent_Abstract : public Component,
-	public Button::Listener
+class ProtocolConfigComponent_Abstract :	public Component,
+											public Button::Listener,
+											public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
-	ProtocolConfigComponent_Abstract();
+	ProtocolConfigComponent_Abstract(ProtocolRole role);
 	~ProtocolConfigComponent_Abstract();
-
-	//==============================================================================
-	virtual bool DumpConfig(NodeId NId, ProtocolId PId, ProcessingEngineConfig& config);
-	virtual void SetConfig(NodeId NId, ProtocolId PId, const ProcessingEngineConfig& config);
 
 	//==============================================================================
 	virtual const std::pair<int, int> GetSuggestedSize() = 0;
 
 	//==============================================================================
 	virtual void AddListener(ProtocolConfigWindow* listener);
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 protected:
 	//==============================================================================
@@ -88,6 +91,8 @@ protected:
 	std::unique_ptr<TextButton> m_applyConfigButton;	/**< Button to apply edited values to configuration and leave. */
 	ProtocolConfigWindow*		m_parentListener;		/**< Parent that needs to be notified when this window self-destroys. */
 
+	ProtocolRole	m_ProtocolRole;
+
 };
 
 /**
@@ -98,7 +103,7 @@ class BasicProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
 	public TextEditor::Listener
 {
 public:
-	BasicProtocolConfigComponent();
+	BasicProtocolConfigComponent(ProtocolRole role);
 	~BasicProtocolConfigComponent();
 
 	//==============================================================================
@@ -144,12 +149,12 @@ class OSCProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
 	public TextEditor::Listener
 {
 public:
-	OSCProtocolConfigComponent();
+	OSCProtocolConfigComponent(ProtocolRole role);
 	~OSCProtocolConfigComponent();
 
 	//==============================================================================
-	bool DumpConfig(NodeId NId, ProtocolId PId, ProcessingEngineConfig& config) override;
-	void SetConfig(NodeId NId, ProtocolId PId, const ProcessingEngineConfig& config) override;
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize() override;
@@ -198,17 +203,18 @@ private:
 /**
  * Class ProtocolConfigWindow provides a window that embedds a ProtocolConfigComponent_Abstract
  */
-class ProtocolConfigWindow : public DialogWindow
+class ProtocolConfigWindow : public DialogWindow, public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	//==============================================================================
 	ProtocolConfigWindow(const String &name, Colour backgroundColour, bool escapeKeyTriggersCloseButton, NodeId NId, ProtocolId PId,
-						 ProtocolType Type, bool addToDesktop = true);
+						 ProtocolRole role, ProtocolType Type, bool addToDesktop = true);
 	~ProtocolConfigWindow();
 
 	//==============================================================================
-	bool DumpConfig(ProcessingEngineConfig& config);
-	void SetConfig(const ProcessingEngineConfig& config);
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
+
 	void OnEditingFinished();
 
 	//==============================================================================

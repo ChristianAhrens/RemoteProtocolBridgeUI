@@ -43,8 +43,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Derived MIDI remote protocol processing class
  */
-MIDIProtocolProcessor::MIDIProtocolProcessor()
-	: ProtocolProcessor_Abstract()
+MIDIProtocolProcessor::MIDIProtocolProcessor(const NodeId& parentNodeId)
+	: ProtocolProcessor_Abstract(parentNodeId)
 {
 	m_type = ProtocolType::PT_DummyMidiProtocol;
 }
@@ -65,10 +65,9 @@ MIDIProtocolProcessor::~MIDIProtocolProcessor()
  * @param NId		The node id of the parent node this protocol processing object is child of
  * @param PId		The protocol id of this protocol processing object
  */
-void MIDIProtocolProcessor::SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData &protocolData,
-														  const Array<RemoteObject> &activeObjs, NodeId NId, ProtocolId PId)
+bool MIDIProtocolProcessor::setStateXml(XmlElement* stateXml)
 {
-	ProtocolProcessor_Abstract::SetProtocolConfigurationData(protocolData, activeObjs, NId, PId);
+	return ProtocolProcessor_Abstract::setStateXml(stateXml);
 }
 
 /**
@@ -95,9 +94,9 @@ bool MIDIProtocolProcessor::Stop()
  *
  * @param Objs	The list of RemoteObjects that shall be activated
  */
-void MIDIProtocolProcessor::SetRemoteObjectsActive(const Array<RemoteObject>& Objs)
+void MIDIProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElement)
 {
-	ignoreUnused(Objs);
+	ignoreUnused(activeObjsXmlElement);
 }
 
 /**

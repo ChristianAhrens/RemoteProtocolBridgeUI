@@ -48,15 +48,16 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class MIDIProtocolProcessor : public ProtocolProcessor_Abstract
 {
 public:
-	MIDIProtocolProcessor();
+	MIDIProtocolProcessor(const NodeId& parentNodeId);
 	~MIDIProtocolProcessor();
 
-	void SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData &protocolData, const Array<RemoteObject> &activeObjs, NodeId NId,
-									  ProtocolId PId) override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	bool Start() override;
 	bool Stop() override;
-	void SetRemoteObjectsActive(const Array<RemoteObject>& Objs) override;
+
+	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
+
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 	String GetMIDIRemoteObjectString(RemoteObjectIdentifier id);

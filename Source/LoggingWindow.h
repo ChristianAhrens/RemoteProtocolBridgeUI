@@ -34,7 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 #include "LoggingTarget_Interface.h"
 #include "ProcessingEngine.h"

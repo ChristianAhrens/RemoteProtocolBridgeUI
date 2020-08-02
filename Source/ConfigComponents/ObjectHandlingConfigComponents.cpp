@@ -108,6 +108,43 @@ void ObjectHandlingConfigComponent_Abstract::AddListener(ObjectHandlingConfigWin
 	m_parentListener = listener;
 }
 
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The object handling config data to use when running the engine.
+ */
+std::unique_ptr<XmlElement> ObjectHandlingConfigComponent_Abstract::createStateXml()
+{
+	auto ohXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING));
+
+	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Bypass));
+	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
+
+	auto aChCntXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (aChCntXmlElement)
+		aChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
+
+	auto bChCntXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
+	if (bChCntXmlElement)
+		bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
+
+	return std::move(ohXmlElement);
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with ObjectHandling data
+ *
+ * @param ohData	The data to set into UI elms.
+ */
+bool ObjectHandlingConfigComponent_Abstract::setStateXml(XmlElement* stateXml)
+{
+	ignoreUnused(stateXml);
+	
+	return true;
+}
+
 
 //==============================================================================
 // Class OHNoConfigComponent
@@ -162,33 +199,6 @@ const std::pair<int, int> OHNoConfigComponent::GetSuggestedSize()
 	int height = 100;
 
 	return std::pair<int, int>(width, height);
-}
-
-/**
- * Method to trigger dumping contents of configcomponent member
- * to list of objects to return to the app to initialize from
- *
- * @return	The object handling config data to use when running the engine.
- */
-ProcessingEngineConfig::ObjectHandlingData OHNoConfigComponent::DumpObjectHandlingData()
-{
-	ProcessingEngineConfig::ObjectHandlingData ohData;
-	ohData.Mode = m_mode;
-	ohData.ACnt = 0;
-	ohData.BCnt = 0;
-
-	return ohData;
-}
-
-/**
- * Method to trigger filling contents of
- * configcomponent member with ObjectHandling data
- *
- * @param ohData	The data to set into UI elms.
- */
-void OHNoConfigComponent::FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData)
-{
-	ignoreUnused(ohData);
 }
 
 
@@ -299,20 +309,30 @@ const std::pair<int, int> OHMultiplexAtoBConfigComponent::GetSuggestedSize()
  *
  * @return	The object handling config data to use when running the engine.
  */
-ProcessingEngineConfig::ObjectHandlingData OHMultiplexAtoBConfigComponent::DumpObjectHandlingData()
+std::unique_ptr<XmlElement> OHMultiplexAtoBConfigComponent::createStateXml()
 {
-	ProcessingEngineConfig::ObjectHandlingData ohData;
-	ohData.Mode = m_mode;
+	auto ohXmlElement = ObjectHandlingConfigComponent_Abstract::createStateXml();
+
+	auto aChCnt = 0;
+	auto bChCnt = 0;
 	if (m_CountAEdit)
 	{
-		ohData.ACnt = m_CountAEdit->getText().getIntValue();
+		aChCnt = m_CountAEdit->getText().getIntValue();
 	}
 	if (m_CountBEdit)
 	{
-		ohData.BCnt = m_CountBEdit->getText().getIntValue();
+		bChCnt = m_CountBEdit->getText().getIntValue();
 	}
 
-	return ohData;
+	auto aChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (aChCntXmlElement)
+		aChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), aChCnt);
+
+	auto bChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
+	if (bChCntXmlElement)
+		bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), bChCnt);
+
+	return std::move(ohXmlElement);
 }
 
 /**
@@ -321,13 +341,27 @@ ProcessingEngineConfig::ObjectHandlingData OHMultiplexAtoBConfigComponent::DumpO
  *
  * @param ohData	The data to set into UI elms.
  */
-void OHMultiplexAtoBConfigComponent::FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData)
+bool OHMultiplexAtoBConfigComponent::setStateXml(XmlElement* stateXml)
 {
-	if (m_CountAEdit)
-		m_CountAEdit->setText(String(ohData.ACnt), dontSendNotification);
-	if (m_CountBEdit)
-		m_CountBEdit->setText(String(ohData.BCnt), dontSendNotification);
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
+		return false;
 
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Mux_nA_to_mB))
+		return false;
+
+	auto aChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (aChCntXmlElement && m_CountAEdit)
+		m_CountAEdit->setText(String(aChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT))), dontSendNotification);
+	else
+		return false;
+
+	auto bChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
+	if (bChCntXmlElement && m_CountBEdit)
+		m_CountBEdit->setText(String(bChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT))), dontSendNotification);
+	else
+		return false;
+
+	return true;
 }
 
 
@@ -422,32 +456,35 @@ const std::pair<int, int> OHForwardOnlyValueChangesConfigComponent::GetSuggested
  *
  * @return	The object handling config data to use when running the engine.
  */
-ProcessingEngineConfig::ObjectHandlingData OHForwardOnlyValueChangesConfigComponent::DumpObjectHandlingData()
+std::unique_ptr<XmlElement> OHForwardOnlyValueChangesConfigComponent::createStateXml()
 {
-	ProcessingEngineConfig::ObjectHandlingData ohData;
-	ohData.Mode = m_mode;
+	auto ohXmlElement = ObjectHandlingConfigComponent_Abstract::createStateXml();
+
+	auto precision = 0.001;
 	if (m_PrecisionSelect)
 	{
 		PrecVal pv = static_cast<PrecVal>(m_PrecisionSelect->getSelectedId());
 		switch (pv)
 		{
 		case PV_EVEN:
-			ohData.Prec = 1;
+			precision = 1;
 			break;
 		case PV_CENTI:
-			ohData.Prec = 0.1;
+			precision = 0.1;
 			break;
 		case PV_MILLI:
-			ohData.Prec = 0.01;
+			precision = 0.01;
 			break;
 		case PV_MICRO:
 		default:
-			ohData.Prec = 0.001;
+			precision = 0.001;
 			break;
 		}
 	}
 
-	return ohData;
+	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), precision);
+
+	return std::move(ohXmlElement);
 }
 
 /**
@@ -456,21 +493,33 @@ ProcessingEngineConfig::ObjectHandlingData OHForwardOnlyValueChangesConfigCompon
  *
  * @param ohData	The data to set into UI elms.
  */
-void OHForwardOnlyValueChangesConfigComponent::FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData)
+bool OHForwardOnlyValueChangesConfigComponent::setStateXml(XmlElement* stateXml)
 {
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
+		return false;
+
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Forward_only_valueChanges))
+		return false;
+
+	auto precision = stateXml->getDoubleAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
+
 	if (m_PrecisionSelect)
 	{
-		if(ohData.Prec == 1)
+		if (precision == 1)
 			m_PrecisionSelect->setSelectedId(PV_EVEN);
-		else if (ohData.Prec == 0.1)
+		else if (precision == 0.1)
 			m_PrecisionSelect->setSelectedId(PV_CENTI);
-		else if (ohData.Prec == 0.01)
+		else if (precision == 0.01)
 			m_PrecisionSelect->setSelectedId(PV_MILLI);
-		else if (ohData.Prec == 0.001)
+		else if (precision == 0.001)
 			m_PrecisionSelect->setSelectedId(PV_MICRO);
 		else
 			m_PrecisionSelect->setSelectedId(PV_MICRO);
 	}
+	else
+		return false;
+
+	return true;
 }
 
 /**
@@ -576,11 +625,9 @@ void ObjectHandlingConfigWindow::AddListener(NodeComponent* listener)
  * @param config	The global configuration object to dump data to
  * @return	True on success
  */
-bool ObjectHandlingConfigWindow::DumpConfig(ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> ObjectHandlingConfigWindow::createStateXml()
 {
-	config.SetObjectHandlingData(m_NId, m_configComponent->DumpObjectHandlingData());
-
-	return true;
+	return m_configComponent->createStateXml();
 }
 
 /**
@@ -589,9 +636,9 @@ bool ObjectHandlingConfigWindow::DumpConfig(ProcessingEngineConfig& config)
  *
  * @param config	The global configuration object.
  */
-void ObjectHandlingConfigWindow::SetConfig(const ProcessingEngineConfig& config)
+bool ObjectHandlingConfigWindow::setStateXml(XmlElement* stateXml)
 {
-	m_configComponent->FillObjectHandlingData(config.GetObjectHandlingData(m_NId));
+	return m_configComponent->setStateXml(stateXml);
 }
 
 /**

@@ -34,10 +34,11 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 #include "../RemoteProtocolBridgeCommon.h"
 #include "../ProcessingEngine.h"
+#include "../ProcessingEngineConfig.h"
 
 // Fwd. Declarations
 class NodeComponent;
@@ -46,22 +47,23 @@ class ObjectHandlingConfigWindow;
 /**
  * Class ObjectHandlingConfigComponent_Abstract is a container used to hold the GUI controls for modifying the node object handling configuration.
  */
-class ObjectHandlingConfigComponent_Abstract : public Component,
-	public Button::Listener
+class ObjectHandlingConfigComponent_Abstract :	public Component,
+												public Button::Listener,
+												public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	ObjectHandlingConfigComponent_Abstract(ObjectHandlingMode mode = OHM_Invalid);
 	~ObjectHandlingConfigComponent_Abstract();
 
 	//==============================================================================
-	virtual ProcessingEngineConfig::ObjectHandlingData DumpObjectHandlingData() = 0;
-	virtual void FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData) = 0;
-
-	//==============================================================================
 	virtual const std::pair<int, int> GetSuggestedSize() = 0;
 
 	//==============================================================================
 	virtual void AddListener(ObjectHandlingConfigWindow* listener);
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 private:
 	virtual void paint(Graphics&) override;
@@ -72,7 +74,7 @@ private:
 protected:
 	std::unique_ptr<Label>			m_Headline;				/**< Headlining Label for complete object list section. */
 	std::unique_ptr<TextButton>		m_applyConfigButton;	/**< Button to apply edited values to configuration and leave. */
-	ObjectHandlingConfigWindow*	m_parentListener;		/**< Parent that needs to be notified when this window self-destroys. */
+	ObjectHandlingConfigWindow*		m_parentListener;		/**< Parent that needs to be notified when this window self-destroys. */
 	ObjectHandlingMode				m_mode;					/**< The mode of this OH object. */
 
 };
@@ -87,10 +89,6 @@ class OHNoConfigComponent : public ObjectHandlingConfigComponent_Abstract,
 public:
 	OHNoConfigComponent(ObjectHandlingMode mode);
 	~OHNoConfigComponent();
-
-	//==============================================================================
-	ProcessingEngineConfig::ObjectHandlingData DumpObjectHandlingData() override;
-	void FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize() override;
@@ -112,8 +110,8 @@ public:
 	~OHMultiplexAtoBConfigComponent();
 
 	//==============================================================================
-	ProcessingEngineConfig::ObjectHandlingData DumpObjectHandlingData() override;
-	void FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData) override;
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize() override;
@@ -152,8 +150,8 @@ public:
 	~OHForwardOnlyValueChangesConfigComponent();
 
 	//==============================================================================
-	ProcessingEngineConfig::ObjectHandlingData DumpObjectHandlingData() override;
-	void FillObjectHandlingData(const ProcessingEngineConfig::ObjectHandlingData& ohData) override;
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize() override;
@@ -173,7 +171,8 @@ private:
 /**
  * Class ObjectHandlingConfigWindow provides a window that embedds an ObjectHandlingConfigComponent_Abstract
  */
-class ObjectHandlingConfigWindow : public DialogWindow
+class ObjectHandlingConfigWindow : public DialogWindow, 
+	public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	//==============================================================================
@@ -182,9 +181,11 @@ public:
 	~ObjectHandlingConfigWindow();
 
 	//==============================================================================
-	bool DumpConfig(ProcessingEngineConfig& config);
-	void SetConfig(const ProcessingEngineConfig& config);
 	void OnEditingFinished();
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize();

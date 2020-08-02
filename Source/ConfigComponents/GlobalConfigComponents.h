@@ -38,6 +38,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../RemoteProtocolBridgeCommon.h"
 #include "../ProcessingEngine.h"
+#include "../ProcessingEngineConfig.h"
 
 // Fwd. Declarations
 class MainRemoteProtocolBridgeComponent;
@@ -47,8 +48,9 @@ class GlobalConfigWindow;
  * Class GlobalConfigComponent is a container used to hold the GUI controls for modifying the app configuration.
  */
 class GlobalConfigComponent :	public Component,
-							public TextEditor::Listener,
-							public Button::Listener
+								public TextEditor::Listener,
+								public Button::Listener,
+								public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	GlobalConfigComponent();
@@ -65,6 +67,10 @@ public:
 
 	//==============================================================================
 	void AddListener(GlobalConfigWindow* listener);
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 private:
 	void paint(Graphics&) override;
@@ -89,7 +95,8 @@ private:
 /**
  * Class GlobalConfigWindow provides a window for editing app configuration
  */
-class GlobalConfigWindow : public DialogWindow
+class GlobalConfigWindow :	public DialogWindow,
+							public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	//==============================================================================
@@ -100,9 +107,11 @@ public:
 	~GlobalConfigWindow();
 
 	//==============================================================================
-	bool DumpConfig(ProcessingEngineConfig& config);
-	void SetConfig(const ProcessingEngineConfig& config);
 	void OnEditingFinished();
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize();

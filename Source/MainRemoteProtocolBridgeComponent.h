@@ -51,7 +51,9 @@ class NodeComponent;
  * containing everything else regarding ui elements.
  */
 class MainRemoteProtocolBridgeComponent   : public Component,
-						public Button::Listener
+											public Button::Listener,
+											public ProcessingEngineConfig::Dumper,
+											public ProcessingEngineConfig::Watcher
 {
 public:
     //==============================================================================
@@ -66,12 +68,13 @@ public:
 	void childWindowCloseTriggered(DialogWindow* childWindow);
 
 	//==============================================================================
-	void DumpUItoConfig();
-    void RefreshUIfromConfig();
+	ProcessingEngine* GetEngine();
 
 	//==============================================================================
-	ProcessingEngineConfig* GetConfig();
-	ProcessingEngine* GetEngine();
+	void performConfigurationDump() override;
+
+	//==============================================================================
+	void onConfigUpdated() override;
 
 private:
     //==============================================================================
@@ -85,10 +88,11 @@ private:
 	std::unique_ptr<TextButton>							m_EngineStartStopButton;	/**< Button to toggle engine start/stop. */
 
 	std::unique_ptr<GlobalConfigWindow>					m_ConfigDialog;				/**< Pointer to configuration dialog instance (created on demand). */
+	std::unique_ptr<XmlElement>							m_GlobalConfigXml;
 	std::unique_ptr<LoggingWindow>						m_LoggingDialog;			/**< Pointer to logging dialog instance (created on demand). */
 
 	ProcessingEngine									m_engine;					/**< The processig engine of RemoteProtocolBridge. */
-	ProcessingEngineConfig								m_config;					/**< The configuration object for engine. */
+	std::unique_ptr<ProcessingEngineConfig>				m_config;					/**< The configuration object for engine. */
 
 	void buttonClicked(Button* button) override;
 

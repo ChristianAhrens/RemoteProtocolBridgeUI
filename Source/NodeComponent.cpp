@@ -55,13 +55,11 @@ NodeComponent::NodeComponent(NodeId NId)
 
     m_NodeId = NId;
 
-	m_protocolsAComponent = std::make_unique<ProtocolGroupComponent>();
-	m_protocolsAComponent->AddListener(this);
+	m_protocolsAComponent = std::make_unique<ProtocolGroupComponent>(ProtocolRole::PR_A);
 	addAndMakeVisible(m_protocolsAComponent.get());
 	m_protocolsAComponent->setText("Role A");
 
-	m_protocolsBComponent = std::make_unique<ProtocolGroupComponent>();
-	m_protocolsBComponent->AddListener(this);
+	m_protocolsBComponent = std::make_unique<ProtocolGroupComponent>(ProtocolRole::PR_B);
 	addAndMakeVisible(m_protocolsBComponent.get());
 	m_protocolsBComponent->setText("Role B");
 
@@ -142,26 +140,12 @@ void NodeComponent::resized()
  */
 void NodeComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 {
-	ProcessingEngineConfig* config = GetConfig();
-	ProcessingEngine* engine = GetEngine();
-
-	if (childWindow == m_OHMConfigDialog.get())
+	if (m_OHMConfigDialog && childWindow == m_OHMConfigDialog.get())
 	{
-		if (config && engine)
-		{
-			bool EngineIsRunning = engine->IsRunning();
-			if (EngineIsRunning)
-				engine->Stop();
+		m_ohmXmlElement = m_OHMConfigDialog->createStateXml();
+		triggerConfigurationUpdate();
 
-			m_OHMConfigDialog->DumpConfig(*config);
-			config->WriteConfiguration();
-			engine->SetConfig(*config);
-
-			if (EngineIsRunning)
-				engine->Start();
-		}
-
-		if (m_OHMConfigDialog != 0 && m_OHMConfigEditButton)
+		if (m_OHMConfigEditButton)
 		{
 			m_OHMConfigEditButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
 			m_OHMConfigEditButton->setColour(Label::textColourId, Colours::white);
@@ -174,22 +158,38 @@ void NodeComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 /**
  * Method to gather data from ui input elements and dump them to given configuration object.
  *
- * @param config	The configuration object to be filled with contents from ui elements of this node
+ * @return	The configuration xml object of this node
  */
-void NodeComponent::DumpUItoConfig(ProcessingEngineConfig& config)
+std::unique_ptr<XmlElement> NodeComponent::createStateXml()
 {
-	m_protocolsAComponent->DumpUItoConfig(config);
-	m_protocolsBComponent->DumpUItoConfig(config);
-    
-    // get the mode the node should run in from ui
-    ObjectHandlingMode ohMode = OHM_Invalid;
-    if (m_NodeModeDrop)
-        ohMode = (ObjectHandlingMode)m_NodeModeDrop->getSelectedId();
+	auto nodeXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+	nodeXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_NodeId));
 
-    ProcessingEngineConfig::NodeData node = config.GetNodeData(m_NodeId);
-    node.Id = m_NodeId;
-    node.ObjectHandling.Mode = ohMode;
-    config.SetNode(node.Id, node);
+	auto protocolsAXmlElement = m_protocolsAComponent->createStateXml();
+	if (protocolsAXmlElement)
+	{
+		auto protocolAXmlElement = protocolsAXmlElement->getNextElement();
+		while (protocolAXmlElement != nullptr)
+		{
+			nodeXmlElement->addChildElement(protocolAXmlElement);
+			protocolAXmlElement = protocolsAXmlElement->getNextElement();
+		}
+	}
+
+	auto protocolsBXmlElement = m_protocolsBComponent->createStateXml();
+	if (protocolsBXmlElement)
+	{
+		auto protocolBXmlElement = protocolsBXmlElement->getNextElement();
+		while (protocolBXmlElement != nullptr)
+		{
+			nodeXmlElement->addChildElement(protocolBXmlElement);
+			protocolBXmlElement = protocolsBXmlElement->getNextElement();
+		}
+	}
+
+	nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*m_ohmXmlElement).release());
+
+	return std::move(nodeXmlElement);
 }
 
 /**
@@ -198,52 +198,40 @@ void NodeComponent::DumpUItoConfig(ProcessingEngineConfig& config)
  * @param config	The configuration object to extract the data to show on ui from
  * @return	The calculated theoretically required size for this component
  */
-int NodeComponent::RefreshUIfromConfig(const ProcessingEngineConfig& config)
+bool NodeComponent::setStateXml(XmlElement* stateXml)
 {
-    ProcessingEngineConfig::NodeData node = config.GetNodeData(m_NodeId);
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE))
+		return false;
 
+	m_NodeId = static_cast<NodeId>(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID)));
+
+	auto objectHandlingStateXml = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING));
+	if (objectHandlingStateXml)
+		m_ohmXmlElement = std::make_unique<XmlElement>(*objectHandlingStateXml);
+	else
+		return false;
+
+	m_protocolsAComponent->setStateXml(stateXml);
+	m_protocolsAComponent->setStateXml(stateXml);
+
+	return true;
+}
+
+/**
+ *
+ */
+int NodeComponent::GetCurrentRequiredHeight()
+{
 	int requiredHeight = 0;
     
-	requiredHeight += m_protocolsAComponent->RefreshUIfromConfig(m_NodeId, node.RoleAProtocols, config);
-	requiredHeight += m_protocolsBComponent->RefreshUIfromConfig(m_NodeId, node.RoleBProtocols, config);
+	requiredHeight += m_protocolsAComponent->GetCurrentRequiredHeight();
+	requiredHeight += m_protocolsBComponent->GetCurrentRequiredHeight();
 	requiredHeight += UIS_Margin_s;
 
-    m_NodeModeDrop->setSelectedId(node.ObjectHandling.Mode, dontSendNotification);
+    m_NodeModeDrop->setSelectedId(m_ohmXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), dontSendNotification));
 	requiredHeight += UIS_ElmSize + UIS_Margin_m;
 
 	return requiredHeight;
-}
-
-/**
- * Method to allow access to internal config.
- *
- * @return	Reference to the internal config object
- */
-ProcessingEngineConfig* NodeComponent::GetConfig()
-{
-	if (m_parentComponent)
-		return m_parentComponent->GetConfig();
-	else
-	{
-		jassert(false);
-		return 0;
-	}
-}
-
-/**
- * Method to allow access to internal engine.
- *
- * @return	Reference to the internal engine object
- */
-ProcessingEngine* NodeComponent::GetEngine()
-{
-	if (m_parentComponent)
-		return m_parentComponent->GetEngine();
-	else
-	{
-		jassert(false);
-		return 0;
-	}
 }
 
 /**
@@ -280,8 +268,8 @@ void NodeComponent::buttonClicked(Button* button)
 	{
 		ToggleOpenCloseObjectHandlingConfig(m_OHMConfigEditButton.get());
 	}
-	
-	TriggerParentConfigDump();
+
+	triggerConfigurationUpdate();
 }
 
 /**
@@ -294,7 +282,7 @@ void NodeComponent::comboBoxChanged(ComboBox* comboBox)
 {
 	ignoreUnused(comboBox);
 
-	TriggerParentConfigDump();
+	triggerConfigurationUpdate();
 }
 
 /**
@@ -307,7 +295,7 @@ void NodeComponent::textEditorTextChanged(TextEditor& textEdit)
 {
 	ignoreUnused(textEdit);
 
-	TriggerParentConfigDump();
+	triggerConfigurationUpdate();
 }
 
 /**
@@ -320,7 +308,7 @@ void NodeComponent::textEditorReturnKeyPressed(TextEditor& textEdit)
 {
 	ignoreUnused(textEdit);
 
-	TriggerParentConfigDump();
+	triggerConfigurationUpdate();
 }
 
 /**
@@ -346,24 +334,6 @@ void NodeComponent::textEditorFocusLost(TextEditor& textEdit)
 }
 
 /**
- * Proxy method to forward triggering parent to start dumping to config
- */
-void NodeComponent::TriggerParentConfigDump()
-{
-	if (m_parentComponent)
-		m_parentComponent->DumpUItoConfig();
-}
-
-/**
- * Proxy method to forward triggering parent to start refreshing from config
- */
-void NodeComponent::TriggerParentConfigRefresh()
-{
-	if (m_parentComponent)
-		m_parentComponent->RefreshUIfromConfig();
-}
-
-/**
  * Helper method to be called by child protocolgroupcomponent for adding a new default protocol.
  * Detecting if new protocol shall be added as A or B type is done through comparing the sender
  * object pointer to internally kept member objects.
@@ -373,103 +343,44 @@ void NodeComponent::TriggerParentConfigRefresh()
  */
 bool NodeComponent::AddDefaultProtocol(const ProtocolGroupComponent* targetPGC)
 {
+	auto config = ProcessingEngineConfig::getInstance();
+	if (!config)
+		return false;
+
 	if (targetPGC == m_protocolsAComponent.get())
-		return AddDefaultProtocolA();
+	{
+		auto nodeState = createStateXml();
+		nodeState->addChildElement(ProcessingEngineConfig::GetDefaultProtocol(ProtocolRole::PR_A).release());
+		return config->setConfigState(std::move(nodeState), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+	}
 	else if (targetPGC == m_protocolsBComponent.get())
-		return AddDefaultProtocolB();
-	else
-		return false;
-}
-
-/**
- *
- */
-bool NodeComponent::AddDefaultProtocolA()
-{
-	ProcessingEngine* engine = GetEngine();
-	ProcessingEngineConfig* config = GetConfig();
-
-	if (engine && config)
 	{
-		bool EngineIsRunning = engine->IsRunning();
-		if (EngineIsRunning)
-			engine->Stop();
-
-		config->AddDefaultProtocolA(m_NodeId);
-		config->WriteConfiguration();
-		engine->SetConfig(*config);
-
-		TriggerParentConfigRefresh();
-
-		if (EngineIsRunning)
-			engine->Start();
-
-		return true;
+		auto nodeState = createStateXml();
+		nodeState->addChildElement(ProcessingEngineConfig::GetDefaultProtocol(ProtocolRole::PR_B).release());
+		return config->setConfigState(std::move(nodeState), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
 	}
 	else
 		return false;
 }
 
-/**
- *
- */
-bool NodeComponent::AddDefaultProtocolB()
-{
-	ProcessingEngine* engine = GetEngine();
-	ProcessingEngineConfig* config = GetConfig();
 
-	if (engine && config)
-	{
-		bool EngineIsRunning = engine->IsRunning();
-		if (EngineIsRunning)
-			engine->Stop();
-
-		config->AddDefaultProtocolB(m_NodeId);
-		config->WriteConfiguration();
-		engine->SetConfig(*config);
-
-		TriggerParentConfigRefresh();
-
-		if (EngineIsRunning)
-			engine->Start();
-
-		return true;
-	}
-	else
-		return false;
-}
 
 /**
  * Method to remove a given nodes' protocol with specified is
  *
- * @param NId	The node the protocol is part of
  * @param PId	The protocol to remove
  * @return	True on success false on failure
  */
-bool NodeComponent::RemoveProtocol(const NodeId& NId, const ProtocolId& PId)
+bool NodeComponent::RemoveProtocol(const ProtocolId& PId)
 {
-	ProcessingEngine* engine = GetEngine();
-	ProcessingEngineConfig* config = GetConfig();
-
-	if (engine && config)
-	{
-		bool EngineIsRunning = engine->IsRunning();
-		if (EngineIsRunning)
-			engine->Stop();
-
-		config->RemoveProtocol(NId, PId);
-		config->WriteConfiguration();
-		engine->SetConfig(*config);
-
-		TriggerParentConfigRefresh();
-
-		if (EngineIsRunning)
-			engine->Start();
-
-		return true;
-	}
+	if (m_protocolsAComponent->GetProtocolIds().contains(PId))
+		m_protocolsAComponent->RemoveProtocol(PId);
+	else if (m_protocolsBComponent->GetProtocolIds().contains(PId))
+		m_protocolsBComponent->RemoveProtocol(PId);
 	else
 		return false;
+
+	return true;
 }
 
 /**
@@ -483,56 +394,33 @@ void NodeComponent::ToggleOpenCloseObjectHandlingConfig(Button* button)
 	if (!m_parentComponent || !button)
 		return;
 
-	ProcessingEngineConfig* config = m_parentComponent->GetConfig();
-	ProcessingEngine* engine = m_parentComponent->GetEngine();
-
 	// if the config dialog exists, this is a uncheck (close) click,
 	// which means we have to process edited data
 	if (m_OHMConfigDialog)
 	{
-		if (config && engine)
-		{
-			bool EngineIsRunning = engine->IsRunning();
-			if (EngineIsRunning)
-				engine->Stop();
-
-			m_OHMConfigDialog->DumpConfig(*config);
-			config->WriteConfiguration();
-			engine->SetConfig(*config);
-
-			if (EngineIsRunning)
-				engine->Start();
-		}
-
-		button->setColour(TextButton::buttonColourId, Colours::dimgrey);
-		button->setColour(Label::textColourId, Colours::white);
-
-		m_OHMConfigDialog.reset();
+		childWindowCloseTriggered(m_OHMConfigDialog.get());
 	}
 	// otherwise we have to create the dialog and show it
 	else
 	{
-		if (config && engine)
-		{
-			ObjectHandlingMode ohMode = config->GetObjectHandlingData(m_NodeId).Mode;
+		ObjectHandlingMode ohMode = static_cast<ObjectHandlingMode>(m_ohmXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)));
 
-			String dialogTitle = ProcessingEngineConfig::ObjectHandlingModeToString(ohMode) + " obj. handling configuration (Node Id" + String(m_NodeId) + ")";
+		String dialogTitle = ProcessingEngineConfig::ObjectHandlingModeToString(ohMode) + " obj. handling configuration (Node Id" + String(m_NodeId) + ")";
 
-			m_OHMConfigDialog = std::make_unique<ObjectHandlingConfigWindow>(dialogTitle, Colours::dimgrey, false, m_NodeId, ohMode);
-			m_OHMConfigDialog->AddListener(this);
-			m_OHMConfigDialog->setResizable(true, true);
-			m_OHMConfigDialog->setUsingNativeTitleBar(true);
-			m_OHMConfigDialog->setVisible(true);
-			m_OHMConfigDialog->SetConfig(*config);
+		m_OHMConfigDialog = std::make_unique<ObjectHandlingConfigWindow>(dialogTitle, Colours::dimgrey, false, m_NodeId, ohMode);
+		m_OHMConfigDialog->AddListener(this);
+		m_OHMConfigDialog->setResizable(true, true);
+		m_OHMConfigDialog->setUsingNativeTitleBar(true);
+		m_OHMConfigDialog->setVisible(true);
+		m_OHMConfigDialog->setStateXml(m_ohmXmlElement.get());
 #if defined JUCE_IOS ||  defined JUCE_ANDROID
-            m_OHMConfigDialog->setFullScreen(true);
+        m_OHMConfigDialog->setFullScreen(true);
 #else
-			const std::pair<int, int> size = m_OHMConfigDialog->GetSuggestedSize();
-			m_OHMConfigDialog->setResizeLimits(size.first, size.second, size.first, size.second);
-			m_OHMConfigDialog->setBounds(Rectangle<int>(getScreenBounds().getX(), getScreenBounds().getY(), size.first, size.second));
+		const std::pair<int, int> size = m_OHMConfigDialog->GetSuggestedSize();
+		m_OHMConfigDialog->setResizeLimits(size.first, size.second, size.first, size.second);
+		m_OHMConfigDialog->setBounds(Rectangle<int>(getScreenBounds().getX(), getScreenBounds().getY(), size.first, size.second));
 #endif
-			button->setColour(TextButton::buttonColourId, Colours::lightblue);
-			button->setColour(Label::textColourId, Colours::dimgrey);
-		}
+		button->setColour(TextButton::buttonColourId, Colours::lightblue);
+		button->setColour(Label::textColourId, Colours::dimgrey);
 	}
 }

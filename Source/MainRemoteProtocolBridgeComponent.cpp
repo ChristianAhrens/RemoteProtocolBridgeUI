@@ -49,7 +49,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 {
-    m_config.InitConfiguration();
+	m_config = std::make_unique<ProcessingEngineConfig>(ProcessingEngineConfig::getDefaultConfigFilePath());
+	m_config->addDumper(this);
+	m_config->addWatcher(&m_engine);
     
 	m_ConfigDialog = 0;
 	m_LoggingDialog = 0;
@@ -99,15 +101,18 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 	m_EngineStartStopButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
 	m_EngineStartStopButton->setColour(Label::textColourId, Colours::white);
 
-    RefreshUIfromConfig();
-
-	if (m_config.IsEngineStartOnAppStart())
+	if (!m_config->isValid())
 	{
-		// Get data from ui together to start the engine correctly.
-		DumpUItoConfig();
+		// Add a default node               
+		m_config->triggerConfigurationDump();
+	}
+	else
+	{
+		m_config->triggerWatcherUpdate();
+	}
 
-		m_engine.SetConfig(m_config);
-
+	if (m_config->IsEngineStartOnAppStart())
+	{
 		if (!m_engine.IsRunning() && m_engine.Start())
 		{
 			m_EngineStartStopButton->setColour(TextButton::buttonColourId, Colours::lightgreen);
@@ -124,36 +129,14 @@ MainRemoteProtocolBridgeComponent::~MainRemoteProtocolBridgeComponent()
 {
 	if (m_engine.IsRunning())
 		m_engine.Stop();
-    
-    m_config.Clear();
-}
-
-/**
- * Method to gather data from ui elements to update the app config object with fresh data.
- * This approach is not a very elegant one and should be done more dynamically (esp. since design of the app
- * is made in a way to support multiple dynamic nodes, ...), but for lack of time and resources this is what the
- * first shot looks like.
- * A fix node is created with a hardcoded id, as is done for both protocols of this node.
- */
-void MainRemoteProtocolBridgeComponent::DumpUItoConfig()
-{
-    Array<NodeId> NIds = m_config.GetNodeIds();
-    for (int i = 0; i < NIds.size(); ++i)
-    {
-        NodeId NId = NIds[i];
-        if (m_NodeBoxes.count(NId) && m_NodeBoxes.at(NId))
-			m_NodeBoxes.at(NId)->DumpUItoConfig(m_config);
-    }
-
-	m_config.WriteConfiguration();
 }
 
 /**
  * Method to set up ui elements according to configuration contents.
  */
-void MainRemoteProtocolBridgeComponent::RefreshUIfromConfig()
+void MainRemoteProtocolBridgeComponent::onConfigUpdated()
 {
-    Array<NodeId> NIds = m_config.GetNodeIds();
+    Array<NodeId> NIds = m_config->GetNodeIds();
 
 	// go through current ui node boxes to find out which ones need to be removed/destroyed
 	Array<NodeId> NIdsToRemove;
@@ -182,7 +165,7 @@ void MainRemoteProtocolBridgeComponent::RefreshUIfromConfig()
 		{
 			NodeComponent* Node = new NodeComponent(NId);
 			Node->AddListener(this);
-			requiredNodeAreaHeight += Node->RefreshUIfromConfig(m_config);
+			requiredNodeAreaHeight += Node->GetCurrentRequiredHeight();
 			Node->setText("Protocol Bridging Node Id" + String(NId));
 			addAndMakeVisible(Node);
 
@@ -190,11 +173,11 @@ void MainRemoteProtocolBridgeComponent::RefreshUIfromConfig()
 		}
 		else
 		{
-			requiredNodeAreaHeight += m_NodeBoxes[NId]->RefreshUIfromConfig(m_config);
+			requiredNodeAreaHeight += m_NodeBoxes[NId]->GetCurrentRequiredHeight();
 		}
     }
 
-	if (m_config.IsTrafficLoggingAllowed())
+	if (m_config->IsTrafficLoggingAllowed())
 		addAndMakeVisible(m_TriggerOpenLoggingButton.get());
 	else
 		removeChildComponent(m_TriggerOpenLoggingButton.get());
@@ -213,16 +196,6 @@ void MainRemoteProtocolBridgeComponent::RefreshUIfromConfig()
 }
 
 /**
- * Method to allow access to internal config.
- *
- * @return	Reference to the internal config object
- */
-ProcessingEngineConfig* MainRemoteProtocolBridgeComponent::GetConfig()
-{
-	return &m_config;
-}
-
-/**
  * Method to allow access to internal engine.
  *
  * @return	Reference to the internal engine object
@@ -230,6 +203,25 @@ ProcessingEngineConfig* MainRemoteProtocolBridgeComponent::GetConfig()
 ProcessingEngine* MainRemoteProtocolBridgeComponent::GetEngine()
 {
 	return &m_engine;
+}
+
+/**
+ * Reimplemented from JUCEAppBasics::AppConfigurationBase::Dumper to be called from configuration
+ * to start a complete dump of the app configuration state into the config object contents
+ */
+void MainRemoteProtocolBridgeComponent::performConfigurationDump()
+{
+	Array<NodeId> NIds = m_config->GetNodeIds();
+	for (int i = 0; i < NIds.size(); ++i)
+	{
+		NodeId NId = NIds[i];
+		if (m_NodeBoxes.count(NId) && m_NodeBoxes.at(NId))
+		{
+			m_config->setConfigState(m_NodeBoxes.at(NId)->createStateXml(), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+		}
+	}
+
+	m_config->setConfigState(std::make_unique<XmlElement>(*m_GlobalConfigXml));
 }
 
 /**
@@ -272,7 +264,7 @@ void MainRemoteProtocolBridgeComponent::resized()
 	/*Dynamically sized nodes*/
 	int nodeAreaWidth = windowWidth - 2 * UIS_Margin_s;
 	int nodeAreaHeight = yPositionAddRemButts - UIS_Margin_m;
-    Array<NodeId> NIds = m_config.GetNodeIds();
+    Array<NodeId> NIds = m_config->GetNodeIds();
 	int nodeCount = NIds.size();
 	int nodeHeight = nodeCount > 0 ? nodeAreaHeight / nodeCount : 0;
     for (int i = 0; i < nodeCount; ++i)
@@ -295,35 +287,14 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 {
 	if (button == m_AddNodeButton.get())
 	{
-		bool EngineIsRunning = m_engine.IsRunning();
-		if (EngineIsRunning)
-			m_engine.Stop();
-
-		m_config.AddDefaultNode();
-		m_config.WriteConfiguration();
-		m_engine.SetConfig(m_config);
-
-		RefreshUIfromConfig();
-
-		if (EngineIsRunning)
-			m_engine.Start();
+		m_config->setConfigState(ProcessingEngineConfig::GetDefaultNode());
 	}
 	else if (button == m_RemoveNodeButton.get())
 	{
-		if (m_config.GetNodeIds().size() > 0)
+		if (m_config->GetNodeIds().size() > 0)
 		{
-			bool EngineIsRunning = m_engine.IsRunning();
-			if (EngineIsRunning)
-				m_engine.Stop();
-
-			m_config.RemoveNode(m_config.GetNodeIds().getLast());
-			m_config.WriteConfiguration();
-			m_engine.SetConfig(m_config);
-
-			RefreshUIfromConfig();
-
-			if (EngineIsRunning)
-				m_engine.Start();
+			m_NodeBoxes.erase(m_config->GetNodeIds().getLast());
+			m_config->triggerConfigurationDump();
 		}
 	}
 	else if (button == m_TriggerOpenConfigButton.get())
@@ -332,22 +303,8 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 		// which means we have to process edited data
 		if (m_ConfigDialog != 0)
 		{
-			bool EngineIsRunning = m_engine.IsRunning();
-			if (EngineIsRunning)
-				m_engine.Stop();
-
-			m_ConfigDialog->DumpConfig(m_config);
-			m_config.WriteConfiguration();
-			m_engine.SetConfig(m_config);
-
-			RefreshUIfromConfig();
-
-			if (EngineIsRunning)
-				m_engine.Start();
-
-			button->setColour(TextButton::buttonColourId, Colours::dimgrey);
-			button->setColour(Label::textColourId, Colours::white);
-
+			m_GlobalConfigXml = m_ConfigDialog->createStateXml();
+			m_config->triggerConfigurationDump();
 			m_ConfigDialog.reset();
 		}
 		// otherwise we have to create the dialog and show it
@@ -365,7 +322,7 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
             m_ConfigDialog->setResizeLimits(size.first, size.second, size.first, size.second);
 			m_ConfigDialog->setBounds(Rectangle<int>(getScreenBounds().getX() + getWidth(), getScreenBounds().getY(), size.first, size.second));
 #endif
-			m_ConfigDialog->SetConfig(m_config);
+			m_ConfigDialog->setStateXml(m_GlobalConfigXml.get());
 
 			button->setColour(TextButton::buttonColourId, Colours::lightblue);
 			button->setColour(Label::textColourId, Colours::dimgrey);
@@ -414,9 +371,7 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 		else
 		{
 			// Get data from ui together to start the engine correctly.
-			DumpUItoConfig();
-
-			m_engine.SetConfig(m_config);
+			m_config->triggerConfigurationDump();
 
 			if (m_engine.Start())
 			{
@@ -441,21 +396,8 @@ void MainRemoteProtocolBridgeComponent::childWindowCloseTriggered(DialogWindow* 
 	{
 		if (m_ConfigDialog != 0)
 		{
-			bool EngineIsRunning = m_engine.IsRunning();
-			if (EngineIsRunning)
-				m_engine.Stop();
-
-			m_ConfigDialog->DumpConfig(m_config);
-			m_config.WriteConfiguration();
-			m_engine.SetConfig(m_config);
-
-			RefreshUIfromConfig();
-
-			if (EngineIsRunning)
-				m_engine.Start();
-
-			m_TriggerOpenConfigButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
-			m_TriggerOpenConfigButton->setColour(Label::textColourId, Colours::white);
+			m_GlobalConfigXml = m_ConfigDialog->createStateXml();
+			m_config->triggerConfigurationDump();
 		}
 
 		m_ConfigDialog.reset();

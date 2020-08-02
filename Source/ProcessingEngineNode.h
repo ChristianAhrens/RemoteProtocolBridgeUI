@@ -36,17 +36,18 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "RemoteProtocolBridgeCommon.h"
 
+#include "ProcessingEngineConfig.h"
 #include "ProtocolProcessor/ProtocolProcessor_Abstract.h"
 
 // Fwd. declarations
 class ObjectDataHandling_Abstract;
-class ProcessingEngineConfig;
 class ProcessingEngine;
 
 /**
  * Class ProcessingEngineNode is a class to hold a processing element handled by engine class.
  */
-class ProcessingEngineNode : public ProtocolProcessor_Abstract::Listener
+class ProcessingEngineNode :	public ProtocolProcessor_Abstract::Listener,
+								public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	/**
@@ -78,8 +79,12 @@ public:
 
 	bool Start();
 	bool Stop();
-	void SetNodeConfiguration(const ProcessingEngineConfig& config, NodeId NId);
 
+	//==============================================================================
+	virtual std::unique_ptr<XmlElement> createStateXml() override;
+	virtual bool setStateXml(XmlElement* stateXml) override;
+
+	//==============================================================================
 	void OnProtocolMessageReceived(ProtocolProcessor_Abstract* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 private:
