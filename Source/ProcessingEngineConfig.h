@@ -177,7 +177,4 @@ public:
 private:
     int GetNextUniqueId();
 	int ValidateUniqueId(int uniqueId);
-
-	bool								m_TrafficLoggingAllowed;/**< Flag defining if the TrafficLogging togglebutton should be available. */
-	bool								m_EngineStartOnAppStart;/**< Flag defining if the engine should be automatically started on app start. */
 };

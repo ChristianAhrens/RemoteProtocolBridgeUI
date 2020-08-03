@@ -46,8 +46,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ProcessingEngineConfig::ProcessingEngineConfig(const File& file)
 	: JUCEAppBasics::AppConfigurationBase(file)
 {
-	m_TrafficLoggingAllowed = true;
-	m_EngineStartOnAppStart = false;
+
 }
 
 /**
@@ -76,6 +75,7 @@ bool ProcessingEngineConfig::isValid()
 		if (rootChild->getTagName() == getTagName(TagID::NODE))
 		{
 			XmlElement* nodeSectionElement = rootChild;
+			ValidateUniqueId(nodeSectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
 
 			XmlElement* objHandleSectionElement = nodeSectionElement->getChildByName(getTagName(TagID::OBJECTHANDLING));
 			if (objHandleSectionElement)
@@ -91,6 +91,7 @@ bool ProcessingEngineConfig::isValid()
 				return false;
 
 			XmlElement* protocolASectionElement = nodeSectionElement->getChildByName(getTagName(TagID::PROTOCOLA));
+			ValidateUniqueId(protocolASectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
 			if (protocolASectionElement)
 			{
 				XmlElement* ipAddrSectionElement = protocolASectionElement->getChildByName(getTagName(TagID::IPADDRESS));
@@ -113,6 +114,7 @@ bool ProcessingEngineConfig::isValid()
 				return false;
 
 			XmlElement* protocolBSectionElement = nodeSectionElement->getChildByName(getTagName(TagID::PROTOCOLB));
+			ValidateUniqueId(protocolBSectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
 			if (protocolBSectionElement)
 			{
 				XmlElement* ipAddrSectionElement = protocolBSectionElement->getChildByName(getTagName(TagID::IPADDRESS));
@@ -171,7 +173,7 @@ Array<NodeId> ProcessingEngineConfig::GetNodeIds()
 	while (nodeXmlElement != nullptr)
 	{
 		NIds.add(nodeXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID)));
-		nodeXmlElement = currentConfig->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+		nodeXmlElement = nodeXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
 	}
 
 	return NIds;
@@ -396,7 +398,7 @@ std::unique_ptr<XmlElement>	ProcessingEngineConfig::GetDefaultNode()
 	auto objectHandlingXmlElement = nodeXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING));
 	if (objectHandlingXmlElement)
 	{
-		objectHandlingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Forward_only_valueChanges));
+		objectHandlingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Bypass));
 		objectHandlingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
 
 		auto aChCntXmlElement = objectHandlingXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
@@ -427,6 +429,7 @@ std::unique_ptr<XmlElement> ProcessingEngineConfig::GetDefaultProtocol(ProtocolR
 	auto thisConfig = dynamic_cast<ProcessingEngineConfig*>(ProcessingEngineConfig::getInstance());
 	if (thisConfig)
 		protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), thisConfig->GetNextUniqueId());
+
 	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), ProcessingEngineConfig::ProtocolTypeToString(PT_OSCProtocol));
 	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), 1);
 

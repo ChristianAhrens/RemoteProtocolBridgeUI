@@ -170,12 +170,12 @@ void MainRemoteProtocolBridgeComponent::onConfigUpdated()
     {
 		if (m_NodeBoxes.count(nodeId) == 0)
 		{
-			NodeComponent* Node = new NodeComponent(nodeId);
-			Node->AddListener(this);
-			Node->setText("Protocol Bridging Node Id" + String(nodeId));
-			addAndMakeVisible(Node);
+			auto node = std::make_unique<NodeComponent>(nodeId);
+			node->AddListener(this);
+			node->setText("Protocol Bridging Node Id" + String(nodeId));
+			addAndMakeVisible(node.get());
 
-			m_NodeBoxes[nodeId] = std::unique_ptr<NodeComponent>(Node);
+			m_NodeBoxes[nodeId] = std::move(node);
 		}
     }
 
@@ -189,7 +189,7 @@ void MainRemoteProtocolBridgeComponent::onConfigUpdated()
 			requiredNodeAreaHeight += m_NodeBoxes[nodeId]->GetCurrentRequiredHeight();
 		}
 
-		nodeXmlElement = currentConfigState->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+		nodeXmlElement = nodeXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
 	}
 
 	auto globalConfigXmlElement = currentConfigState->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG));
@@ -233,9 +233,7 @@ ProcessingEngine* MainRemoteProtocolBridgeComponent::GetEngine()
  */
 void MainRemoteProtocolBridgeComponent::performConfigurationDump()
 {
-	auto nodeIds = m_config->GetNodeIds();
-
-	if (nodeIds.isEmpty() || !m_GlobalConfigXml)
+	if (m_NodeBoxes.empty() || !m_GlobalConfigXml)
 	{
 		// Add a default node
 		auto defaultNodeXmlElement = ProcessingEngineConfig::GetDefaultNode();
@@ -246,11 +244,11 @@ void MainRemoteProtocolBridgeComponent::performConfigurationDump()
 	}
 	else
 	{
-		for (auto nodeId : nodeIds)
+		for (auto const & nodeKV : m_NodeBoxes)
 		{
-			if (m_NodeBoxes.count(nodeId) && m_NodeBoxes.at(nodeId))
+			if (nodeKV.second)
 			{
-				m_config->setConfigState(m_NodeBoxes.at(nodeId)->createStateXml(), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+				m_config->setConfigState(nodeKV.second->createStateXml(), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
 			}
 		}
 
@@ -321,13 +319,17 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 {
 	if (button == m_AddNodeButton.get())
 	{
-		m_config->setConfigState(ProcessingEngineConfig::GetDefaultNode());
+		m_config->setConfigState(ProcessingEngineConfig::GetDefaultNode(), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+		m_config->triggerWatcherUpdate();
+		m_config->triggerConfigurationDump();
 	}
 	else if (button == m_RemoveNodeButton.get())
 	{
 		if (m_config->GetNodeIds().size() > 0)
 		{
-			m_NodeBoxes.erase(m_config->GetNodeIds().getLast());
+			auto configStateXml = m_config->getConfigState();
+			configStateXml->removeChildElement(configStateXml->getChildByAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), String(static_cast<int>(m_config->GetNodeIds().getLast()))), true);
+			m_config->resetConfigState(std::move(configStateXml));
 			m_config->triggerConfigurationDump();
 		}
 	}

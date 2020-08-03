@@ -172,7 +172,7 @@ std::unique_ptr<XmlElement> NodeComponent::createStateXml()
 		while (protocolAXmlElement != nullptr)
 		{
 			nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*protocolAXmlElement).release());
-			protocolAXmlElement = protocolsAXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
+			protocolAXmlElement = protocolAXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
 		}
 	}
 
@@ -183,7 +183,7 @@ std::unique_ptr<XmlElement> NodeComponent::createStateXml()
 		while (protocolBXmlElement != nullptr)
 		{
 			nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*protocolBXmlElement).release());
-			protocolBXmlElement = protocolsBXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
+			protocolBXmlElement = protocolBXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 		}
 	}
 

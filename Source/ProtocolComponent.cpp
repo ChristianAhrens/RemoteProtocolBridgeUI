@@ -131,6 +131,7 @@ void ProtocolGroupComponent::resized()
 std::unique_ptr<XmlElement> ProtocolGroupComponent::createStateXml()
 {
 	auto protocolsXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+	protocolsXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_NodeId));
 
 	for (auto PId : m_ProtocolIds)
 	{
@@ -166,7 +167,7 @@ bool ProtocolGroupComponent::setStateXml(XmlElement* stateXml)
 		protocolRoles.insert(std::make_pair(static_cast<ProtocolId>(protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID))), m_ProtocolRole));
 		protocolXmls.insert(std::make_pair(static_cast<ProtocolId>(protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID))), protocolXmlElement));
 
-		protocolXmlElement = stateXml->getNextElementWithTagName((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
+		protocolXmlElement = protocolXmlElement->getNextElementWithTagName((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 	}
 
 	// go through current ui node boxes to find out which ones need to be removed/destroyed
@@ -253,6 +254,7 @@ void ProtocolGroupComponent::RemoveProtocol(const ProtocolId& PId)
 	if (m_ProtocolComponents.count(PId) && m_ProtocolComponents[PId])
 	{
 		m_ProtocolComponents.erase(PId);
+		m_ProtocolIds.remove(m_ProtocolIds.indexOf(PId));
 		triggerConfigurationUpdate();
 	}
 }
@@ -268,10 +270,21 @@ void ProtocolGroupComponent::buttonClicked(Button* button)
 {
 	if (button == m_AddProtocolButton.get())
 	{
-		auto currentState = createStateXml();
-		if (currentState)
+
+		auto config = ProcessingEngineConfig::getInstance();
+		if (config)
 		{
-			currentState->addChildElement(ProcessingEngineConfig::GetDefaultProtocol(m_ProtocolRole).release());
+			auto currentState = config->getConfigState();
+			if (currentState)
+			{
+				auto nodeXmlElement = currentState->getChildByAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), String(m_NodeId));
+				if (nodeXmlElement)
+				{
+					nodeXmlElement->addChildElement(ProcessingEngineConfig::GetDefaultProtocol(m_ProtocolRole).release());
+					setStateXml(nodeXmlElement);
+					triggerConfigurationUpdate();
+				}
+			}
 		}
 	}
 	else if (button == m_RemoveProtocolButton.get())
@@ -366,6 +379,8 @@ void ProtocolComponent::resized()
  */
 void ProtocolComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 {
+	ignoreUnused(childWindow);
+
 	ToggleOpenCloseProtocolConfig(m_ProtocolConfigEditButton.get());
 }
 
