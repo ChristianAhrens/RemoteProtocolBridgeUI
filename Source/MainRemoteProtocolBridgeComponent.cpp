@@ -51,7 +51,10 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 {
 	m_config = std::make_unique<ProcessingEngineConfig>(ProcessingEngineConfig::getDefaultConfigFilePath());
 	m_config->addDumper(this);
+
+	m_config->addWatcher(this);
 	m_config->addWatcher(&m_engine);
+
     
 	m_ConfigDialog = 0;
 	m_LoggingDialog = 0;
@@ -103,7 +106,6 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 
 	if (!m_config->isValid())
 	{
-		// Add a default node               
 		m_config->triggerConfigurationDump();
 	}
 	else
@@ -111,13 +113,19 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 		m_config->triggerWatcherUpdate();
 	}
 
-	if (m_config->IsEngineStartOnAppStart())
+	auto currentConfig = m_config->getConfigState();
+	auto globalConfigXmlElement = currentConfig->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG));
+	if (globalConfigXmlElement)
 	{
-		if (!m_engine.IsRunning() && m_engine.Start())
+		auto engineXmlElement = globalConfigXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ENGINE));
+		if (engineXmlElement && engineXmlElement->getBoolAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::AUTOSTART)))
 		{
-			m_EngineStartStopButton->setColour(TextButton::buttonColourId, Colours::lightgreen);
-			m_EngineStartStopButton->setColour(Label::textColourId, Colours::dimgrey);
-			m_EngineStartStopButton->setButtonText("Stop Engine");
+			if (!m_engine.IsRunning() && m_engine.Start())
+			{
+				m_EngineStartStopButton->setColour(TextButton::buttonColourId, Colours::lightgreen);
+				m_EngineStartStopButton->setColour(Label::textColourId, Colours::dimgrey);
+				m_EngineStartStopButton->setButtonText("Stop Engine");
+			}
 		}
 	}
 }
@@ -136,20 +144,21 @@ MainRemoteProtocolBridgeComponent::~MainRemoteProtocolBridgeComponent()
  */
 void MainRemoteProtocolBridgeComponent::onConfigUpdated()
 {
-    Array<NodeId> NIds = m_config->GetNodeIds();
+	auto currentConfigState = m_config->getConfigState();
+    auto nodeIds = m_config->GetNodeIds();
 
 	// go through current ui node boxes to find out which ones need to be removed/destroyed
-	Array<NodeId> NIdsToRemove;
-	for (std::map<NodeId, std::unique_ptr<NodeComponent>>::iterator nodeIter = m_NodeBoxes.begin(); nodeIter != m_NodeBoxes.end(); ++nodeIter)
-		if (!NIds.contains(nodeIter->first))
-			NIdsToRemove.add(nodeIter->first);
+	Array<NodeId> nodeIdsToRemove;
+	for (auto const & nodeBox : m_NodeBoxes)
+		if (!nodeIds.contains(nodeBox.first))
+			nodeIdsToRemove.add(nodeBox.first);
 
-	for(int i=0; i<NIdsToRemove.size(); ++i)
+	for(auto nodeId : nodeIdsToRemove)
 	{
-		if (m_NodeBoxes.count(NIdsToRemove[i]) && m_NodeBoxes.at(NIdsToRemove[i]))
+		if (m_NodeBoxes.count(nodeId) && m_NodeBoxes.at(nodeId))
 		{
-			removeChildComponent(m_NodeBoxes.at(NIdsToRemove[i]).get());
-			m_NodeBoxes.erase(NIdsToRemove[i]);
+			removeChildComponent(m_NodeBoxes.at(nodeId).get());
+			m_NodeBoxes.erase(nodeId);
 		}
 	}
 
@@ -157,30 +166,43 @@ void MainRemoteProtocolBridgeComponent::onConfigUpdated()
 
 	// now go through all node ids currently in config and create those nodes
 	// that do not already exist or simply update those that are present
-    for (int i = 0; i < NIds.size(); ++i)
+    for (auto nodeId : nodeIds)
     {
-		NodeId NId = NIds[i];
-
-		if (!m_NodeBoxes.count(NId))
+		if (m_NodeBoxes.count(nodeId) == 0)
 		{
-			NodeComponent* Node = new NodeComponent(NId);
+			NodeComponent* Node = new NodeComponent(nodeId);
 			Node->AddListener(this);
-			requiredNodeAreaHeight += Node->GetCurrentRequiredHeight();
-			Node->setText("Protocol Bridging Node Id" + String(NId));
+			Node->setText("Protocol Bridging Node Id" + String(nodeId));
 			addAndMakeVisible(Node);
 
-			m_NodeBoxes[NId] = std::unique_ptr<NodeComponent>(Node);
-		}
-		else
-		{
-			requiredNodeAreaHeight += m_NodeBoxes[NId]->GetCurrentRequiredHeight();
+			m_NodeBoxes[nodeId] = std::unique_ptr<NodeComponent>(Node);
 		}
     }
 
-	if (m_config->IsTrafficLoggingAllowed())
-		addAndMakeVisible(m_TriggerOpenLoggingButton.get());
-	else
-		removeChildComponent(m_TriggerOpenLoggingButton.get());
+	auto nodeXmlElement = currentConfigState->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+	while (nodeXmlElement != nullptr)
+	{
+		auto nodeId = nodeXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+		if (m_NodeBoxes.count(nodeId) > 0)
+		{
+			m_NodeBoxes.at(nodeId)->setStateXml(nodeXmlElement);
+			requiredNodeAreaHeight += m_NodeBoxes[nodeId]->GetCurrentRequiredHeight();
+		}
+
+		nodeXmlElement = currentConfigState->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+	}
+
+	auto globalConfigXmlElement = currentConfigState->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG));
+	if (globalConfigXmlElement)
+	{
+		m_GlobalConfigXml = std::make_unique<XmlElement>(*globalConfigXmlElement);
+
+		auto trafficLoggingXmlElement = globalConfigXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::TRAFFICLOGGING));
+		if (trafficLoggingXmlElement && trafficLoggingXmlElement->getBoolAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ALLOWED)))
+			addAndMakeVisible(m_TriggerOpenLoggingButton.get());
+		else
+			removeChildComponent(m_TriggerOpenLoggingButton.get());
+	}
 
 #if defined JUCE_IOS ||  defined JUCE_ANDROID
     if(getScreenBounds().getWidth()<1 || getScreenBounds().getHeight()<1)
@@ -211,17 +233,29 @@ ProcessingEngine* MainRemoteProtocolBridgeComponent::GetEngine()
  */
 void MainRemoteProtocolBridgeComponent::performConfigurationDump()
 {
-	Array<NodeId> NIds = m_config->GetNodeIds();
-	for (int i = 0; i < NIds.size(); ++i)
-	{
-		NodeId NId = NIds[i];
-		if (m_NodeBoxes.count(NId) && m_NodeBoxes.at(NId))
-		{
-			m_config->setConfigState(m_NodeBoxes.at(NId)->createStateXml(), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
-		}
-	}
+	auto nodeIds = m_config->GetNodeIds();
 
-	m_config->setConfigState(std::make_unique<XmlElement>(*m_GlobalConfigXml));
+	if (nodeIds.isEmpty() || !m_GlobalConfigXml)
+	{
+		// Add a default node
+		auto defaultNodeXmlElement = ProcessingEngineConfig::GetDefaultNode();
+		m_config->setConfigState(std::move(defaultNodeXmlElement));
+		// Add default global config
+		auto defaultGlobalXmlElement = ProcessingEngineConfig::GetDefaultGlobalConfig();
+		m_config->setConfigState(std::move(defaultGlobalXmlElement));
+	}
+	else
+	{
+		for (auto nodeId : nodeIds)
+		{
+			if (m_NodeBoxes.count(nodeId) && m_NodeBoxes.at(nodeId))
+			{
+				m_config->setConfigState(m_NodeBoxes.at(nodeId)->createStateXml(), ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+			}
+		}
+
+		m_config->setConfigState(std::make_unique<XmlElement>(*m_GlobalConfigXml));
+	}
 }
 
 /**
@@ -306,6 +340,9 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 			m_GlobalConfigXml = m_ConfigDialog->createStateXml();
 			m_config->triggerConfigurationDump();
 			m_ConfigDialog.reset();
+
+			button->setColour(TextButton::buttonColourId, Colours::dimgrey);
+			button->setColour(Label::textColourId, Colours::white);
 		}
 		// otherwise we have to create the dialog and show it
 		else
@@ -355,6 +392,7 @@ void MainRemoteProtocolBridgeComponent::buttonClicked(Button* button)
 
 			m_engine.SetLoggingEnabled(true);
 			m_engine.SetLoggingTarget(m_LoggingDialog.get());
+
 			button->setColour(TextButton::buttonColourId, Colours::orange);
 			button->setColour(Label::textColourId, Colours::dimgrey);
 		}
@@ -398,6 +436,12 @@ void MainRemoteProtocolBridgeComponent::childWindowCloseTriggered(DialogWindow* 
 		{
 			m_GlobalConfigXml = m_ConfigDialog->createStateXml();
 			m_config->triggerConfigurationDump();
+
+			if (m_TriggerOpenConfigButton)
+			{
+				m_TriggerOpenConfigButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
+				m_TriggerOpenConfigButton->setColour(Label::textColourId, Colours::white);
+			}
 		}
 
 		m_ConfigDialog.reset();
@@ -408,8 +452,12 @@ void MainRemoteProtocolBridgeComponent::childWindowCloseTriggered(DialogWindow* 
 		{
 			m_engine.SetLoggingEnabled(false);
 			m_engine.SetLoggingTarget(0);
-			m_TriggerOpenLoggingButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
-			m_TriggerOpenLoggingButton->setColour(Label::textColourId, Colours::white);
+
+			if (m_TriggerOpenLoggingButton)
+			{
+				m_TriggerOpenLoggingButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
+				m_TriggerOpenLoggingButton->setColour(Label::textColourId, Colours::white);
+			}
 		}
 
 		m_LoggingDialog.reset();

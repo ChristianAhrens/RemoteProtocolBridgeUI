@@ -98,11 +98,17 @@ bool ProcessingEngine::Stop()
 	return stopSuccess;
 }
 
+/**
+ *
+ */
 std::unique_ptr<XmlElement> ProcessingEngine::createStateXml()
 {
 	return nullptr;
 }
 
+/**
+ *
+ */
 bool ProcessingEngine::setStateXml(XmlElement* stateXml)
 {
 	XmlElement* rootChild = stateXml->getFirstChildElement();

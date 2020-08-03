@@ -204,15 +204,15 @@ std::unique_ptr<XmlElement> ProtocolConfigComponent_Abstract::createStateXml()
 
 	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
 
-	auto clientPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
+	auto clientPortXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
 	if (clientPortXmlElement)
 		clientPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.first);
 
-	auto hostPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	auto hostPortXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
 	if (hostPortXmlElement)
 		hostPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.second);
 	
-	auto activeObjsXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	auto activeObjsXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
 	if (activeObjsXmlElement)
 	{
 		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement, activeObjects);
@@ -1063,7 +1063,7 @@ bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 {
 	auto pollingIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
 	if(pollingIntervalXmlElement)
-		FillPollingInterval(pollingIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL)));
+		FillPollingInterval(pollingIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL)));
 
 	return ProtocolConfigComponent_Abstract::setStateXml(stateXml);
 }

@@ -67,6 +67,9 @@ bool ProcessingEngineConfig::isValid()
 		return false;
 
 	XmlElement* rootChild = m_xml->getFirstChildElement();
+	if (rootChild == nullptr)
+		return false;
+
 	while (rootChild != nullptr)
 	{
 
@@ -152,7 +155,6 @@ bool ProcessingEngineConfig::isValid()
 	return true;
 }
 
-
 /**
  * Getter for the list of node ids of current configuration
  *
@@ -165,7 +167,7 @@ Array<NodeId> ProcessingEngineConfig::GetNodeIds()
 		return Array<NodeId>{};
 
 	Array<NodeId> NIds;
-	XmlElement* nodeXmlElement = currentConfig->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
+	XmlElement* nodeXmlElement = currentConfig->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
 	while (nodeXmlElement != nullptr)
 	{
 		NIds.add(nodeXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID)));
@@ -173,45 +175,6 @@ Array<NodeId> ProcessingEngineConfig::GetNodeIds()
 	}
 
 	return NIds;
-}
-/**
- * Getter for the bool memeber defining if trafficlogging button should be available to user
- *
- * @return	True if the togglebutton should be available to the user on ui
- */
-bool ProcessingEngineConfig::IsTrafficLoggingAllowed() const
-{
-	return m_TrafficLoggingAllowed;
-}
-
-/**
- * Setter for the bool memeber defining if trafficlogging button should be available to user
- *
- * @param allowed	True if button should be available to the user
- */
-void ProcessingEngineConfig::SetTrafficLoggingAllowed(bool allowed)
-{
-	m_TrafficLoggingAllowed = allowed;
-}
-
-/**
- * Getter for the bool memeber defining if the engine should be automatically started on app startup
- *
- * @return	True if the engine should be automatically started
- */
-bool ProcessingEngineConfig::IsEngineStartOnAppStart() const
-{
-	return m_EngineStartOnAppStart;
-}
-
-/**
- * Setter for the bool memeber defining if the engine should be automatically started on app startup
- *
- * @param start	True if the engine should be automatically started
- */
-void ProcessingEngineConfig::SetEngineStartOnAppStart(bool start)
-{
-	m_EngineStartOnAppStart = start;
 }
 
 /**
@@ -221,14 +184,14 @@ void ProcessingEngineConfig::SetEngineStartOnAppStart(bool start)
  * @param RemoteObjects			The remote objects list to fill according config contents
  * @return	True if remote objects were inserted, false if empty list is returned
  */
-bool ProcessingEngineConfig::ReadActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject>& RemoteObjects)
+bool ProcessingEngineConfig::ReadActiveObjects(XmlElement* activeObjectsElement, Array<RemoteObject>& RemoteObjects)
 {
 	RemoteObjects.clear();
 
-	if (!ActiveObjectsElement || ActiveObjectsElement->getTagName() != getTagName(TagID::ACTIVEOBJECTS))
+	if (!activeObjectsElement || activeObjectsElement->getTagName() != getTagName(TagID::ACTIVEOBJECTS))
 		return false;
 
-	XmlElement* objectChild = ActiveObjectsElement;
+	XmlElement* objectChild = activeObjectsElement->getFirstChildElement();
 	RemoteObject obj;
 	
 	while (objectChild != nullptr)
@@ -402,6 +365,24 @@ int ProcessingEngineConfig::ValidateUniqueId(int uniqueId)
 }
 
 /**
+ * Returns a default global config xml section
+ */
+std::unique_ptr<XmlElement>	ProcessingEngineConfig::GetDefaultGlobalConfig()
+{
+	auto globalConfigXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::GLOBALCONFIG));
+
+	auto trafficLoggingXmlElement = globalConfigXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::TRAFFICLOGGING));
+	if (trafficLoggingXmlElement)
+		trafficLoggingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ALLOWED), 1);
+
+	auto engineXmlElement = globalConfigXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ENGINE));
+	if (engineXmlElement)
+		engineXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::AUTOSTART), 0);
+
+	return std::move(globalConfigXmlElement);
+}
+
+/**
  * Adds a bridging node with default values to configuration object
  */
 std::unique_ptr<XmlElement>	ProcessingEngineConfig::GetDefaultNode()
@@ -446,7 +427,7 @@ std::unique_ptr<XmlElement> ProcessingEngineConfig::GetDefaultProtocol(ProtocolR
 	auto thisConfig = dynamic_cast<ProcessingEngineConfig*>(ProcessingEngineConfig::getInstance());
 	if (thisConfig)
 		protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), thisConfig->GetNextUniqueId());
-	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), static_cast<int>(PT_OSCProtocol));
+	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), ProcessingEngineConfig::ProtocolTypeToString(PT_OSCProtocol));
 	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), 1);
 
 	auto clientPortXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));

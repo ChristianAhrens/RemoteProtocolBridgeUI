@@ -100,4 +100,6 @@ private:
 
 	std::vector<ProcessingEngineNode::NodeListener*>					m_listeners;		/**< The listner objects, for e.g. logging message traffic. */
 
+	bool																m_shouldBeRunning;
+
 };

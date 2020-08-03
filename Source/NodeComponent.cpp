@@ -168,22 +168,22 @@ std::unique_ptr<XmlElement> NodeComponent::createStateXml()
 	auto protocolsAXmlElement = m_protocolsAComponent->createStateXml();
 	if (protocolsAXmlElement)
 	{
-		auto protocolAXmlElement = protocolsAXmlElement->getNextElement();
+		auto protocolAXmlElement = protocolsAXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
 		while (protocolAXmlElement != nullptr)
 		{
-			nodeXmlElement->addChildElement(protocolAXmlElement);
-			protocolAXmlElement = protocolsAXmlElement->getNextElement();
+			nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*protocolAXmlElement).release());
+			protocolAXmlElement = protocolsAXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
 		}
 	}
 
 	auto protocolsBXmlElement = m_protocolsBComponent->createStateXml();
 	if (protocolsBXmlElement)
 	{
-		auto protocolBXmlElement = protocolsBXmlElement->getNextElement();
+		auto protocolBXmlElement = protocolsBXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 		while (protocolBXmlElement != nullptr)
 		{
-			nodeXmlElement->addChildElement(protocolBXmlElement);
-			protocolBXmlElement = protocolsBXmlElement->getNextElement();
+			nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*protocolBXmlElement).release());
+			protocolBXmlElement = protocolsBXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 		}
 	}
 
@@ -211,8 +211,11 @@ bool NodeComponent::setStateXml(XmlElement* stateXml)
 	else
 		return false;
 
+	ObjectHandlingMode selectedOHM = static_cast<ObjectHandlingMode>(ProcessingEngineConfig::ObjectHandlingModeFromString(m_ohmXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE))));
+	m_NodeModeDrop->setSelectedId(selectedOHM, dontSendNotification);
+
 	m_protocolsAComponent->setStateXml(stateXml);
-	m_protocolsAComponent->setStateXml(stateXml);
+	m_protocolsBComponent->setStateXml(stateXml);
 
 	return true;
 }
@@ -228,7 +231,6 @@ int NodeComponent::GetCurrentRequiredHeight()
 	requiredHeight += m_protocolsBComponent->GetCurrentRequiredHeight();
 	requiredHeight += UIS_Margin_s;
 
-    m_NodeModeDrop->setSelectedId(m_ohmXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), dontSendNotification));
 	requiredHeight += UIS_ElmSize + UIS_Margin_m;
 
 	return requiredHeight;

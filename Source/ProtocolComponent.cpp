@@ -160,7 +160,7 @@ bool ProtocolGroupComponent::setStateXml(XmlElement* stateXml)
 
 	auto protocolRoles = std::map<ProtocolId, ProtocolRole>{};
 	auto protocolXmls = std::map<ProtocolId, XmlElement*>{};
-	XmlElement* protocolXmlElement = stateXml->getNextElementWithTagName((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
+	XmlElement* protocolXmlElement = stateXml->getChildByName((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
 	while (protocolXmlElement != nullptr)
 	{
 		protocolRoles.insert(std::make_pair(static_cast<ProtocolId>(protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID))), m_ProtocolRole));
@@ -366,25 +366,7 @@ void ProtocolComponent::resized()
  */
 void ProtocolComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 {
-	auto config = dynamic_cast<ProcessingEngineConfig*>(ProcessingEngineConfig::getInstance());
-
-	if (childWindow == m_ProtocolConfigDialog.get())
-	{
-		if (config)
-		{
-			m_ProtocolConfigDialog->createStateXml();
-			jassertfalse;
-			triggerConfigurationUpdate();
-		}
-
-		if (m_ProtocolConfigEditButton)
-		{
-			m_ProtocolConfigEditButton->setColour(TextButton::buttonColourId, Colours::dimgrey);
-			m_ProtocolConfigEditButton->setColour(Label::textColourId, Colours::white);
-		}
-
-		m_ProtocolConfigDialog.reset();
-	}
+	ToggleOpenCloseProtocolConfig(m_ProtocolConfigEditButton.get());
 }
 
 /**
@@ -395,7 +377,7 @@ void ProtocolComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 std::unique_ptr<XmlElement> ProtocolComponent::createStateXml()
 {
 	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_ProtocolId));
-	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), static_cast<int>(m_ProtocolDrop->getSelectedId()));
+	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), ProcessingEngineConfig::ProtocolTypeToString(static_cast<ProtocolType>(m_ProtocolDrop->getSelectedId())));
 
 	auto ipAdressEdit = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::IPADDRESS));
 	if (ipAdressEdit)
@@ -425,9 +407,15 @@ bool ProtocolComponent::setStateXml(XmlElement* stateXml)
 	else
 		return false;
 
-	auto protocolIpAdress = m_protocolXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS));
-	if (m_IpEdit)
-		m_IpEdit->setText(protocolIpAdress);
+	auto ipXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::IPADDRESS));
+	if (ipXmlElement)
+	{
+		auto protocolIpAdress = ipXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS));
+		if (m_IpEdit)
+			m_IpEdit->setText(protocolIpAdress);
+		else
+			return false;
+	}
 	else
 		return false;
 
@@ -561,7 +549,7 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
 	{
 		if (m_protocolXmlElement)
 		{
-			ProtocolType protocolType = static_cast<ProtocolType>(m_protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE)));
+			ProtocolType protocolType = ProcessingEngineConfig::ProtocolTypeFromString(m_protocolXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE)));
 
 			String dialogTitle = ProcessingEngineConfig::ProtocolTypeToString(protocolType) + " protocol configuration (Node Id" + String(m_NodeId) + ", Protocol Id" + String(m_ProtocolId) + ")";
 

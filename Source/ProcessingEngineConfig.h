@@ -154,11 +154,8 @@ public:
 	~ProcessingEngineConfig();
 
 	Array<NodeId>		GetNodeIds();
-	bool				IsTrafficLoggingAllowed() const;
-	void				SetTrafficLoggingAllowed(bool allowed = true);
-	bool				IsEngineStartOnAppStart() const;
-	void				SetEngineStartOnAppStart(bool start = true);
 
+	static std::unique_ptr<XmlElement>	GetDefaultGlobalConfig();
 	static std::unique_ptr<XmlElement>	GetDefaultNode();
 	static std::unique_ptr<XmlElement>	GetDefaultProtocol(ProtocolRole role);
 	bool				RemoveNodeOrProtocol(int Id);

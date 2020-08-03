@@ -99,6 +99,8 @@ NodeId ProcessingEngineNode::GetId()
  */
 bool ProcessingEngineNode::Start()
 {
+	m_shouldBeRunning = true;
+
 	bool successfullyStartedA = m_typeAProtocols.size() > 0;
 	bool successfullyStartedB = true;
 
@@ -125,6 +127,8 @@ bool ProcessingEngineNode::Start()
  */
 bool ProcessingEngineNode::Stop()
 {
+	m_shouldBeRunning = false;
+
 	bool successfullyStoppedA = true;
 	bool successfullyStoppedB = true;
 
@@ -220,7 +224,8 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		protocolXmlElement = nextProtocolXmlElement;
 	}
 
-	Start();
+	if(m_shouldBeRunning)
+		Start();
 
 	return retVal;
 }
