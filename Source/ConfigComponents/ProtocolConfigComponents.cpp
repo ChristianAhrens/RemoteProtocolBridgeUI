@@ -196,29 +196,28 @@ void ProtocolConfigComponent_Abstract::SetActiveHandlingUsed(bool active)
  */
 std::unique_ptr<XmlElement> ProtocolConfigComponent_Abstract::createStateXml()
 {
-	auto protocolXmlElement = std::make_unique<XmlElement>((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
-
 	auto ports = DumpProtocolPorts();
 	auto activeHandlingUsed = DumpActiveHandlingUsed();
 	auto activeObjects = DumpActiveRemoteObjects();
 
-	protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
+	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
 
-	auto clientPortXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
+	auto clientPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
 	if (clientPortXmlElement)
 		clientPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.first);
 
-	auto hostPortXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	auto hostPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
 	if (hostPortXmlElement)
 		hostPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.second);
 	
-	auto activeObjsXmlElement = protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	auto activeObjsXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
 	if (activeObjsXmlElement)
 	{
-		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement, activeObjects);
+		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement.get(), activeObjects);
+		m_protocolXmlElement->replaceChildElement(m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS)), activeObjsXmlElement.release());
 	}
 
-	return std::move(protocolXmlElement);
+	return std::make_unique<XmlElement>(*m_protocolXmlElement);
 }
 
 /**
@@ -233,6 +232,8 @@ bool ProtocolConfigComponent_Abstract::setStateXml(XmlElement* stateXml)
 {
 	if (!stateXml || stateXml->getTagName() != ((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB)))
 		return false;
+
+	m_protocolXmlElement = std::make_unique<XmlElement>(*stateXml);
 
 	SetActiveHandlingUsed(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1);
 
@@ -1045,8 +1046,9 @@ const std::pair<int, int> OSCProtocolConfigComponent::GetSuggestedSize()
 std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
 {
 	auto protocolStateXml = ProtocolConfigComponent_Abstract::createStateXml();
-	auto pollingIntervalXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
-	pollingIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), DumpPollingInterval());
+	auto pollingIntervalXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
+	if (pollingIntervalXmlElement)
+		pollingIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), DumpPollingInterval());
 
 	return std::move(protocolStateXml);
 }

@@ -91,7 +91,9 @@ protected:
 	std::unique_ptr<TextButton> m_applyConfigButton;	/**< Button to apply edited values to configuration and leave. */
 	ProtocolConfigWindow*		m_parentListener;		/**< Parent that needs to be notified when this window self-destroys. */
 
-	ProtocolRole	m_ProtocolRole;
+	ProtocolRole				m_ProtocolRole;			/**< This protocols' role (A or B). */
+
+	std::unique_ptr<XmlElement>	m_protocolXmlElement;	/**< This protocols chached xml config element, needed to modify individual values and still be able to deliver the complete element when requested. */
 
 };
 

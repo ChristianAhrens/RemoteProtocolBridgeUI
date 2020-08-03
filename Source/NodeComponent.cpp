@@ -187,6 +187,11 @@ std::unique_ptr<XmlElement> NodeComponent::createStateXml()
 		}
 	}
 
+	if (m_NodeModeDrop)
+	{
+		auto selectedOHMode = static_cast<ObjectHandlingMode>(m_NodeModeDrop->getSelectedId());
+		m_ohmXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(selectedOHMode));
+	}
 	nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*m_ohmXmlElement).release());
 
 	return std::move(nodeXmlElement);
@@ -405,7 +410,7 @@ void NodeComponent::ToggleOpenCloseObjectHandlingConfig(Button* button)
 	// otherwise we have to create the dialog and show it
 	else
 	{
-		ObjectHandlingMode ohMode = static_cast<ObjectHandlingMode>(m_ohmXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)));
+		ObjectHandlingMode ohMode = static_cast<ObjectHandlingMode>(ProcessingEngineConfig::ObjectHandlingModeFromString(m_ohmXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE))));
 
 		String dialogTitle = ProcessingEngineConfig::ObjectHandlingModeToString(ohMode) + " obj. handling configuration (Node Id" + String(m_NodeId) + ")";
 
