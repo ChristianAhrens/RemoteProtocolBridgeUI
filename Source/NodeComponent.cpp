@@ -36,10 +36,10 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MainRemoteProtocolBridgeComponent.h"
 #include "ProtocolComponent.h"
-#include "ConfigComponents/ObjectHandlingConfigComponents.h"
+#include "ConfigComponents/ObjectHandlingConfigComponents/ObjectHandlingConfigComponents.h"
 
-#include "ProcessingEngine.h"
-#include "ProcessingEngineConfig.h"
+#include "ProcessingEngine/ProcessingEngine.h"
+#include "ProcessingEngine/ProcessingEngineConfig.h"
 
 
 // **************************************************************************************

@@ -34,9 +34,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "RemoteProtocolBridgeCommon.h"
+#include "../RemoteProtocolBridgeCommon.h"
 
-#include "../submodules/JUCE-AppBasics/Source/AppConfigurationBase.h"
+#include "../../submodules/JUCE-AppBasics/Source/AppConfigurationBase.h"
 
 #include <JuceHeader.h>
 

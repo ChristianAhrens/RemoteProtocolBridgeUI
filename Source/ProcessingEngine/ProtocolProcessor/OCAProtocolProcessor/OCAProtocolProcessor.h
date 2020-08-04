@@ -34,25 +34,22 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../../RemoteProtocolBridgeCommon.h"
+#include "../../../RemoteProtocolBridgeCommon.h"
 #include "../ProtocolProcessor_Abstract.h"
-
-#include "SenderAwareOSCReceiver.h"
 
 #include <JuceHeader.h>
 
-using namespace SenderAwareOSC;
 
 /**
- * Class OSCProtocolProcessor is a derived class for OSC protocol interaction.
+ * Class OCAProtocolProcessor is a derived class for OCA protocol interaction. 
+ * This currently is only a dummy for potential future functionality.
+ * Feel free to implement something yourself here.
  */
-class OSCProtocolProcessor : public SenderAwareOSCReceiver::SAOListener<OSCReceiver::MessageLoopCallback>,
-	public ProtocolProcessor_Abstract,
-	private Timer
+class OCAProtocolProcessor : public ProtocolProcessor_Abstract
 {
 public:
-	OSCProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber);
-	~OSCProtocolProcessor();
+	OCAProtocolProcessor(const NodeId& parentNodeId);
+	~OCAProtocolProcessor();
 
 	bool setStateXml(XmlElement* stateXml) override;
 
@@ -65,17 +62,4 @@ public:
 
 	static String GetRemoteObjectString(RemoteObjectIdentifier id);
 
-	virtual void oscBundleReceived(const OSCBundle &bundle, const String& senderIPAddress, const int& senderPort) override;
-	virtual void oscMessageReceived(const OSCMessage &message, const String& senderIPAddress, const int& senderPort) override;
-
-private:
-	void timerCallback() override;
-
-private:
-	OSCSender				m_oscSender;			/**< An OSCSender object can connect to a network port. It then can send OSC
-													   * messages and bundles to a specified host over an UDP socket. */
-	SenderAwareOSCReceiver	m_oscReceiver;			/**< An OSCReceiver object can connect to a network port, receive incoming OSC packets from the network
-													   * via UDP, parse them, and forward the included OSCMessage and OSCBundle objects to its listeners. */
-	int						m_oscMsgRate;			/**< Interval at which OSC messages are sent to the host, in ms. */
-	Array<RemoteObject>		m_activeRemoteObjects;	/**< List of remote objects to be activly handled. */
 };

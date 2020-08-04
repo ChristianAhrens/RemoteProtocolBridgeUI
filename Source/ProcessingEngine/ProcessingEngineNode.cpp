@@ -34,7 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProcessingEngineNode.h"
 
-#include "ObjectDataHandling.h"
+#include "ObjectDataHandling/ObjectDataHandling.h"
 #include "ProcessingEngine.h"
 #include "ProcessingEngineConfig.h"
 

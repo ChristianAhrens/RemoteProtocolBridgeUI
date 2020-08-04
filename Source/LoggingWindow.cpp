@@ -38,8 +38,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MainRemoteProtocolBridgeComponent.h"
 #include "RemoteProtocolBridgeCommon.h"
 
-#include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
-#include "ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
 
 
 constexpr int NODE = INT_MAX;

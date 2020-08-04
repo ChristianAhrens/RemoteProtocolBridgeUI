@@ -35,8 +35,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolComponent.h"
 
 #include "NodeComponent.h"
-#include "ConfigComponents/ProtocolConfigComponents.h"
-#include "ProcessingEngineConfig.h"
+#include "ConfigComponents/ProtocolConfigComponents/ProtocolConfigComponents.h"
+#include "ProcessingEngine/ProcessingEngineConfig.h"
 
 
 // **************************************************************************************

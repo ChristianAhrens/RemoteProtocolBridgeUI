@@ -34,22 +34,22 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../../RemoteProtocolBridgeCommon.h"
+#include "../../../RemoteProtocolBridgeCommon.h"
 #include "../ProtocolProcessor_Abstract.h"
 
 #include <JuceHeader.h>
 
 
 /**
- * Class OCAProtocolProcessor is a derived class for OCA protocol interaction. 
+ * Class MIDIProtocolProcessor is a derived class for MIDI protocol interaction.
  * This currently is only a dummy for potential future functionality.
  * Feel free to implement something yourself here.
  */
-class OCAProtocolProcessor : public ProtocolProcessor_Abstract
+class MIDIProtocolProcessor : public ProtocolProcessor_Abstract
 {
 public:
-	OCAProtocolProcessor(const NodeId& parentNodeId);
-	~OCAProtocolProcessor();
+	MIDIProtocolProcessor(const NodeId& parentNodeId);
+	~MIDIProtocolProcessor();
 
 	bool setStateXml(XmlElement* stateXml) override;
 
@@ -60,6 +60,6 @@ public:
 
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
-	static String GetRemoteObjectString(RemoteObjectIdentifier id);
+	String GetMIDIRemoteObjectString(RemoteObjectIdentifier id);
 
 };

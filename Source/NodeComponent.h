@@ -37,7 +37,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <JuceHeader.h>
 
 #include "RemoteProtocolBridgeCommon.h"
-#include "ConfigComponents/ObjectHandlingConfigComponents.h"
+#include "ConfigComponents/ObjectHandlingConfigComponents/ObjectHandlingConfigComponents.h"
 
 // Fwd. Declarations
 class MainRemoteProtocolBridgeComponent;

@@ -37,8 +37,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RemoteProtocolBridgeCommon.h"
 #include "NodeComponent.h"
 #include "LoggingWindow.h"
-#include "ConfigComponents/GlobalConfigComponents.h"
-#include "ProcessingEngineConfig.h"
+#include "ConfigComponents/GlobalConfigComponents/GlobalConfigComponents.h"
+#include "ProcessingEngine/ProcessingEngineConfig.h"
 
 
 // **************************************************************************************

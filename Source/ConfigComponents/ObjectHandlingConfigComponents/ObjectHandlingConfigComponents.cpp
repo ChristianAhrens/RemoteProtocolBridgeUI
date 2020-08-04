@@ -34,8 +34,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ObjectHandlingConfigComponents.h"
 
-#include "../NodeComponent.h"
-#include "../RemoteProtocolBridgeCommon.h"
+#include "../../NodeComponent.h"
+#include "../../RemoteProtocolBridgeCommon.h"
 
 //==============================================================================
 // Class ObjectHandlingConfigComponent_Abstract
