@@ -66,6 +66,9 @@ public:
 		GLOBALCONFIG,
 		TRAFFICLOGGING,
 		ENGINE,
+		SIMCHCNT,
+		SIMMAPCNT,
+		REFRESHINTERVAL,
 	};
 	static String getTagName(TagID Id)
 	{
@@ -99,6 +102,12 @@ public:
 			return "TrafficLogging";
 		case ENGINE:
 			return "Engine";
+		case SIMCHCNT:
+			return "SimulatedChCount";
+		case SIMMAPCNT:
+			return "SimulatedMappingsCount";
+		case REFRESHINTERVAL:
+			return "RefreshInterval";
 		default:
 			return "INVALID";
 		}

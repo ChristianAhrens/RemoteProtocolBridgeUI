@@ -544,6 +544,207 @@ String OHForwardOnlyValueChangesConfigComponent::PrecisionValToString(PrecVal pv
 }
 
 
+//==============================================================================
+// Class OHDS100SimConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+OHDS100SimConfigComponent::OHDS100SimConfigComponent(ObjectHandlingMode mode)
+	: ObjectHandlingConfigComponent_Abstract(mode)
+{
+	m_Headline = std::make_unique <Label>();
+	m_Headline->setText("Simulation parameters:", dontSendNotification);
+	addAndMakeVisible(m_Headline.get());
+
+
+	//==============================================================================
+	m_CountChannelsEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_CountChannelsEdit.get());
+	m_CountChannelsEdit->addListener(this);
+
+	m_CountChannelsLabel = std::make_unique<Label>();
+	m_CountChannelsLabel->setText("Simulated Soundsource Count", dontSendNotification);
+	addAndMakeVisible(m_CountChannelsLabel.get());
+	m_CountChannelsLabel->attachToComponent(m_CountChannelsEdit.get(), true);
+
+
+	//==============================================================================
+	m_CountMappingsEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_CountMappingsEdit.get());
+	m_CountMappingsEdit->addListener(this);
+
+	m_CountMappingsLabel = std::make_unique<Label>();
+	m_CountMappingsLabel->setText("Simulated Mappings Count", dontSendNotification);
+	addAndMakeVisible(m_CountMappingsLabel.get());
+	m_CountMappingsLabel->attachToComponent(m_CountMappingsEdit.get(), true);
+
+
+	//==============================================================================
+	m_RefreshIntervalEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_RefreshIntervalEdit.get());
+	m_RefreshIntervalEdit->addListener(this);
+
+	m_RefreshIntervalLabel = std::make_unique<Label>();
+	m_RefreshIntervalLabel->setText("Simulation update interval", dontSendNotification);
+	addAndMakeVisible(m_RefreshIntervalLabel.get());
+	m_RefreshIntervalLabel->attachToComponent(m_RefreshIntervalEdit.get(), true);
+
+
+	//==============================================================================
+	m_applyConfigButton = std::make_unique<TextButton>("Ok");
+	addAndMakeVisible(m_applyConfigButton.get());
+	m_applyConfigButton->addListener(this);
+}
+
+/**
+ * Class destructor.
+ */
+OHDS100SimConfigComponent::~OHDS100SimConfigComponent()
+{
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void OHDS100SimConfigComponent::resized()
+{
+	double usableWidth = (double)(getWidth() - 2 * UIS_Margin_s);
+
+	// active objects headline
+	int yOffset = UIS_Margin_s;
+	m_Headline->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
+
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_CountChannelsEdit->setBounds(Rectangle<int>(UIS_WideAttachedLabelWidth + UIS_Margin_s, yOffset, (int)usableWidth - UIS_WideAttachedLabelWidth - UIS_Margin_s, UIS_ElmSize));
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_CountMappingsEdit->setBounds(Rectangle<int>(UIS_WideAttachedLabelWidth + UIS_Margin_s, yOffset, (int)usableWidth - UIS_WideAttachedLabelWidth - UIS_Margin_s, UIS_ElmSize));
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_RefreshIntervalEdit->setBounds(Rectangle<int>(UIS_WideAttachedLabelWidth + UIS_Margin_s, yOffset, (int)usableWidth - UIS_WideAttachedLabelWidth - UIS_Margin_s, UIS_ElmSize));
+
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for changes to our textEditors.
+ * @param textEditor	The TextEditor object whose content has just changed.
+ */
+void OHDS100SimConfigComponent::textEditorFocusLost(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for Enter key presses on textEditors.
+ * @param textEditor	The TextEditor object whose where enter key was pressed.
+ */
+void OHDS100SimConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Method to get the components' suggested size. This will be deprecated as soon as
+ * the primitive UI is refactored and uses dynamic / proper layouting
+ *
+ * @return	The pair of int representing the suggested size for this component
+ */
+const std::pair<int, int> OHDS100SimConfigComponent::GetSuggestedSize()
+{
+	int width = UIS_OSCConfigWidth;
+	int height = UIS_Margin_s +
+		2 * UIS_Margin_m + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
+		UIS_Margin_s + UIS_ElmSize;
+
+	return std::pair<int, int>(width, height);
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The object handling config data to use when running the engine.
+ */
+std::unique_ptr<XmlElement> OHDS100SimConfigComponent::createStateXml()
+{
+	auto ohXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING));
+
+	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_DS100_DeviceSimulation));
+
+	auto channelsCount = 0;
+	auto mappingsCount = 0;
+	auto updateInterval = 0;
+
+	if (m_CountChannelsEdit)
+	{
+		channelsCount = m_CountChannelsEdit->getText().getIntValue();
+	}
+	if (m_CountMappingsEdit)
+	{
+		mappingsCount = m_CountMappingsEdit->getText().getIntValue();
+	}
+	if (m_RefreshIntervalEdit)
+	{
+		updateInterval = m_RefreshIntervalEdit->getText().getIntValue();
+	}
+
+	auto simChCntXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMCHCNT));
+	if (simChCntXmlElement)
+		simChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), channelsCount);
+
+	auto simMapingsCntXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMMAPCNT));
+	if (simMapingsCntXmlElement)
+		simMapingsCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), mappingsCount);
+
+	auto refreshIntervalXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::REFRESHINTERVAL));
+	if (refreshIntervalXmlElement)
+		refreshIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), updateInterval);
+
+	return std::move(ohXmlElement);
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with ObjectHandling data
+ *
+ * @param ohData	The data to set into UI elms.
+ */
+bool OHDS100SimConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
+		return false;
+
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_DS100_DeviceSimulation))
+		return false;
+
+	auto simChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMCHCNT));
+	if (simChCntXmlElement && m_CountChannelsEdit)
+		m_CountChannelsEdit->setText(String(simChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT))), dontSendNotification);
+	else
+		return false;
+
+	auto simMapingsCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMMAPCNT));
+	if (simMapingsCntXmlElement && m_CountMappingsEdit)
+		m_CountMappingsEdit->setText(String(simMapingsCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT))), dontSendNotification);
+	else
+		return false;
+
+	auto refreshIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::REFRESHINTERVAL));
+	if (refreshIntervalXmlElement && m_RefreshIntervalEdit)
+		m_RefreshIntervalEdit->setText(String(refreshIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL))), dontSendNotification);
+	else
+		return false;
+
+	return true;
+}
+
+
 // **************************************************************************************
 //    class ObjectHandlingConfigWindow
 // **************************************************************************************
@@ -573,13 +774,14 @@ ObjectHandlingConfigWindow::ObjectHandlingConfigWindow(const String &name, Colou
 	case ObjectHandlingMode::OHM_Forward_only_valueChanges:
 		m_configComponent = std::make_unique<OHForwardOnlyValueChangesConfigComponent>(mode);
 		break;
+	case ObjectHandlingMode::OHM_DS100_DeviceSimulation:
+		m_configComponent = std::make_unique<OHDS100SimConfigComponent>(mode);
+		break;
 	case ObjectHandlingMode::OHM_Bypass:
 		// intentionally no break to run into default
 	case ObjectHandlingMode::OHM_Remap_A_X_Y_to_B_XY:
 		// intentionally no break to run into default
 	case ObjectHandlingMode::OHM_Invalid:
-		// intentionally no break to run into default
-	case ObjectHandlingMode::OHM_DS100_DeviceSimulation:
 		// intentionally no break to run into default
 	default:
 		m_configComponent = std::make_unique<OHNoConfigComponent>(mode);

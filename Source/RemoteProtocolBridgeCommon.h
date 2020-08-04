@@ -51,7 +51,6 @@ typedef uint64 ProtocolId;
 * Generic defines
 */
 #define INVALID_ADDRESS_VALUE -1
-#define CONFIGURATION_FILE "RemoteProtocolBridgeConfig.xml"
 
 /**
  * Known Protocol Processor Types
@@ -139,8 +138,8 @@ struct RemoteObjectAddressing
 	/**
 	 * Constructor to initialize with parameter values
 	 *
-	 * @param a	The value to set for internal 'first'
-	 * @param b	The value to set for internal 'second'
+	 * @param a	The value to set for internal 'first' - SourceId (Channel)
+	 * @param b	The value to set for internal 'second' - MappingId (Record)
 	 */
 	RemoteObjectAddressing(int16 a, int16 b)
 	{

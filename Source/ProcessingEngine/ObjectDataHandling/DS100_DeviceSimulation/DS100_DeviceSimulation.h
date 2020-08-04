@@ -46,20 +46,31 @@ class ProcessingEngineNode;
 /**
  * Class DS100_DeviceSimulation is a class for filtering received value data to only forward changed values.
  */
-class DS100_DeviceSimulation : public ObjectDataHandling_Abstract
+class DS100_DeviceSimulation : public ObjectDataHandling_Abstract, public Timer
 {
 public:
 	DS100_DeviceSimulation(ProcessingEngineNode* parentNode);
 	~DS100_DeviceSimulation();
 
+	//==============================================================================
 	bool setStateXml(XmlElement* stateXml) override;
 
+	//==============================================================================
 	bool OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
 
+	//==============================================================================
+	void timerCallback() override;
+
 private:
-	bool IsChangedDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
-	void SetCurrentDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
+	bool IsDataRequestPollMessage(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
+	bool ReplyToDataRequest(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectAddressing adressing);
+
+	void InitDataValues();
 	
 	std::map<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>	m_currentValues;	/**< Hash of current value data to use to compare to incoming data regarding value changes. */
-	double m_precision;																								/**< Value precision to use for processing. */
+	int		m_simulatedChCount;			/**< Count of channels that are currently simulated. */
+	int		m_simulatedMappingsCount;	/**< Count of mapping areas (mappings) that are currently simulated. */
+	int		m_refreshInterval;			/**< Refresh interval to update internal simulation. */
+
+	float	m_simulationBaseValue;		/**< Rolling value that is used as base for simulated object values. */
 };

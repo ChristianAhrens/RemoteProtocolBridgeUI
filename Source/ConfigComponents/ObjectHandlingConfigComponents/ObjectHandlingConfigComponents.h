@@ -169,6 +169,39 @@ private:
 };
 
 /**
+ * Class OHForwardOnlyValueChangesConfigComponent is a container used to hold the GUI
+ * specifically used to configure configuration of Forward_only_valueChanges protocol value filter precision.
+ */
+class OHDS100SimConfigComponent : public ObjectHandlingConfigComponent_Abstract,
+	public TextEditor::Listener
+{
+public:
+	OHDS100SimConfigComponent(ObjectHandlingMode mode);
+	~OHDS100SimConfigComponent();
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
+
+	//==============================================================================
+	const std::pair<int, int> GetSuggestedSize() override;
+
+private:
+	virtual void resized() override;
+
+	virtual void textEditorFocusLost(TextEditor&) override;
+	virtual void textEditorReturnKeyPressed(TextEditor&) override;
+
+	std::unique_ptr<Label>		m_CountChannelsLabel;	/**< . */
+	std::unique_ptr<TextEditor>	m_CountChannelsEdit;	/**< . */
+	std::unique_ptr<Label>		m_CountMappingsLabel;	/**< . */
+	std::unique_ptr<TextEditor>	m_CountMappingsEdit;	/**< . */
+	std::unique_ptr<Label>		m_RefreshIntervalLabel;	/**< . */
+	std::unique_ptr<TextEditor>	m_RefreshIntervalEdit;	/**< . */
+
+};
+
+/**
  * Class ObjectHandlingConfigWindow provides a window that embedds an ObjectHandlingConfigComponent_Abstract
  */
 class ObjectHandlingConfigWindow : public DialogWindow, 

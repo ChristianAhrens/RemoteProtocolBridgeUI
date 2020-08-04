@@ -35,7 +35,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OSCProtocolProcessor.h"
 
 #include "../../ProcessingEngineConfig.h"
-//#include "../../ProcessingEngineNode.h"
 
 
 // **************************************************************************************

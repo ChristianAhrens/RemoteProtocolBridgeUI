@@ -50,7 +50,10 @@ DS100_DeviceSimulation::DS100_DeviceSimulation(ProcessingEngineNode* parentNode)
 	: ObjectDataHandling_Abstract(parentNode)
 {
 	m_mode = ObjectHandlingMode::OHM_DS100_DeviceSimulation;
-	m_precision = 0.001f;
+
+	m_simulatedChCount = 0;
+	m_simulatedMappingsCount = 0;
+	m_refreshInterval = 50;
 }
 
 /**
@@ -58,15 +61,11 @@ DS100_DeviceSimulation::DS100_DeviceSimulation(ProcessingEngineNode* parentNode)
  */
 DS100_DeviceSimulation::~DS100_DeviceSimulation()
 {
-	for (std::pair<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>> roi : m_currentValues)
+	for (auto const & idValuesKV : m_currentValues)
 	{
-		for (std::pair<RemoteObjectAddressing, RemoteObjectMessageData> val : roi.second)
+		for (auto value : idValuesKV.second)
 		{
-			delete val.second.payload;
-	
-			val.second.payload = nullptr;
-			val.second.payloadSize = 0;
-			val.second.valCount = 0;
+			delete value.second.payload;
 		}
 	}
 	
@@ -87,7 +86,23 @@ bool DS100_DeviceSimulation::setStateXml(XmlElement* stateXml)
 	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(OHM_DS100_DeviceSimulation))
 		return false;
 
-	m_precision = stateXml->getDoubleAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
+	stopTimer();
+
+	auto simChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMCHCNT));
+	if (simChCntXmlElement)
+		m_simulatedChCount = simChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 64);
+
+	auto simMapingsCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMMAPCNT));
+	if (simMapingsCntXmlElement)
+		m_simulatedMappingsCount = simMapingsCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 1);
+
+	auto refreshIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::REFRESHINTERVAL));
+	if (refreshIntervalXmlElement)
+		m_refreshInterval = refreshIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), 50);
+
+	InitDataValues();
+
+	startTimer(m_refreshInterval);
 
 	return true;
 }
@@ -104,29 +119,35 @@ bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, Remot
 {
 	if (m_parentNode)
 	{
-		if (!IsChangedDataValue(Id, msgData))
-			return false;
-
-		if (m_protocolAIds.contains(PId))
+		if (IsDataRequestPollMessage(Id, msgData))
 		{
-			// Send to all typeB protocols
-			bool sendSuccess = true;
-			int typeBProtocolCount = m_protocolBIds.size();
-			for (int i = 0; i < typeBProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolBIds[i], Id, msgData);
-
-			return sendSuccess;
-
+			return ReplyToDataRequest(PId, Id, msgData.addrVal);
 		}
-		if (m_protocolBIds.contains(PId))
+		else
 		{
-			// Send to all typeA protocols
-			bool sendSuccess = true;
-			int typeAProtocolCount = m_protocolAIds.size();
-			for (int i = 0; i < typeAProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], Id, msgData);
+			if (m_protocolAIds.contains(PId))
+			{
+				// Send to all typeB protocols
+				bool sendSuccess = true;
+				int typeBProtocolCount = m_protocolBIds.size();
+				for (int i = 0; i < typeBProtocolCount; ++i)
+					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolBIds[i], Id, msgData);
 
-			return sendSuccess;
+				return sendSuccess;
+
+			}
+			if (m_protocolBIds.contains(PId))
+			{
+				// Send to all typeA protocols
+				bool sendSuccess = true;
+				int typeAProtocolCount = m_protocolAIds.size();
+				for (int i = 0; i < typeAProtocolCount; ++i)
+					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], Id, msgData);
+
+				return sendSuccess;
+			}
+
+			return false;
 		}
 	}
 
@@ -134,90 +155,94 @@ bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, Remot
 }
 
 /**
- * Helper method to detect if incoming value has changed in any way compared with the previously received one
- * (RemoteObjectIdentifier is taken in account as well as the channel/record addressing)
+ * Helper method to detect if incoming message is an osc message adressing a valid object without
+ * actual data value (meaning a reply with the current data value of the object is expected).
  *
  * @param Id	The ROI that was received and has to be checked
  * @param msgData	The received message data that has to be checked
- * @return True if a change has been detected, false if not
+ * @return True if the object is valid and no data is contained, false if not
  */
-bool DS100_DeviceSimulation::IsChangedDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
+bool DS100_DeviceSimulation::IsDataRequestPollMessage(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
-	if (m_precision == 0)
-		return true;
-
-	bool isChangedDataValue = false;
-
-	// if our hash does not yet contain our ROI, initialize it
-	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData.addrVal)== 0))
+	bool remoteObjectRequiresReply = false;
+	switch (Id)
 	{
-		isChangedDataValue = true;
+	case ROI_HeartbeatPing:
+	case ROI_SoundObject_Position_X:
+	case ROI_SoundObject_Position_Y:
+	case ROI_SoundObject_Position_XY:
+	case ROI_SoundObject_Spread:
+	case ROI_SoundObject_DelayMode:
+	case ROI_ReverbSendGain:
+		remoteObjectRequiresReply = true;
+		break;
+	case ROI_HeartbeatPong:
+	case ROI_Invalid:
+	default:
+		remoteObjectRequiresReply = false;
+		break;
+	}
+
+	if (remoteObjectRequiresReply)
+	{
+		if (msgData.valCount == 0)
+			return true;
+		else
+			return false;
 	}
 	else
+		return false;
+}
+
+/**
+ * Helper method to reply the correct current simulated data to a received request.
+ *
+ * @param PId		The id of the protocol that received the request and needs to be sent back the current value
+ * @param Id		The ROI that was received and has to be checked
+ * @param adressing	The adressing (ch+rec) that was queried and requires answering
+ * @return True if the requested reply was successful, false if not
+ */
+bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectAddressing adressing)
+{
+	if (m_currentValues.count(Id) == 0)
+		return false;
+	if (m_currentValues.at(Id).count(adressing) == 0)
+		return false;
+	
+	RemoteObjectMessageData emptyReplyMessageData;
+	emptyReplyMessageData.payload = nullptr;
+	emptyReplyMessageData.payloadSize = 0;
+	emptyReplyMessageData.valCount = 0;
+	emptyReplyMessageData.valType = ROVT_NONE;
+	emptyReplyMessageData.addrVal.first = 0;
+	emptyReplyMessageData.addrVal.second = 0;
+
+	switch (Id)
 	{
-		const RemoteObjectMessageData& currentVal = m_currentValues.at(Id).at(msgData.addrVal);
-		if ((currentVal.valType != msgData.valType) || (currentVal.valCount != msgData.valCount) || (currentVal.payloadSize != msgData.payloadSize))
-		{
-			isChangedDataValue = true;
-		}
-		else
-		{
-			uint16 valCount = currentVal.valCount;
-			RemoteObjectValueType valType = currentVal.valType;
-			void *refData = currentVal.payload;
-			void *newData = msgData.payload;
-	
-			int referencePrecisionValue = 0;
-			int newPrecisionValue = 0;
-	
-			bool changeFound = false;
-			for (int i = 0; i < valCount; ++i)
-			{
-				switch (valType)
-				{
-				case ROVT_INT:
-					{
-					int *refVal = static_cast<int*>(refData);
-					int *newVal = static_cast<int*>(newData);
-					referencePrecisionValue = static_cast<int>(*refVal);
-					newPrecisionValue = static_cast<int>(*newVal);
-					refData = refVal+1;
-					newData = newVal+1;
-					}
-					break;
-				case ROVT_FLOAT:
-					{
-					float *refVal = static_cast<float*>(refData);
-					float *newVal = static_cast<float*>(newData);
-					referencePrecisionValue = static_cast<int>((*refVal) / m_precision);
-					newPrecisionValue = static_cast<int>((*newVal) / m_precision);
-					refData = refVal+1;
-					newData = newVal+1;
-					}
-					break;
-				case ROVT_STRING:
-					jassertfalse; // String not (yet?) supported
-					changeFound = true;
-					break;
-				case ROVT_NONE:
-				default:
-					changeFound = true;
-					break;
-				}
-	
-	
-				if (referencePrecisionValue != newPrecisionValue)
-					changeFound = true;
-			}
-	
-			isChangedDataValue = changeFound;
-		}
+	case ROI_HeartbeatPing:
+		return m_parentNode->SendMessageTo(PId, ROI_HeartbeatPong, emptyReplyMessageData);
+	case ROI_SoundObject_Position_XY:
+		jassert(m_currentValues.at(Id).at(adressing).valCount == 2);
+		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
+		break;
+	case ROI_SoundObject_Position_X:
+	case ROI_SoundObject_Position_Y:
+	case ROI_SoundObject_Spread:
+	case ROI_ReverbSendGain:
+		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
+		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
+		break;
+	case ROI_SoundObject_DelayMode:
+		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
+		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_INT);
+		break;
+	case ROI_HeartbeatPong:
+	case ROI_Invalid:
+	default:
+		return false;
 	}
 
-	if(isChangedDataValue)
-		SetCurrentDataValue(Id, msgData);
-
-	return isChangedDataValue;
+	return m_parentNode->SendMessageTo(PId, Id, m_currentValues.at(Id).at(adressing));
 }
 
 /**
@@ -227,30 +252,116 @@ bool DS100_DeviceSimulation::IsChangedDataValue(const RemoteObjectIdentifier Id,
  * @param Id	The ROI that shall be stored
  * @param msgData	The message data that shall be stored
  */
-void DS100_DeviceSimulation::SetCurrentDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
+void DS100_DeviceSimulation::InitDataValues()
 {
-	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData.addrVal) == 0) || (m_currentValues.at(Id).at(msgData.addrVal).payloadSize != msgData.payloadSize))
+	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; i++)
 	{
-		if ((m_currentValues.count(Id) != 0) && (m_currentValues.at(Id).count(msgData.addrVal) != 0) && (m_currentValues.at(Id).at(msgData.addrVal).payloadSize != msgData.payloadSize))
+		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
+		auto& remoteAdressValueMap = m_currentValues[roi];
+
+		for (juce::int16 mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
 		{
-			delete m_currentValues.at(Id).at(msgData.addrVal).payload;
-			m_currentValues.at(Id).at(msgData.addrVal).payload = nullptr;
-			m_currentValues.at(Id).at(msgData.addrVal).payloadSize = 0;
+			for (juce::int16 channel = 1; channel <= m_simulatedChCount; channel++)
+			{
+				RemoteObjectAddressing adressing(channel, mapping);
+				auto& remoteValue = remoteAdressValueMap[adressing];
+
+				switch (roi)
+				{
+				case ROI_SoundObject_Position_XY:
+					remoteValue.valCount = 2;
+					remoteValue.valType = ROVT_FLOAT;
+					remoteValue.payload = new float[2];
+					static_cast<float*>(remoteValue.payload)[0] = 0.0f;
+					static_cast<float*>(remoteValue.payload)[1] = 0.0f;
+					remoteValue.payloadSize = 2 * sizeof(float);
+					break;
+				case ROI_SoundObject_Position_X:
+				case ROI_SoundObject_Position_Y:
+				case ROI_SoundObject_Spread:
+				case ROI_ReverbSendGain:
+					remoteValue.valCount = 1;
+					remoteValue.valType = ROVT_FLOAT;
+					remoteValue.payload = new float;
+					*static_cast<float*>(remoteValue.payload) = 0.0f;
+					remoteValue.payloadSize = sizeof(float);
+					break;
+				case ROI_SoundObject_DelayMode:
+					remoteValue.valCount = 1;
+					remoteValue.valType = ROVT_INT;
+					remoteValue.payload = new int;
+					*static_cast<int*>(remoteValue.payload) = 0;
+					remoteValue.payloadSize = sizeof(int);
+					break;
+				case ROI_HeartbeatPing:
+				case ROI_HeartbeatPong:
+				case ROI_Invalid:
+				default:
+					remoteValue.valCount = 0;
+					remoteValue.valType = ROVT_NONE;
+					remoteValue.payload = nullptr;
+					remoteValue.payloadSize = 0;
+					break;
+				}
+			}
 		}
-	
-		RemoteObjectMessageData dataCopy = msgData;
-	
-		dataCopy.payload = new unsigned char[msgData.payloadSize];
-		memcpy(dataCopy.payload, msgData.payload, msgData.payloadSize);
-	
-		m_currentValues[Id][msgData.addrVal] = dataCopy;
 	}
-	else
+}
+
+/**
+ * Reimplemented from Timer to tick 
+ */
+void DS100_DeviceSimulation::timerCallback()
+{
+	m_simulationBaseValue += 0.1f;
+
+	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; i++)
 	{
-		// do not copy entire data struct, since we need to keep our payload ptr
-		m_currentValues[Id][msgData.addrVal].addrVal = msgData.addrVal;
-		m_currentValues[Id][msgData.addrVal].valCount = msgData.valCount;
-		m_currentValues[Id][msgData.addrVal].valType = msgData.valType;
-		memcpy(m_currentValues[Id][msgData.addrVal].payload, msgData.payload, msgData.payloadSize);
+		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
+		auto & remoteAdressValueMap = m_currentValues.at(roi);
+
+		for (juce::int16 mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
+		{
+			for (juce::int16 channel = 1; channel <= m_simulatedChCount; channel++)
+			{
+				RemoteObjectAddressing adressing(channel, mapping);
+				auto& remoteValue = remoteAdressValueMap.at(adressing);
+
+				float val1 = sin(m_simulationBaseValue + channel);
+				float val2 = cos(m_simulationBaseValue + channel);
+
+				switch (remoteValue.valType)
+				{
+				case ROVT_FLOAT:
+					if (remoteValue.valCount == 1)
+					{
+						static_cast<float*>(remoteValue.payload)[0] = val1;
+					}
+					else if (remoteValue.valCount == 2)
+					{
+						static_cast<float*>(remoteValue.payload)[0] = val1;
+						static_cast<float*>(remoteValue.payload)[1] = val2;
+					}
+					DBG(String(i) + " " + String(channel) + "/" + String(mapping) + " val12 " + String(int(val1)) + " " + String(int(val2)));
+					break;
+				case ROVT_INT:
+					if (remoteValue.valCount == 1)
+					{
+						static_cast<int*>(remoteValue.payload)[0] = static_cast<int>(val1);
+					}
+					else if (remoteValue.valCount == 2)
+					{
+						static_cast<int*>(remoteValue.payload)[0] = static_cast<int>(val1);
+						static_cast<int*>(remoteValue.payload)[1] = static_cast<int>(val2);
+					}
+					DBG(String(i) + " " + String(channel) + "/" + String(mapping) + " val12 " + String(val1) + " " + String(val2));
+					break;
+				case ROVT_STRING:
+				case ROVT_NONE:
+				default:
+					break;
+				}
+			}
+		}
 	}
 }
