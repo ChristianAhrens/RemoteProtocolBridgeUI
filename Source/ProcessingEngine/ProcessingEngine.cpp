@@ -69,7 +69,7 @@ ProcessingEngine::~ProcessingEngine()
  */
 bool ProcessingEngine::Start()
 {
-	bool startSuccess = true;
+	bool startSuccess = !m_ProcessingNodes.empty();
 
 	for(auto const & node : m_ProcessingNodes)
 		startSuccess = startSuccess && node.second->Start();
@@ -134,7 +134,7 @@ bool ProcessingEngine::setStateXml(XmlElement* stateXml)
 		else
 			return false;
 
-		rootChild = stateXml->getNextElement();
+		rootChild = rootChild->getNextElement();
 	}
 
 	return true;
