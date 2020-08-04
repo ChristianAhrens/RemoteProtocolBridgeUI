@@ -568,6 +568,8 @@ String ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode ohm
 		return "Multiplex multiple n-ch. A to m-ch. B protocols";
 	case OHM_Forward_only_valueChanges:
 		return "Forward value changes only";
+	case OHM_DS100_DeviceSimulation:
+		return "Simulate DS100 object poll answers";
 	default:
 		return "";
 	}
