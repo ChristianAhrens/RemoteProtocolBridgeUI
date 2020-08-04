@@ -342,7 +342,6 @@ void DS100_DeviceSimulation::timerCallback()
 						static_cast<float*>(remoteValue.payload)[0] = val1;
 						static_cast<float*>(remoteValue.payload)[1] = val2;
 					}
-					DBG(String(i) + " " + String(channel) + "/" + String(mapping) + " val12 " + String(int(val1)) + " " + String(int(val2)));
 					break;
 				case ROVT_INT:
 					if (remoteValue.valCount == 1)
@@ -354,7 +353,6 @@ void DS100_DeviceSimulation::timerCallback()
 						static_cast<int*>(remoteValue.payload)[0] = static_cast<int>(val1);
 						static_cast<int*>(remoteValue.payload)[1] = static_cast<int>(val2);
 					}
-					DBG(String(i) + " " + String(channel) + "/" + String(mapping) + " val12 " + String(val1) + " " + String(val2));
 					break;
 				case ROVT_STRING:
 				case ROVT_NONE:
