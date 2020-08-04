@@ -34,9 +34,13 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProcessingEngineNode.h"
 
-#include "ObjectDataHandling/ObjectDataHandling.h"
 #include "ProcessingEngine.h"
 #include "ProcessingEngineConfig.h"
+
+#include "ObjectDataHandling/BypassHandling/BypassHandling.h"
+#include "ObjectDataHandling/Remap_A_X_Y_to_B_XY_Handling/Remap_A_X_Y_to_B_XY_Handling.h"
+#include "ObjectDataHandling/Mux_nA_to_mB/Mux_nA_to_mB.h"
+#include "ObjectDataHandling/Forward_only_valueChanges/Forward_only_valueChanges.h"
 
 #include "ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
 #include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
