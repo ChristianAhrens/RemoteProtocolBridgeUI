@@ -579,6 +579,8 @@ ObjectHandlingConfigWindow::ObjectHandlingConfigWindow(const String &name, Colou
 		// intentionally no break to run into default
 	case ObjectHandlingMode::OHM_Invalid:
 		// intentionally no break to run into default
+	case ObjectHandlingMode::OHM_DS100_DeviceSimulation:
+		// intentionally no break to run into default
 	default:
 		m_configComponent = std::make_unique<OHNoConfigComponent>(mode);
 		break;

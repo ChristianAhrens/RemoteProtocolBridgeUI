@@ -70,6 +70,7 @@ NodeComponent::NodeComponent(NodeId NId)
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Remap_A_X_Y_to_B_XY), OHM_Remap_A_X_Y_to_B_XY);
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Mux_nA_to_mB), OHM_Mux_nA_to_mB);
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Forward_only_valueChanges), OHM_Forward_only_valueChanges);
+	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_DS100_DeviceSimulation), OHM_DS100_DeviceSimulation);
 	m_NodeModeDrop->setColour(Label::textColourId, Colours::white);
 	m_NodeModeDrop->setJustificationType(Justification::right);
 

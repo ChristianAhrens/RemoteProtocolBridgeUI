@@ -86,6 +86,7 @@ enum ObjectHandlingMode
 	OHM_Remap_A_X_Y_to_B_XY,		/**< Simple hardcoded data remapping mode (protocol A (x), (y) to protocol B (XY)). */
 	OHM_Mux_nA_to_mB,				/**< Data multiplexing mode from n channel typeA protocols to m channel typeB protocols. */
 	OHM_Forward_only_valueChanges,	/**< Data filtering mode to only forward value changes. */
+	OHM_DS100_DeviceSimulation,		/**< Device simulation mode that answers incoming roi messages without value with appropriate simulated value answer. */
 	OHM_UserMAX						/**< Value to mark enum max; For iteration purpose. */
 };
 

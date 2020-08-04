@@ -586,6 +586,8 @@ ObjectHandlingMode ProcessingEngineConfig::ObjectHandlingModeFromString(String m
 		return OHM_Mux_nA_to_mB;
 	if (mode == ObjectHandlingModeToString(OHM_Forward_only_valueChanges))
 		return OHM_Forward_only_valueChanges;
+	if (mode == ObjectHandlingModeToString(OHM_DS100_DeviceSimulation))
+		return OHM_DS100_DeviceSimulation;
 
 	return OHM_Invalid;
 }
