@@ -60,6 +60,8 @@ OSCProtocolProcessor::OSCProtocolProcessor(const NodeId& parentNodeId, int liste
 OSCProtocolProcessor::~OSCProtocolProcessor()
 {
 	Stop();
+
+	m_oscReceiver.removeListener(this);
 }
 
 /**
@@ -314,8 +316,8 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 	// Check if the incoming message is a response to a sent "pong" heartbeat.
 	else if (addressString.startsWith(GetRemoteObjectString(ROI_HeartbeatPing)) && m_messageListener)
 		m_messageListener->OnProtocolMessageReceived(this, ROI_HeartbeatPing, newMsgData);
-	// Check if the incoming message contains parameters.
-	else if (messageSize > 0)
+	// Handle the incoming message contents.
+	else
 	{
 		// Parse the Source ID
 		int sourceId = (addressString.fromLastOccurrenceOf("/", false, true)).getIntValue();

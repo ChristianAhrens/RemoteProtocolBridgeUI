@@ -233,6 +233,9 @@ ProcessingEngine* MainRemoteProtocolBridgeComponent::GetEngine()
  */
 void MainRemoteProtocolBridgeComponent::performConfigurationDump()
 {
+	auto running = GetEngine()->IsRunning();
+	GetEngine()->Stop();
+
 	if (m_NodeBoxes.empty() || !m_GlobalConfigXml)
 	{
 		// Add a default node
@@ -254,6 +257,9 @@ void MainRemoteProtocolBridgeComponent::performConfigurationDump()
 
 		m_config->setConfigState(std::make_unique<XmlElement>(*m_GlobalConfigXml));
 	}
+
+	if (running)
+		GetEngine()->Start();
 }
 
 /**

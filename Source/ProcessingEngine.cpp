@@ -88,10 +88,10 @@ bool ProcessingEngine::Start()
  */
 bool ProcessingEngine::Stop()
 {
-	auto stopSuccess = false;
+	auto stopSuccess = true;
 
 	for (auto const& node : m_ProcessingNodes)
-		stopSuccess = stopSuccess && node.second->Stop();
+		stopSuccess = (stopSuccess && node.second->Stop());
 
 	m_IsRunning = false;
 
@@ -122,8 +122,7 @@ bool ProcessingEngine::setStateXml(XmlElement* stateXml)
 
 			if(m_ProcessingNodes.count(nodeId) == 0)
 			{
-				ProcessingEngineNode* node = new ProcessingEngineNode(this);
-				m_ProcessingNodes[nodeId] = std::unique_ptr<ProcessingEngineNode>(node);
+				m_ProcessingNodes.insert(std::make_pair(nodeId, std::make_unique<ProcessingEngineNode>(this)));
 			}
 
 			m_ProcessingNodes.at(nodeId)->setStateXml(nodeSectionElement);

@@ -275,8 +275,8 @@ void NodeComponent::buttonClicked(Button* button)
 	{
 		ToggleOpenCloseObjectHandlingConfig(m_OHMConfigEditButton.get());
 	}
-
-	triggerConfigurationUpdate();
+	else
+		triggerConfigurationUpdate();
 }
 
 /**

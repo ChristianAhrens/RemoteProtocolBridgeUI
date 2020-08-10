@@ -132,11 +132,11 @@ bool ProcessingEngineNode::Stop()
 	bool successfullyStoppedA = true;
 	bool successfullyStoppedB = true;
 
-	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>::iterator paiter = m_typeAProtocols.begin(); paiter != m_typeAProtocols.end(); ++paiter)
-		successfullyStoppedA = successfullyStoppedA && paiter->second->Stop();
+	for (auto const & typeAProtocol : m_typeAProtocols)
+		successfullyStoppedA = successfullyStoppedA && typeAProtocol.second->Stop();
 
-	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>::iterator pbiter = m_typeAProtocols.begin(); pbiter != m_typeAProtocols.end(); ++pbiter)
-		successfullyStoppedB = successfullyStoppedB && pbiter->second->Stop();
+	for (auto const & typeBProtocol : m_typeBProtocols)
+		successfullyStoppedB = successfullyStoppedB && typeBProtocol.second->Stop();
 
 	return (successfullyStoppedA && successfullyStoppedB);
 }
@@ -197,26 +197,49 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		else
 			retVal = false;
 
-		ProtocolProcessor_Abstract* protocol = CreateProtocolProcessor(protocolType, hostPort);
-
-		// set up the protocol processing objects of correct type as defined in config
-		if (protocol)
+		auto protocolExistsAsA = (m_typeAProtocols.count(protocolId) != 0);
+		auto protocolExistsAsB = (m_typeBProtocols.count(protocolId) != 0);
+		auto protocolExists = protocolExistsAsA || protocolExistsAsB;
+		auto currentProtocolTypeMatches = false;
+		if (protocolExists)
 		{
-			protocol->AddListener(this);
-			protocol->setStateXml(protocolXmlElement);
-			if (protocol->GetRole() == ProtocolRole::PR_A)
-				m_typeAProtocols[protocolId] = std::unique_ptr<ProtocolProcessor_Abstract>(protocol);
-			else if (protocol->GetRole() == ProtocolRole::PR_B)
-				m_typeBProtocols[protocolId] = std::unique_ptr<ProtocolProcessor_Abstract>(protocol);
+			if (protocolExistsAsA)
+				currentProtocolTypeMatches = (m_typeAProtocols.at(protocolId)->GetType() == protocolType);
+			else if (protocolExistsAsB)
+				currentProtocolTypeMatches = (m_typeBProtocols.at(protocolId)->GetType() == protocolType);
+		}
 
-			// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
-			if (m_dataHandling)
-				m_dataHandling->AddProtocolAId(protocolId);
+		if (protocolExists && currentProtocolTypeMatches)
+		{
+			if (protocolExistsAsA)
+				m_typeAProtocols.at(protocolId)->setStateXml(protocolXmlElement);
+			else if (protocolExistsAsB)
+				m_typeBProtocols.at(protocolId)->setStateXml(protocolXmlElement);
+		}
+		else
+		{
+			auto protocol = std::unique_ptr<ProtocolProcessor_Abstract>(CreateProtocolProcessor(protocolType, hostPort));
+
+			// set up the protocol processing objects of correct type as defined in config
+			if (protocol)
+			{
+				protocol->AddListener(this);
+				protocol->setStateXml(protocolXmlElement);
+				if (protocol->GetRole() == ProtocolRole::PR_A)
+					m_typeAProtocols.insert(std::make_pair(protocolId, std::move(protocol)));
+				else if (protocol->GetRole() == ProtocolRole::PR_B)
+					m_typeBProtocols.insert(std::make_pair(protocolId, std::move(protocol)));
+
+				// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
+				if (m_dataHandling)
+					m_dataHandling->AddProtocolAId(protocolId);
+				else
+					retVal = false;
+			}
 			else
 				retVal = false;
 		}
-		else
-			retVal = false;
+
 
 		auto nextProtocolXmlElement = protocolXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
 		if(nextProtocolXmlElement == nullptr)
