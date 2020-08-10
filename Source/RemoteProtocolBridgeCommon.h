@@ -165,7 +165,10 @@ struct RemoteObjectAddressing
 	 */
 	bool operator<(const RemoteObjectAddressing& o) const
 	{
-		return first < o.first && second < o.second;
+		if(first != INVALID_ADDRESS_VALUE && o.first != INVALID_ADDRESS_VALUE && second != INVALID_ADDRESS_VALUE && o.second != INVALID_ADDRESS_VALUE)
+			return first < o.first || (first == o.first && second < o.second);
+		else
+			return first < o.first && second < o.second;
 	}
 	/**
 	 * Greater than comparison operator overload
