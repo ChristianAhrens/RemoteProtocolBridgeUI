@@ -36,8 +36,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../RemoteProtocolBridgeCommon.h"
 
-#include "../../submodules/JUCE-AppBasics/Source/AppConfigurationBase.h"
-
+#include <AppConfigurationBase.h>
 #include <JuceHeader.h>
 
 
