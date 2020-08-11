@@ -154,10 +154,13 @@ std::unique_ptr<XmlElement> ProcessingEngineNode::createStateXml()
 	auto nodeXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE));
 	nodeXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_nodeId));
 
-	nodeXmlElement->addChildElement(m_dataHandling->createStateXml().release());
-
-
-
+	if (m_dataHandling)
+	{
+		auto dataHandlingXmlElement = m_dataHandling->createStateXml();
+		if (dataHandlingXmlElement)
+			nodeXmlElement->addChildElement(dataHandlingXmlElement.release());
+	}
+	
 	return std::move(nodeXmlElement);
 }
 
