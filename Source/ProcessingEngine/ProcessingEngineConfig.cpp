@@ -345,6 +345,72 @@ bool ProcessingEngineConfig::WriteActiveObjects(XmlElement* ActiveObjectsElement
 }
 
 /**
+ * Method to replace the node configuration part regarding active objects per protocol
+ *
+ * @param ActiveObjectsElement	The xml element for the nodes' protocols' active objects in the DOM
+ * @param RemoteObjects			The remote objects to set active in config
+ * @return	True on success, false on failure
+ */
+bool ProcessingEngineConfig::ReplaceActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects)
+{
+	if (!ActiveObjectsElement)
+		return false;
+
+	int RemoteObjectCount = RemoteObjects.size();
+
+	HashMap<int, Array<int>> channelsPerObj;
+	HashMap<int, Array<int>> recordsPerObj;
+	for (int j = 0; j < RemoteObjectCount; ++j)
+	{
+		Array<int> selChs = channelsPerObj[RemoteObjects[j].Id];
+		if (!selChs.contains(RemoteObjects[j].Addr.first))
+		{
+			selChs.add(RemoteObjects[j].Addr.first);
+			channelsPerObj.set(RemoteObjects[j].Id, selChs);
+		}
+
+		Array<int> selRecs = recordsPerObj[RemoteObjects[j].Id];
+		if (!selRecs.contains(RemoteObjects[j].Addr.second))
+		{
+			selRecs.add(RemoteObjects[j].Addr.second);
+			recordsPerObj.set(RemoteObjects[j].Id, selRecs);
+		}
+	}
+
+	for (int k = ROI_Invalid + 1; k < ROI_UserMAX; ++k)
+	{
+		if (XmlElement* ObjectElement = ActiveObjectsElement->getChildByName(GetObjectDescription((RemoteObjectIdentifier)k).removeCharacters(" ")))
+		{
+			String selChanTxt;
+			for (int j = 0; j < channelsPerObj[k].size(); ++j)
+			{
+				if (channelsPerObj[k][j] > 0)
+				{
+					if (!selChanTxt.isEmpty())
+						selChanTxt << ", ";
+					selChanTxt << channelsPerObj[k][j];
+				}
+			}
+			ObjectElement->setAttribute("channels", selChanTxt);
+
+			String selRecTxt;
+			for (int j = 0; j < recordsPerObj[k].size(); ++j)
+			{
+				if (recordsPerObj[k][j] > 0)
+				{
+					if (!selRecTxt.isEmpty())
+						selRecTxt << ", ";
+					selRecTxt << recordsPerObj[k][j];
+				}
+			}
+			ObjectElement->setAttribute("records", selRecTxt);
+		}
+	}
+
+	return true;
+}
+
+/**
  * Method to generate next available unique id.
  * There is no cleanup / recycling of old ids available yet,
  * we only perform a ++ on a static counter

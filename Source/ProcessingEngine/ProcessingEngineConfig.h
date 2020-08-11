@@ -169,8 +169,9 @@ public:
 	bool				RemoveNodeOrProtocol(int Id);
 
 	static bool			ReadActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject>& RemoteObjects);
-	static bool			ReadPollingInterval(XmlElement* ActiveObjectsElement, int& PollingInterval);
+	static bool			ReadPollingInterval(XmlElement* PollingIntervalElement, int& PollingInterval);
 	static bool			WriteActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects);
+	static bool			ReplaceActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects);
 
 	static String				ProtocolTypeToString(ProtocolType pt);
 	static ProtocolType			ProtocolTypeFromString(String type);
