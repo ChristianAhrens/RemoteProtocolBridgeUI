@@ -64,9 +64,26 @@ DS100_DeviceSimulation::~DS100_DeviceSimulation()
 {
 	for (auto const & idValuesKV : m_currentValues)
 	{
-		for (auto value : idValuesKV.second)
+		for (auto val : idValuesKV.second)
 		{
-			delete value.second.payload;
+            switch(val.second.valType)
+            {
+                case ROVT_INT:
+                    delete static_cast<int*>(val.second.payload);
+                    break;
+                case ROVT_FLOAT:
+                    delete static_cast<float*>(val.second.payload);
+                    break;
+                case ROVT_STRING:
+                    delete static_cast<char*>(val.second.payload);
+                    break;
+                default:
+                    break;
+            }
+    
+            val.second.payload = nullptr;
+            val.second.payloadSize = 0;
+            val.second.valCount = 0;
 		}
 	}
 	

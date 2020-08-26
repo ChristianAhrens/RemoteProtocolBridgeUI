@@ -161,7 +161,7 @@ std::unique_ptr<XmlElement> ProcessingEngineNode::createStateXml()
 			nodeXmlElement->addChildElement(dataHandlingXmlElement.release());
 	}
 	
-	return std::move(nodeXmlElement);
+    return nodeXmlElement;
 }
 
 /**

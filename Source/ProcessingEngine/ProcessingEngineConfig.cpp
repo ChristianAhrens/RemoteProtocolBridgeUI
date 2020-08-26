@@ -449,7 +449,7 @@ std::unique_ptr<XmlElement>	ProcessingEngineConfig::GetDefaultGlobalConfig()
 	if (engineXmlElement)
 		engineXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::AUTOSTART), 0);
 
-	return std::move(globalConfigXmlElement);
+    return globalConfigXmlElement;
 }
 
 /**
@@ -481,7 +481,7 @@ std::unique_ptr<XmlElement>	ProcessingEngineConfig::GetDefaultNode()
 	nodeXmlElement->addChildElement(GetDefaultProtocol(ProtocolRole::PR_A).release());
 	nodeXmlElement->addChildElement(GetDefaultProtocol(ProtocolRole::PR_B).release());
 
-	return std::move(nodeXmlElement);
+    return nodeXmlElement;
 }
 
 /**
@@ -539,7 +539,7 @@ std::unique_ptr<XmlElement> ProcessingEngineConfig::GetDefaultProtocol(ProtocolR
 	if (pollIntervalXmlElement)
 		pollIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), ET_DefaultPollingRate);
 
-	return std::move(protocolXmlElement);
+    return protocolXmlElement;
 }
 
 /**

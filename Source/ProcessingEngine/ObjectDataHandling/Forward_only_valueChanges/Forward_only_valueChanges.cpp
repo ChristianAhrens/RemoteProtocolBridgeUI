@@ -62,7 +62,20 @@ Forward_only_valueChanges::~Forward_only_valueChanges()
 	{
 		for (std::pair<RemoteObjectAddressing, RemoteObjectMessageData> val : roi.second)
 		{
-			delete val.second.payload;
+            switch(val.second.valType)
+            {
+                case ROVT_INT:
+                    delete static_cast<int*>(val.second.payload);
+                    break;
+                case ROVT_FLOAT:
+                    delete static_cast<float*>(val.second.payload);
+                    break;
+                case ROVT_STRING:
+                    delete static_cast<char*>(val.second.payload);
+                    break;
+                default:
+                    break;
+            }
 	
 			val.second.payload = nullptr;
 			val.second.payloadSize = 0;
@@ -233,9 +246,24 @@ void Forward_only_valueChanges::SetCurrentDataValue(const RemoteObjectIdentifier
 	{
 		if ((m_currentValues.count(Id) != 0) && (m_currentValues.at(Id).count(msgData.addrVal) != 0) && (m_currentValues.at(Id).at(msgData.addrVal).payloadSize != msgData.payloadSize))
 		{
-			delete m_currentValues.at(Id).at(msgData.addrVal).payload;
-			m_currentValues.at(Id).at(msgData.addrVal).payload = nullptr;
-			m_currentValues.at(Id).at(msgData.addrVal).payloadSize = 0;
+            switch(m_currentValues.at(Id).at(msgData.addrVal).valType)
+            {
+                case ROVT_INT:
+                    delete static_cast<int*>(m_currentValues.at(Id).at(msgData.addrVal).payload);
+                    break;
+                case ROVT_FLOAT:
+                    delete static_cast<float*>(m_currentValues.at(Id).at(msgData.addrVal).payload);
+                    break;
+                case ROVT_STRING:
+                    delete static_cast<char*>(m_currentValues.at(Id).at(msgData.addrVal).payload);
+                    break;
+                default:
+                    break;
+            }
+    
+            m_currentValues.at(Id).at(msgData.addrVal).payload = nullptr;
+            m_currentValues.at(Id).at(msgData.addrVal).payloadSize = 0;
+            m_currentValues.at(Id).at(msgData.addrVal).valCount = 0;
 		}
 	
 		RemoteObjectMessageData dataCopy = msgData;
