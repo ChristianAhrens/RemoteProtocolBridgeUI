@@ -91,9 +91,10 @@ bool ProcessingEngineConfig::isValid()
 				return false;
 
 			XmlElement* protocolASectionElement = nodeSectionElement->getChildByName(getTagName(TagID::PROTOCOLA));
-			ValidateUniqueId(protocolASectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
 			if (protocolASectionElement)
 			{
+                ValidateUniqueId(protocolASectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
+                
 				XmlElement* ipAddrSectionElement = protocolASectionElement->getChildByName(getTagName(TagID::IPADDRESS));
 				if (!ipAddrSectionElement)
 					return false;
@@ -114,9 +115,10 @@ bool ProcessingEngineConfig::isValid()
 				return false;
 
 			XmlElement* protocolBSectionElement = nodeSectionElement->getChildByName(getTagName(TagID::PROTOCOLB));
-			ValidateUniqueId(protocolBSectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
 			if (protocolBSectionElement)
 			{
+                ValidateUniqueId(protocolBSectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
+                
 				XmlElement* ipAddrSectionElement = protocolBSectionElement->getChildByName(getTagName(TagID::IPADDRESS));
 				if (!ipAddrSectionElement)
 					return false;
