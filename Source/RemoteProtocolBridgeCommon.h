@@ -89,6 +89,8 @@ enum ObjectHandlingMode
 	OHM_Mux_nA_to_mB,				/**< Data multiplexing mode from n channel typeA protocols to m channel typeB protocols. */
 	OHM_Forward_only_valueChanges,	/**< Data filtering mode to only forward value changes. */
 	OHM_DS100_DeviceSimulation,		/**< Device simulation mode that answers incoming roi messages without value with appropriate simulated value answer. */
+    OHM_Forward_A_to_B_only,        /**< Data filtering mode to only pass on values from Role A to B protocols. */
+    OHM_Reverse_B_to_A_only,        /**< Data filtering mode to only pass on values from Role B to A protocols. */
 	OHM_UserMAX						/**< Value to mark enum max; For iteration purpose. */
 };
 

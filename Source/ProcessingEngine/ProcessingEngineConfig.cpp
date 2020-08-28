@@ -694,6 +694,10 @@ String ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode ohm
 		return "Multiplex multiple n-ch. A to m-ch. B protocols";
 	case OHM_Forward_only_valueChanges:
 		return "Forward value changes only";
+    case OHM_Forward_A_to_B_only:
+        return "Forward data only (A->B)";
+    case OHM_Reverse_B_to_A_only:
+        return "Reverse data only (B->A)";
 	case OHM_DS100_DeviceSimulation:
 		return "Simulate DS100 object poll answers";
 	default:
@@ -714,6 +718,10 @@ ObjectHandlingMode ProcessingEngineConfig::ObjectHandlingModeFromString(String m
 		return OHM_Mux_nA_to_mB;
 	if (mode == ObjectHandlingModeToString(OHM_Forward_only_valueChanges))
 		return OHM_Forward_only_valueChanges;
+    if (mode == ObjectHandlingModeToString(OHM_Forward_A_to_B_only))
+        return OHM_Forward_A_to_B_only;
+    if (mode == ObjectHandlingModeToString(OHM_Reverse_B_to_A_only))
+        return OHM_Reverse_B_to_A_only;
 	if (mode == ObjectHandlingModeToString(OHM_DS100_DeviceSimulation))
 		return OHM_DS100_DeviceSimulation;
 

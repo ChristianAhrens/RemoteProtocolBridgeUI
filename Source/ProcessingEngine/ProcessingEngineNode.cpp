@@ -42,6 +42,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ObjectDataHandling/Mux_nA_to_mB/Mux_nA_to_mB.h"
 #include "ObjectDataHandling/Forward_only_valueChanges/Forward_only_valueChanges.h"
 #include "ObjectDataHandling/DS100_DeviceSimulation/DS100_DeviceSimulation.h"
+#include "ObjectDataHandling/Forward_A_to_B_only/Forward_A_to_B_only.h"
+#include "ObjectDataHandling/Reverse_B_to_A_only/Reverse_B_to_A_only.h"
 
 #include "ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
 #include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
@@ -296,6 +298,10 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
 {
 	switch (mode)
 	{
+	case OHM_Reverse_B_to_A_only:
+		return new Reverse_B_to_A_only(this);
+	case OHM_Forward_A_to_B_only:
+		return new Forward_A_to_B_only(this);
 	case OHM_Forward_only_valueChanges:
 		return new Forward_only_valueChanges(this);
 	case OHM_Remap_A_X_Y_to_B_XY:
