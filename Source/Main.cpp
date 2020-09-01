@@ -36,6 +36,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MainRemoteProtocolBridgeComponent.h"
 
+#include "../submodules/JUCE-AppBasics/Source/CustomLookAndFeel.h"
+
 /**
  * Class definition/declaration of RemoteProtocolBridgeApplication is mostly the
  * default JUCEApplication implementation for a desktop application. A minor differenc
@@ -97,6 +99,9 @@ public:
 		MainWindow(String name)
 			: DocumentWindow(name, Desktop::getInstance().getDefaultLookAndFeel().findColour(ResizableWindow::backgroundColourId), DocumentWindow::allButtons)
 		{
+			m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new JUCEAppBasics::CustomLookAndFeel);
+			Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
+
 			setUsingNativeTitleBar(true);
 			setContentOwned(new MainRemoteProtocolBridgeComponent(), true);
 
@@ -116,6 +121,8 @@ public:
 		void closeButtonPressed() override { JUCEApplication::getInstance()->systemRequestedQuit(); }	/**< JUCE default implementation to handle close button click. */
 
 	private:
+		std::unique_ptr<LookAndFeel>	m_customLookAndFeel; // our own look and feel implementation instance
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
 	};
 
