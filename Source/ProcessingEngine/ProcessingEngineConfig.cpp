@@ -259,6 +259,37 @@ bool ProcessingEngineConfig::ReadActiveObjects(XmlElement* activeObjectsElement,
 }
 
 /**
+ * Method to read the node configuration part regarding muted objects per protocol
+ *
+ * @param mutedObjectChannelsElement	The xml element for the nodes' protocols' muted objects in the DOM
+ * @param channel						The remote object channels list to fill according config contents
+ * @return	True if remote object channels were inserted, false if empty list is returned
+ */
+bool ProcessingEngineConfig::ReadMutedObjectChannels(XmlElement* mutedObjectChannelsElement, Array<int>& channels)
+{
+	channels.clear();
+
+	if (!mutedObjectChannelsElement || mutedObjectChannelsElement->getTagName() != getTagName(TagID::MUTEDCHANNELS))
+		return false;
+
+	XmlElement* objectsTextXmlElement = mutedObjectChannelsElement->getFirstChildElement();
+	if (objectsTextXmlElement && objectsTextXmlElement->isTextElement())
+	{
+		String chStrToSplit = objectsTextXmlElement->getText();
+		StringArray chNumbers;
+		chNumbers.addTokens(chStrToSplit, ", ", "");
+		for (int j = 0; j < chNumbers.size(); ++j)
+		{
+			int chNum = chNumbers[j].getIntValue();
+			if (chNum > 0)
+				channels.add(chNum);
+		}
+	}
+
+	return !channels.isEmpty();
+}
+
+/**
  * Method to read the node configuration part regarding polling interval per protocol.
  * Includes fixup to default if not found in xml.
  *
@@ -342,6 +373,33 @@ bool ProcessingEngineConfig::WriteActiveObjects(XmlElement* ActiveObjectsElement
 			ObjectElement->setAttribute("records", selRecTxt);
 		}
 	}
+
+	return true;
+}
+
+/**
+ * Method to write the node configuration part regarding muted channels per protocol
+ *
+ * @param mutedObjectChannelsElement	The xml element for the nodes' protocols' active objects in the DOM
+ * @param channels			The remote objects to set active in config
+ * @return	True on success, false on failure
+ */
+bool ProcessingEngineConfig::WriteMutedObjectChannels(XmlElement* mutedObjectChannelsElement, Array<int> const& channels)
+{
+	if (!mutedObjectChannelsElement || mutedObjectChannelsElement->getTagName() != getTagName(TagID::MUTEDCHANNELS))
+		return false;
+
+	String mutedChannels;
+	for (auto channelNr : channels)
+	{
+		if (!mutedChannels.isEmpty())
+			mutedChannels << ", ";
+
+		mutedChannels << channelNr;
+	}
+
+	auto mutedChannelsTextXmlElement = mutedObjectChannelsElement->createTextElement(mutedChannels);
+	mutedObjectChannelsElement->addChildElement(mutedChannelsTextXmlElement);
 
 	return true;
 }

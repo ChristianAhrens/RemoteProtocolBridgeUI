@@ -62,6 +62,7 @@ public:
 		HOSTPORT,
 		POLLINGINTERVAL,
 		ACTIVEOBJECTS,
+		MUTEDCHANNELS,
 		GLOBALCONFIG,
 		TRAFFICLOGGING,
 		ENGINE,
@@ -95,6 +96,8 @@ public:
 			return "PollingInterval";
 		case ACTIVEOBJECTS:
 			return "ActiveObjects";
+		case MUTEDCHANNELS:
+			return "MutedChannels";
 		case GLOBALCONFIG:
 			return "GlobalConfig";
 		case TRAFFICLOGGING:
@@ -168,9 +171,11 @@ public:
 	static std::unique_ptr<XmlElement>	GetDefaultProtocol(ProtocolRole role);
 	bool				RemoveNodeOrProtocol(int Id);
 
-	static bool			ReadActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject>& RemoteObjects);
+	static bool			ReadActiveObjects(XmlElement* activeObjectsElement, Array<RemoteObject>& remoteObjects);
+	static bool			ReadMutedObjectChannels(XmlElement* mutedObjectChannelsElement, Array<int>& channels);
 	static bool			ReadPollingInterval(XmlElement* PollingIntervalElement, int& PollingInterval);
 	static bool			WriteActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects);
+	static bool			WriteMutedObjectChannels(XmlElement* mutedObjectChannelsElement, Array<int> const& channels);
 	static bool			ReplaceActiveObjects(XmlElement* ActiveObjectsElement, Array<RemoteObject> const& RemoteObjects);
 
 	static String				ProtocolTypeToString(ProtocolType pt);

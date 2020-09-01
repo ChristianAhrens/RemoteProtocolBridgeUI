@@ -100,6 +100,17 @@ void MIDIProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElem
 }
 
 /**
+ * Setter for remote objects to not forward for further processing.
+ * NOT YET IMPLEMENTED
+ *
+ * @param mutedObjChsXmlElement	The xml element that has to be parsed to get the object data
+ */
+void MIDIProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement)
+{
+	ignoreUnused(mutedObjChsXmlElement);
+}
+
+/**
  * Method to trigger sending of a message
  * NOT YET IMPLEMENTED
  *

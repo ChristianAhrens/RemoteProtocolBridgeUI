@@ -60,6 +60,7 @@ public:
 	bool Stop() override;
 
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
+	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
@@ -72,10 +73,11 @@ private:
 	void timerCallback() override;
 
 private:
-	OSCSender				m_oscSender;			/**< An OSCSender object can connect to a network port. It then can send OSC
-													   * messages and bundles to a specified host over an UDP socket. */
-	SenderAwareOSCReceiver	m_oscReceiver;			/**< An OSCReceiver object can connect to a network port, receive incoming OSC packets from the network
-													   * via UDP, parse them, and forward the included OSCMessage and OSCBundle objects to its listeners. */
-	int						m_oscMsgRate;			/**< Interval at which OSC messages are sent to the host, in ms. */
-	Array<RemoteObject>		m_activeRemoteObjects;	/**< List of remote objects to be activly handled. */
+	OSCSender				m_oscSender;					/**< An OSCSender object can connect to a network port. It then can send OSC
+															   * messages and bundles to a specified host over an UDP socket. */
+	SenderAwareOSCReceiver	m_oscReceiver;					/**< An OSCReceiver object can connect to a network port, receive incoming OSC packets from the network
+															   * via UDP, parse them, and forward the included OSCMessage and OSCBundle objects to its listeners. */
+	int						m_oscMsgRate;					/**< Interval at which OSC messages are sent to the host, in ms. */
+	Array<RemoteObject>		m_activeRemoteObjects;			/**< List of remote objects to be activly handled. */
+	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
 };

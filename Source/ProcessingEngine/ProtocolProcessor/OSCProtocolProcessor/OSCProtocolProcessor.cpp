@@ -138,7 +138,7 @@ bool OSCProtocolProcessor::setStateXml(XmlElement *stateXml)
  * In case an empty list of objects is passed, polling is stopped and
  * the internal list is cleared.
  *
- * @param Objs	The list of RemoteObjects that shall be activated
+ * @param activeObjsXmlElement	The xml element that has to be parsed to get the object data
  */
 void OSCProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElement)
 {
@@ -153,6 +153,18 @@ void OSCProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlEleme
 	{
 		stopTimer();
 	}
+}
+
+/**
+ * Setter for remote object channels to not forward for further processing.
+ * This uses a helper method from engine config to get a list of 
+ * object ids into the corresponding internal member.
+ * 
+ * @param mutedObjChsXmlElement	The xml element that has to be parsed to get the object data
+ */
+void OSCProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement)
+{
+	ProcessingEngineConfig::ReadMutedObjectChannels(mutedObjChsXmlElement, m_mutedRemoteObjectChannels);
 }
 
 /**

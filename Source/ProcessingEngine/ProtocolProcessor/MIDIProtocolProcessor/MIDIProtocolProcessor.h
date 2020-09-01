@@ -57,6 +57,7 @@ public:
 	bool Stop() override;
 
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
+	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 

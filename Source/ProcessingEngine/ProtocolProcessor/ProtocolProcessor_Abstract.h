@@ -77,7 +77,8 @@ public:
 	virtual bool Start() = 0;
 	virtual bool Stop() = 0;
 
-	virtual void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) = 0;
+	virtual void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) = 0;	/**< Objects that are to be handled actively (OSC polling, OCA subscribing). */
+	virtual void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) = 0;	/**< Object channels that are to be muted (not forwarded for further node processing). */
 
 	//==============================================================================
 	std::unique_ptr<XmlElement> createStateXml() override { return nullptr; };

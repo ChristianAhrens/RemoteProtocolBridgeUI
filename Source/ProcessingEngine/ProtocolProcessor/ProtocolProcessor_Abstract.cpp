@@ -50,12 +50,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
- * @fn void ProtocolProcessor_Abstract::SetRemoteObjectsActive(const Array<RemoteObject>& Objs)
- * @param Objs	The objects to set for active handling
- * Pure virtual function to set a set of remote object to be activly handled by derived processor object
- */
-
-/**
  * @fn bool ProtocolProcessor_Abstract::SendMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
  * @param Id		The object id to send a message for
  * @param msgData	The actual message value/content data
@@ -140,6 +134,10 @@ bool ProtocolProcessor_Abstract::setStateXml(XmlElement* stateXml)
 		else
 			return false;
 	}
+
+	auto mutedObjChsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MUTEDCHANNELS));
+	if (mutedObjChsXmlElement)
+		SetRemoteObjectChannelsMuted(mutedObjChsXmlElement);
 
 	return true;
 }
