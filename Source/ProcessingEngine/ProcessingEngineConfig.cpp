@@ -398,8 +398,18 @@ bool ProcessingEngineConfig::WriteMutedObjectChannels(XmlElement* mutedObjectCha
 		mutedChannels << channelNr;
 	}
 
-	auto mutedChannelsTextXmlElement = mutedObjectChannelsElement->createTextElement(mutedChannels);
-	mutedObjectChannelsElement->addChildElement(mutedChannelsTextXmlElement);
+	auto mutedChannelsTextXmlElement = mutedObjectChannelsElement->getFirstChildElement();
+	if (!mutedChannelsTextXmlElement)
+	{
+		mutedChannelsTextXmlElement = mutedObjectChannelsElement->createTextElement(mutedChannels);
+		mutedObjectChannelsElement->addChildElement(mutedChannelsTextXmlElement);
+	}
+	else if (mutedChannelsTextXmlElement->isTextElement())
+	{
+		mutedChannelsTextXmlElement->setText(mutedChannels);
+	}
+	else
+		jassertfalse;
 
 	return true;
 }
