@@ -408,7 +408,10 @@ void DS100_DeviceSimulation::timerCallback()
 						if (roi == ROI_ReverbSendGain)
 							val1 = (val1 * 100.0f) - 100.0f;
 
-						static_cast<float*>(remoteValue.payload)[0] = val1;
+						if (roi == ROI_SoundObject_Position_Y)
+							static_cast<float*>(remoteValue.payload)[0] = val2;
+						else
+							static_cast<float*>(remoteValue.payload)[0] = val1;
 					}
 					else if (remoteValue.valCount == 2)
 					{
