@@ -50,12 +50,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 {
 	m_config = std::make_unique<ProcessingEngineConfig>(ProcessingEngineConfig::getDefaultConfigFilePath());
+
 	m_config->addDumper(this);
 
 	m_config->addWatcher(this);
 	m_config->addWatcher(&m_engine);
 
-    
 	m_ConfigDialog = 0;
 	m_LoggingDialog = 0;
 

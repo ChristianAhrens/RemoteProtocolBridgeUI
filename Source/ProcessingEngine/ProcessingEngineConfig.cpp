@@ -78,16 +78,7 @@ bool ProcessingEngineConfig::isValid()
 			ValidateUniqueId(nodeSectionElement->getIntAttribute(getAttributeName(AttributeID::ID)));
 
 			XmlElement* objHandleSectionElement = nodeSectionElement->getChildByName(getTagName(TagID::OBJECTHANDLING));
-			if (objHandleSectionElement)
-			{
-				XmlElement* protocolAChCntSectionElement = objHandleSectionElement->getChildByName(getTagName(TagID::PROTOCOLACHCNT));
-				if (!protocolAChCntSectionElement)
-					return false;
-				XmlElement* protocolBChCntSectionElement = objHandleSectionElement->getChildByName(getTagName(TagID::PROTOCOLBCHCNT));
-				if (!protocolBChCntSectionElement)
-					return false;
-			}
-			else
+			if (!objHandleSectionElement)
 				return false;
 
 			XmlElement* protocolASectionElement = nodeSectionElement->getChildByName(getTagName(TagID::PROTOCOLA));
@@ -135,8 +126,7 @@ bool ProcessingEngineConfig::isValid()
 				if (!activeObjSectionElement)
 					return false;
 			}
-			else
-				return false;
+			// no else 'return false' here, since RoleB protocol is not mandatory!
 
 		}
 		else if (rootChild->getTagName() == getTagName(TagID::GLOBALCONFIG))
