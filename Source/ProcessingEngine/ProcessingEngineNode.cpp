@@ -55,7 +55,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 ProcessingEngineNode::ProcessingEngineNode()
 {
-	m_dataHandling	= 0;
+	m_dataHandling	= nullptr;
+	m_isRunning = false;
 }
 
 /**
@@ -104,8 +105,6 @@ NodeId ProcessingEngineNode::GetId()
  */
 bool ProcessingEngineNode::Start()
 {
-	m_shouldBeRunning = true;
-
 	bool successfullyStartedA = m_typeAProtocols.size() > 0;
 	bool successfullyStartedB = true;
 
@@ -121,8 +120,10 @@ bool ProcessingEngineNode::Start()
 	{
 		Stop();
 	}
+	else
+		m_isRunning = true;
 
-	return (successfullyStartedA && successfullyStartedB);
+	return m_isRunning;
 }
 
 /**
@@ -132,8 +133,6 @@ bool ProcessingEngineNode::Start()
  */
 bool ProcessingEngineNode::Stop()
 {
-	m_shouldBeRunning = false;
-
 	bool successfullyStoppedA = true;
 	bool successfullyStoppedB = true;
 
@@ -143,7 +142,9 @@ bool ProcessingEngineNode::Stop()
 	for (auto const & typeBProtocol : m_typeBProtocols)
 		successfullyStoppedB = successfullyStoppedB && typeBProtocol.second->Stop();
 
-	return (successfullyStoppedA && successfullyStoppedB);
+	m_isRunning = (successfullyStoppedA && successfullyStoppedB);
+
+	return m_isRunning;
 }
 
 /**
@@ -173,6 +174,8 @@ std::unique_ptr<XmlElement> ProcessingEngineNode::createStateXml()
  */
 bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 {
+	bool shouldBeRunning = m_isRunning;
+
 	Stop();
 
 	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::NODE))
@@ -255,7 +258,7 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		protocolXmlElement = nextProtocolXmlElement;
 	}
 
-	if(m_shouldBeRunning)
+	if(shouldBeRunning)
 		Start();
 
 	return retVal;
