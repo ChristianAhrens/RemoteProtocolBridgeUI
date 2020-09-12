@@ -53,6 +53,7 @@ typedef uint64 ProtocolId;
 #define INVALID_ADDRESS_VALUE -1
 #define INVALID_IPADDRESS_VALUE String()
 #define INVALID_RATE_VALUE -1
+#define INVALID_PORT_VALUE -1
 
 /**
  * Known Protocol Processor Types
