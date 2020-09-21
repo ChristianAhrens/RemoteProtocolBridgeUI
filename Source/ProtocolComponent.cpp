@@ -141,7 +141,7 @@ std::unique_ptr<XmlElement> ProtocolGroupComponent::createStateXml()
 		}
 	}
 
-	return std::move(protocolsXmlElement);
+	return protocolsXmlElement;
 }
 
 /**
