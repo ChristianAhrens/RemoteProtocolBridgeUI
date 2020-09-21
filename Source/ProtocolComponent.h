@@ -39,6 +39,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RemoteProtocolBridgeCommon.h"
 #include "ProcessingEngine/ProcessingEngine.h"
 
+#include "../submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.h"
+
 // Fwd. Declarations
 class NodeComponent;
 class ProtocolComponent;
@@ -120,16 +122,21 @@ public:
 	//==============================================================================
 	std::unique_ptr<XmlElement> createStateXml() override;
 	bool setStateXml(XmlElement* stateXml) override;
+    
+    //==============================================================================
+    void handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info);
 
 private:
 
-	NodeId									m_NodeId;					/**< The parent node id of this protocol config component. */
-	ProtocolId								m_ProtocolId;				/**< The protocol id of this protocol config component. */
-	ProtocolRole							m_Role;
+	NodeId									m_NodeId;		    /**< The parent node id of this protocol config component. */
+	ProtocolId								m_ProtocolId;	    /**< The protocol id of this protocol config component. */
+	ProtocolRole							m_Role;             /**< Role of the protocol that is represented by this component. */
 
-	std::unique_ptr<Label>					m_ProtocolLabel;			/**< Label for a descriptive string for this protocol component. */
-	std::unique_ptr<ComboBox>				m_ProtocolDrop;				/**< Dropdown for protocol type selection for this protocol config component. */
-	std::unique_ptr<TextEditor>				m_IpEdit;					/**< Edit for IP address to use for this protocol. */
+	std::unique_ptr<Label>					m_ProtocolLabel;    /**< Label for a descriptive string for this protocol component. */
+	std::unique_ptr<ComboBox>				m_ProtocolDrop;	    /**< Dropdown for protocol type selection for this protocol config component. */
+	std::unique_ptr<TextEditor>				m_IpEdit;		    /**< Edit for IP address to use for this protocol. */
+    
+    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>  m_ZeroconfIpDiscovery;  /**< Button for Zeroconf network device discovery. */
 
 	std::unique_ptr<TextButton>				m_ProtocolConfigEditButton;	/**< Button to invoke extended protocol configuration editing dialog. */
 	std::unique_ptr<ProtocolConfigWindow>	m_ProtocolConfigDialog;		/**< Extended protocol configuration dialog, created on demand and required as member to be able to trigger closing. */

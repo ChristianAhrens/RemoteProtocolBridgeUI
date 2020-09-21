@@ -255,7 +255,7 @@ void ProtocolGroupComponent::RemoveProtocol(const ProtocolId& PId)
 	{
 		m_ProtocolComponents.erase(PId);
 		m_ProtocolIds.remove(m_ProtocolIds.indexOf(PId));
-		triggerConfigurationUpdate();
+		triggerConfigurationUpdate(true);
 	}
 }
 
@@ -282,7 +282,7 @@ void ProtocolGroupComponent::buttonClicked(Button* button)
 				{
 					nodeXmlElement->addChildElement(ProcessingEngineConfig::GetDefaultProtocol(m_ProtocolRole).release());
 					setStateXml(nodeXmlElement);
-					triggerConfigurationUpdate();
+					triggerConfigurationUpdate(true);
 				}
 			}
 		}
@@ -330,6 +330,10 @@ ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId, c
 	m_IpEdit->addListener(this);
 	addAndMakeVisible(m_IpEdit.get());
 	m_IpEdit->setColour(Label::textColourId, Colours::white);
+    
+    m_ZeroconfIpDiscovery = std::make_unique<JUCEAppBasics::ZeroconfDiscoverComponent>(false, false);
+    addAndMakeVisible(m_ZeroconfIpDiscovery.get());
+    m_ZeroconfIpDiscovery->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType type, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info) { handleOnServiceSelected(type, info); };
 
 	m_ProtocolConfigEditButton = std::make_unique<TextButton>();
 	m_ProtocolConfigEditButton->addListener(this);
@@ -360,10 +364,14 @@ void ProtocolComponent::resized()
 	if (m_ProtocolConfigEditButton)
 		m_ProtocolConfigEditButton->setBounds(xPos, 0, UIS_ConfigButtonWidth, UIS_ElmSize);
 
-	int IpEditWidth = getWidth() - UIS_ProtocolLabelWidth - UIS_Margin_s - UIS_ProtocolDropWidth - UIS_Margin_s - UIS_ConfigButtonWidth - UIS_Margin_s;
+	int IpEditWidth = getWidth() - UIS_ProtocolLabelWidth - UIS_Margin_s - UIS_ProtocolDropWidth - UIS_Margin_s - UIS_ElmSize - UIS_Margin_s - UIS_ConfigButtonWidth - UIS_Margin_s;
 	xPos = (UIS_ProtocolLabelWidth + UIS_Margin_s + UIS_ProtocolDropWidth);
 	if (m_IpEdit)
 		m_IpEdit->setBounds(xPos, 0, IpEditWidth, UIS_ElmSize);
+    
+    xPos += IpEditWidth + UIS_Margin_s;
+    if (m_ZeroconfIpDiscovery)
+        m_ZeroconfIpDiscovery->setBounds(xPos, 0, UIS_ElmSize, UIS_ElmSize);
 
 	xPos = UIS_ProtocolLabelWidth;
 	if (m_ProtocolDrop)
@@ -433,6 +441,32 @@ bool ProtocolComponent::setStateXml(XmlElement* stateXml)
 	}
 	else
 		return false;
+    
+    auto hostPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+    if (hostPortXmlElement)
+    {
+        auto protocolHostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+        if (m_ZeroconfIpDiscovery)
+        {
+            switch (protocolType)
+            {
+                case PT_OSCProtocol:
+                    m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OSC, protocolHostPort);
+                    break;
+                case PT_OCAProtocol:
+                    m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA, protocolHostPort);
+                    break;
+                case PT_DummyMidiProtocol:
+                case PT_UserMAX:
+                case PT_Invalid:
+                    break;
+            }
+        }
+        else
+            return false;
+    }
+    else
+        return false;
 
 	return true;
 }
@@ -551,7 +585,7 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
 		if (m_protocolXmlElement)
 		{
 			m_protocolXmlElement = m_ProtocolConfigDialog->createStateXml();
-			triggerConfigurationUpdate();
+			triggerConfigurationUpdate(true);
 		}
 
 		button->setColour(TextButton::buttonColourId, Colours::dimgrey);
@@ -585,4 +619,16 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
 			button->setColour(Label::textColourId, Colours::dimgrey);
 		}
 	}
+}
+
+/**
+ * Helper method to do the handling of selected zeroconf services and fill the service's ip address in to our ip edit
+ *
+ * @param serviceType    The service that was selected
+ * @param info     The detailled info on the selected service
+ */
+void ProtocolComponent::handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info)
+{
+    if (info && m_IpEdit)
+        m_IpEdit->setText(info->ip);
 }

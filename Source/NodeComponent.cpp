@@ -146,7 +146,7 @@ void NodeComponent::childWindowCloseTriggered(DialogWindow* childWindow)
 	if (m_OHMConfigDialog && childWindow == m_OHMConfigDialog.get())
 	{
 		m_ohmXmlElement = m_OHMConfigDialog->createStateXml();
-		triggerConfigurationUpdate();
+		triggerConfigurationUpdate(true);
 
 		if (m_OHMConfigEditButton)
 		{
@@ -279,7 +279,7 @@ void NodeComponent::buttonClicked(Button* button)
 		ToggleOpenCloseObjectHandlingConfig(m_OHMConfigEditButton.get());
 	}
 	else
-		triggerConfigurationUpdate();
+		triggerConfigurationUpdate(true);
 }
 
 /**
@@ -292,7 +292,7 @@ void NodeComponent::comboBoxChanged(ComboBox* comboBox)
 {
 	ignoreUnused(comboBox);
 
-	triggerConfigurationUpdate();
+	triggerConfigurationUpdate(true);
 }
 
 /**
@@ -305,7 +305,7 @@ void NodeComponent::textEditorTextChanged(TextEditor& textEdit)
 {
 	ignoreUnused(textEdit);
 
-	triggerConfigurationUpdate();
+	triggerConfigurationUpdate(true);
 }
 
 /**
@@ -318,7 +318,7 @@ void NodeComponent::textEditorReturnKeyPressed(TextEditor& textEdit)
 {
 	ignoreUnused(textEdit);
 
-	triggerConfigurationUpdate();
+	triggerConfigurationUpdate(true);
 }
 
 /**
