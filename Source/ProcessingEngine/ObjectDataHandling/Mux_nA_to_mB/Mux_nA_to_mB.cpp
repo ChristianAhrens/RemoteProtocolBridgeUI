@@ -106,8 +106,8 @@ bool Mux_nA_to_mB::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIde
 		{
 			jassert(msgData.addrVal.first <= m_protoChCntA);
 			int absChNr = m_protocolAIds.indexOf(PId) * m_protoChCntA + msgData.addrVal.first;
-			int protocolBIndex = absChNr / m_protoChCntB;
-			int16 chForB = int16(absChNr % m_protoChCntB);
+			int protocolBIndex = absChNr / (m_protoChCntB + 1);
+			int16 chForB = int16(absChNr % (m_protoChCntB + 1));
 
 			msgData.addrVal.first = chForB;
 			if (m_protocolBIds.size() >= protocolBIndex + 1)
@@ -117,8 +117,8 @@ bool Mux_nA_to_mB::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIde
 		{
 			jassert(msgData.addrVal.first <= m_protoChCntB);
 			int absChNr = m_protocolBIds.indexOf(PId) * m_protoChCntB + msgData.addrVal.first;
-			int protocolAIndex = absChNr / m_protoChCntA;
-			int16 chForA = int16(absChNr % m_protoChCntA);
+			int protocolAIndex = absChNr / (m_protoChCntA + 1);
+			int16 chForA = int16(absChNr % (m_protoChCntA + 1));
 
 			msgData.addrVal.first = chForA;
 			if (m_protocolAIds.size() >= protocolAIndex + 1)
