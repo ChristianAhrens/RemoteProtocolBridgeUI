@@ -129,7 +129,7 @@ std::unique_ptr<XmlElement> ObjectHandlingConfigComponent_Abstract::createStateX
 	if (bChCntXmlElement)
 		bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
 
-	return std::move(ohXmlElement);
+	return ohXmlElement;
 }
 
 /**
@@ -332,7 +332,7 @@ std::unique_ptr<XmlElement> OHMultiplexAtoBConfigComponent::createStateXml()
 	if (bChCntXmlElement)
 		bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), bChCnt);
 
-	return std::move(ohXmlElement);
+	return ohXmlElement;
 }
 
 /**
@@ -484,7 +484,7 @@ std::unique_ptr<XmlElement> OHForwardOnlyValueChangesConfigComponent::createStat
 
 	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), precision);
 
-	return std::move(ohXmlElement);
+	return ohXmlElement;
 }
 
 /**
@@ -706,7 +706,7 @@ std::unique_ptr<XmlElement> OHDS100SimConfigComponent::createStateXml()
 	if (refreshIntervalXmlElement)
 		refreshIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), updateInterval);
 
-	return std::move(ohXmlElement);
+	return ohXmlElement;
 }
 
 /**

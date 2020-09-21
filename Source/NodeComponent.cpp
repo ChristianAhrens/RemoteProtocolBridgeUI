@@ -197,7 +197,7 @@ std::unique_ptr<XmlElement> NodeComponent::createStateXml()
 	}
 	nodeXmlElement->addChildElement(std::make_unique<XmlElement>(*m_ohmXmlElement).release());
 
-	return std::move(nodeXmlElement);
+	return nodeXmlElement;
 }
 
 /**
