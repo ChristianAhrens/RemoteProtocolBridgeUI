@@ -666,7 +666,7 @@ OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
 		addAndMakeVisible(m_RemObjActiveChannelEdits.at(i).get());
 
 		// the mapping checks are only wanted for positioning objects
-		if (i >= ROI_SoundObject_Position_X && i <= ROI_SoundObject_Position_XY)
+		if (i >= ROI_CoordinateMapping_SourcePosition_X && i <= ROI_CoordinateMapping_SourcePosition_XY)
 		{
 			m_RemObjMappingArea1Checks[i] = std::make_unique<ToggleButton>();
 			addAndMakeVisible(m_RemObjMappingArea1Checks.at(i).get());

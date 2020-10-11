@@ -186,11 +186,11 @@ bool DS100_DeviceSimulation::IsDataRequestPollMessage(const RemoteObjectIdentifi
 	switch (Id)
 	{
 	case ROI_HeartbeatPing:
-	case ROI_SoundObject_Position_X:
-	case ROI_SoundObject_Position_Y:
-	case ROI_SoundObject_Position_XY:
-	case ROI_SoundObject_Spread:
-	case ROI_SoundObject_DelayMode:
+	case ROI_CoordinateMapping_SourcePosition_X:
+	case ROI_CoordinateMapping_SourcePosition_Y:
+	case ROI_CoordinateMapping_SourcePosition_XY:
+	case ROI_Positioning_SourceSpread:
+	case ROI_Positioning_SourceDelayMode:
 	case ROI_MatrixInput_ReverbSendGain:
 		remoteObjectRequiresReply = true;
 		break;
@@ -222,22 +222,22 @@ void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdenti
 	case ROI_HeartbeatPong:
 		DBG("Sending Pong reply.");
 		break;
-	case ROI_SoundObject_Position_XY:
+	case ROI_CoordinateMapping_SourcePosition_XY:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + "Rec" + String(idDataKV.second.addrVal.second) + " XY position reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ", " + String(static_cast<float*>(idDataKV.second.payload)[1]) + ").");
 		break;
-	case ROI_SoundObject_Position_X:
+	case ROI_CoordinateMapping_SourcePosition_X:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " X position reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
 		break;
-	case ROI_SoundObject_Position_Y:
+	case ROI_CoordinateMapping_SourcePosition_Y:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " Y position reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
 		break;
-	case ROI_SoundObject_Spread:
+	case ROI_Positioning_SourceSpread:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " spread reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
 		break;
 	case ROI_MatrixInput_ReverbSendGain:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " EnSpace gain reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
 		break;
-	case ROI_SoundObject_DelayMode:
+	case ROI_Positioning_SourceDelayMode:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " delaymode reply (" + String(static_cast<int*>(idDataKV.second.payload)[0]) + ").");
 		break;
 	default:
@@ -268,20 +268,20 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_NONE);
 		dataReply.first = ROI_HeartbeatPong;
 		break;
-	case ROI_SoundObject_Position_XY:
+	case ROI_CoordinateMapping_SourcePosition_XY:
 		jassert(m_currentValues.at(Id).at(adressing).valCount == 2);
 		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
 		dataReply.second.addrVal = adressing;
 		break;
-	case ROI_SoundObject_Position_X:
-	case ROI_SoundObject_Position_Y:
-	case ROI_SoundObject_Spread:
+	case ROI_CoordinateMapping_SourcePosition_X:
+	case ROI_CoordinateMapping_SourcePosition_Y:
+	case ROI_Positioning_SourceSpread:
 	case ROI_MatrixInput_ReverbSendGain:
 		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
 		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
 		dataReply.second.addrVal = adressing;
 		break;
-	case ROI_SoundObject_DelayMode:
+	case ROI_Positioning_SourceDelayMode:
 		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
 		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_INT);
 		dataReply.second.addrVal = adressing;
@@ -332,7 +332,7 @@ void DS100_DeviceSimulation::InitDataValues()
 
 				switch (roi)
 				{
-				case ROI_SoundObject_Position_XY:
+				case ROI_CoordinateMapping_SourcePosition_XY:
 					remoteValue.valCount = 2;
 					remoteValue.valType = ROVT_FLOAT;
 					remoteValue.payload = new float[2];
@@ -340,9 +340,9 @@ void DS100_DeviceSimulation::InitDataValues()
 					static_cast<float*>(remoteValue.payload)[1] = 0.0f;
 					remoteValue.payloadSize = 2 * sizeof(float);
 					break;
-				case ROI_SoundObject_Position_X:
-				case ROI_SoundObject_Position_Y:
-				case ROI_SoundObject_Spread:
+				case ROI_CoordinateMapping_SourcePosition_X:
+				case ROI_CoordinateMapping_SourcePosition_Y:
+				case ROI_Positioning_SourceSpread:
 				case ROI_MatrixInput_ReverbSendGain:
 					remoteValue.valCount = 1;
 					remoteValue.valType = ROVT_FLOAT;
@@ -350,7 +350,7 @@ void DS100_DeviceSimulation::InitDataValues()
 					*static_cast<float*>(remoteValue.payload) = 0.0f;
 					remoteValue.payloadSize = sizeof(float);
 					break;
-				case ROI_SoundObject_DelayMode:
+				case ROI_Positioning_SourceDelayMode:
 					remoteValue.valCount = 1;
 					remoteValue.valType = ROVT_INT;
 					remoteValue.payload = new int;
@@ -408,7 +408,7 @@ void DS100_DeviceSimulation::timerCallback()
 						if (roi == ROI_MatrixInput_ReverbSendGain)
 							val1 = (val1 * 100.0f) - 100.0f;
 
-						if (roi == ROI_SoundObject_Position_Y)
+						if (roi == ROI_CoordinateMapping_SourcePosition_Y)
 							static_cast<float*>(remoteValue.payload)[0] = val2;
 						else
 							static_cast<float*>(remoteValue.payload)[0] = val1;
@@ -422,7 +422,7 @@ void DS100_DeviceSimulation::timerCallback()
 				case ROVT_INT:
 					if (remoteValue.valCount == 1)
 					{
-						if (roi == ROI_SoundObject_DelayMode)
+						if (roi == ROI_Positioning_SourceDelayMode)
 							val1 = val1 * 3.0f;
 						
 						static_cast<int*>(remoteValue.payload)[0] = static_cast<int>(val1);

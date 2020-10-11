@@ -345,14 +345,14 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 			int newIntValue;
 
 			// Determine which parameter was changed depending on the incoming message's address pattern.
-			if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Position_XY)))
+			if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_XY)))
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
 				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
-				newObjectId = ROI_SoundObject_Position_XY;
+				newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
 
 				if (isContentMessage)
 				{
@@ -364,14 +364,14 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 					newMsgData.payloadSize = 2 * sizeof(float);
 				}
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Position_X)))
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_X)))
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
 				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
-				newObjectId = ROI_SoundObject_Position_X;
+				newObjectId = ROI_CoordinateMapping_SourcePosition_X;
 				
 				if (isContentMessage)
 				{
@@ -382,14 +382,14 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 					newMsgData.payloadSize = sizeof(float);
 				}
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Position_Y)))
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_Y)))
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
 				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
-				newObjectId = ROI_SoundObject_Position_Y;
+				newObjectId = ROI_CoordinateMapping_SourcePosition_Y;
 
 				if (isContentMessage)
 				{
@@ -400,9 +400,9 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 					newMsgData.payloadSize = sizeof(float);
 				}
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Spread)))
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceSpread)))
 			{
-				newObjectId = ROI_SoundObject_Spread;
+				newObjectId = ROI_Positioning_SourceSpread;
 
 				if (isContentMessage)
 				{
@@ -413,9 +413,9 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 					newMsgData.payloadSize = sizeof(float);
 				}
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_DelayMode)))
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceDelayMode)))
 			{
-				newObjectId = ROI_SoundObject_DelayMode;
+				newObjectId = ROI_Positioning_SourceDelayMode;
 
 				if (isContentMessage)
 				{
@@ -471,15 +471,15 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 		return "/pong";
 	case ROI_HeartbeatPing:
 		return "/ping";
-	case ROI_SoundObject_Position_X:
+	case ROI_CoordinateMapping_SourcePosition_X:
 		return "/dbaudio1/coordinatemapping/source_position_x";
-	case ROI_SoundObject_Position_Y:
+	case ROI_CoordinateMapping_SourcePosition_Y:
 		return "/dbaudio1/coordinatemapping/source_position_y";
-	case ROI_SoundObject_Position_XY:
+	case ROI_CoordinateMapping_SourcePosition_XY:
 		return "/dbaudio1/coordinatemapping/source_position_xy";
-	case ROI_SoundObject_Spread:
+	case ROI_Positioning_SourceSpread:
 		return "/dbaudio1/positioning/source_spread";
-	case ROI_SoundObject_DelayMode:
+	case ROI_Positioning_SourceDelayMode:
 		return "/dbaudio1/positioning/source_delaymode";
 	case ROI_MatrixInput_ReverbSendGain:
 		return "/dbaudio1/matrixinput/reverbsendgain";

@@ -77,7 +77,7 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 
 			RemoteObjectIdentifier ObjIdToSend = Id;
 
-			if (Id == ROI_SoundObject_Position_X)
+			if (Id == ROI_CoordinateMapping_SourcePosition_X)
 			{
 				// special handling of merging separate x message to a combined xy one
 				jassert(msgData.valType == ROVT_FLOAT);
@@ -98,9 +98,9 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 				msgData.payload = &newXYVal;
 				msgData.payloadSize = 2 * sizeof(float);
 
-				ObjIdToSend = ROI_SoundObject_Position_XY;
+				ObjIdToSend = ROI_CoordinateMapping_SourcePosition_XY;
 			}
-			else if (Id == ROI_SoundObject_Position_Y)
+			else if (Id == ROI_CoordinateMapping_SourcePosition_Y)
 			{
 				// special handling of merging separate y message to a combined xy one
 				jassert(msgData.valType == ROVT_FLOAT);
@@ -121,7 +121,7 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 				msgData.payload = &newXYVal;
 				msgData.payloadSize = 2 * sizeof(float);
 
-				ObjIdToSend = ROI_SoundObject_Position_XY;
+				ObjIdToSend = ROI_CoordinateMapping_SourcePosition_XY;
 			}
 
 			// Send to all typeB protocols
@@ -135,7 +135,7 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 		}
 		if (m_protocolBIds.contains(PId))
 		{
-			if (Id == ROI_SoundObject_Position_XY)
+			if (Id == ROI_CoordinateMapping_SourcePosition_XY)
 			{
 				// special handling of splitting a combined xy message to  separate x, y ones
 				jassert(msgData.valType == ROVT_FLOAT);
@@ -161,10 +161,10 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 				for (int i = 0; i < typeAProtocolCount; ++i)
 				{
 					msgData.payload = &newXVal;
-					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], ROI_SoundObject_Position_X, msgData);
+					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], ROI_CoordinateMapping_SourcePosition_X, msgData);
 
 					msgData.payload = &newYVal;
-					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], ROI_SoundObject_Position_Y, msgData);
+					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], ROI_CoordinateMapping_SourcePosition_Y, msgData);
 				}
 
 				return sendSuccess;

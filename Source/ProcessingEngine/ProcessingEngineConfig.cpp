@@ -571,8 +571,8 @@ std::unique_ptr<XmlElement> ProcessingEngineConfig::GetDefaultProtocol(ProtocolR
 	Array<RemoteObject> activeObjects;
 	RemoteObject objectX, objectY;
 
-	objectX.Id = ROI_SoundObject_Position_X;
-	objectY.Id = ROI_SoundObject_Position_Y;
+	objectX.Id = ROI_CoordinateMapping_SourcePosition_X;
+	objectY.Id = ROI_CoordinateMapping_SourcePosition_Y;
 	for (int16 i = 1; i <= 16; ++i)
 	{
 		RemoteObjectAddressing addr;
@@ -631,15 +631,15 @@ String ProcessingEngineConfig::GetObjectDescription(RemoteObjectIdentifier Id)
 		return "PING";
 	case ROI_HeartbeatPong:
 		return "PONG";
-	case ROI_SoundObject_Position_X:
+	case ROI_CoordinateMapping_SourcePosition_X:
 		return "Sound Object Position X";
-	case ROI_SoundObject_Position_Y:
+	case ROI_CoordinateMapping_SourcePosition_Y:
 		return "Sound Object Position Y";
-	case ROI_SoundObject_Position_XY:
+	case ROI_CoordinateMapping_SourcePosition_XY:
 		return "Sound Object Position XY";
-	case ROI_SoundObject_Spread:
+	case ROI_Positioning_SourceSpread:
 		return "Sound Object Spread";
-	case ROI_SoundObject_DelayMode:
+	case ROI_Positioning_SourceDelayMode:
 		return "Sound Object Delay Mode";
 	case ROI_MatrixInput_ReverbSendGain:
 		return "En-Space Send Gain";

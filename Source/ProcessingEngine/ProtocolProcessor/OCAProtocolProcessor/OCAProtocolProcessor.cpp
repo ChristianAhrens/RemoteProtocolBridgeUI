@@ -132,13 +132,13 @@ String OCAProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 {
 	switch (id)
 	{
-	case ROI_SoundObject_Position_X:
+	case ROI_CoordinateMapping_SourcePosition_X:
 		return "Positioning_Source_Position_X";
-	case ROI_SoundObject_Position_Y:
+	case ROI_CoordinateMapping_SourcePosition_Y:
 		return "Positioning_Source_Position_Y";
-	case ROI_SoundObject_Spread:
+	case ROI_Positioning_SourceSpread:
 		return "Positioning_Source_Spread";
-	case ROI_SoundObject_DelayMode:
+	case ROI_Positioning_SourceDelayMode:
 		return "Positioning_Source_DelayMode";
 	case ROI_MatrixInput_ReverbSendGain:
 		return "MatrixInput_ReverbSendGain";

@@ -130,11 +130,16 @@ enum RemoteObjectIdentifier
 	ROI_MatrixOutput_ChannelName,
 	ROI_MatrixOutput_LevelMeterPreMute,
 	ROI_MatrixOutput_LevelMeterPostMute,
-	ROI_SoundObject_Position_X,					/**< x position remote object id. */
-	ROI_SoundObject_Position_Y,					/**< y position remote object id. */
-	ROI_SoundObject_Position_XY,				/**< combined xy position remote object id. */
-	ROI_SoundObject_Spread,						/**< spread remote object id. */
-	ROI_SoundObject_DelayMode,					/**< delaymode remote object id. */
+	ROI_Positioning_SourceSpread,				/**< spread remote object id. */
+	ROI_Positioning_SourceDelayMode,			/**< delaymode remote object id. */
+	ROI_Positioning_SourcePosition,
+	ROI_Positioning_SourcePosition_XY,
+	ROI_Positioning_SourcePosition_X,
+	ROI_Positioning_SourcePosition_Y,
+	ROI_CoordinateMapping_SourcePosition,		/**< combined xyz position remote object id. */
+	ROI_CoordinateMapping_SourcePosition_XY,	/**< combined xy position remote object id. */
+	ROI_CoordinateMapping_SourcePosition_X,		/**< x position remote object id. */
+	ROI_CoordinateMapping_SourcePosition_Y,		/**< y position remote object id. */
 	ROI_MatrixSettings_ReverbRoomId,
 	ROI_MatrixSettings_ReverbPredelayFactor,
 	ROI_MatrixSettings_RevebRearLevel,
