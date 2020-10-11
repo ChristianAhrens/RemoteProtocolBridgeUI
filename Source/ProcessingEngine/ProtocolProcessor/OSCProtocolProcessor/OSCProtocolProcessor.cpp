@@ -471,18 +471,110 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 		return "/pong";
 	case ROI_HeartbeatPing:
 		return "/ping";
+	case ROI_Settings_DeviceName:
+		return "/dbaudio1/settings/devicename";
+	case ROI_Error_GnrlErr:
+		return "/dbaudio1/error/gnrlerr";
+	case ROI_Error_ErrorText:
+		return "/dbaudio1/error/errortext";
+	case ROI_Status_StatusText:
+		return "/dbaudio1/status/statustext";
+	case ROI_MatrixInput_Mute:
+		return "/dbaudio1/matrixinput/mute";
+	case ROI_MatrixInput_Gain:
+		return "/dbaudio1/matrixinput/gain";
+	case ROI_MatrixInput_Delay:
+		return "/dbaudio1/matrixinput/delay";
+	case ROI_MatrixInput_DelayEnable:
+		return "/dbaudio1/matrixinput/delayenable";
+	case ROI_MatrixInput_EqEnable:
+		return "/dbaudio1/matrixinput/eqenable";
+	case ROI_MatrixInput_Polarity:
+		return "/dbaudio1/matrixinput/polarity";
+	case ROI_MatrixInput_ChannelName:
+		return "/dbaudio1/matrixinput/channelname";
+	case ROI_MatrixInput_LevelMeterPreMute:
+		return "/dbaudio1/matrixinput/levelmeterpremute";
+	case ROI_MatrixInput_LevelMeterPostMute:
+		return "/dbaudio1/matrixinput/levelmeterpostmute";
+	case ROI_MatrixNode_Enable:
+		return "/dbaudio1/matrixnode/enable";
+	case ROI_MatrixNode_Gain:
+		return "/dbaudio1/matrixnode/gain";
+	case ROI_MatrixNode_DelayEnable:
+		return "/dbaudio1/matrixnode/delayenable";
+	case ROI_MatrixNode_Delay:
+		return "/dbaudio1/matrixnode/delay";
+	case ROI_MatrixOutput_Mute:
+		return "/dbaudio1/matrixoutput/mute";
+	case ROI_MatrixOutput_Gain:
+		return "/dbaudio1/matrixoutput/gain";
+	case ROI_MatrixOutput_Delay:
+		return "/dbaudio1/matrixoutput/delay";
+	case ROI_MatrixOutput_DelayEnable:
+		return "/dbaudio1/matrixoutput/delayenable";
+	case ROI_MatrixOutput_EqEnable:
+		return "/dbaudio1/matrixoutput/eqenable";
+	case ROI_MatrixOutput_Polarity:
+		return "/dbaudio1/matrixoutput/polarity";
+	case ROI_MatrixOutput_ChannelName:
+		return "/dbaudio1/matrixoutput/channelname";
+	case ROI_MatrixOutput_LevelMeterPreMute:
+		return "/dbaudio1/matrixoutput/levelmeterpremute";
+	case ROI_MatrixOutput_LevelMeterPostMute:
+		return "/dbaudio1/matrixoutput/levelmeterpostmute";
+	case ROI_Positioning_SourceSpread:
+		return "/dbaudio1/positioning/source_spread";
+	case ROI_Positioning_SourceDelayMode:
+		return "/dbaudio1/positioning/source_delaymode";
+	case ROI_Positioning_SourcePosition:
+		return "/dbaudio1/positioning/source_position";
+	case ROI_Positioning_SourcePosition_XY:
+		return "/dbaudio1/positioning/source_position_xy";
+	case ROI_Positioning_SourcePosition_X:
+		return "/dbaudio1/positioning/source_position_x";
+	case ROI_Positioning_SourcePosition_Y:
+		return "/dbaudio1/positioning/source_position_y";
+	case ROI_CoordinateMapping_SourcePosition:
+		return "/dbaudio1/coordinatemapping/source_position";
 	case ROI_CoordinateMapping_SourcePosition_X:
 		return "/dbaudio1/coordinatemapping/source_position_x";
 	case ROI_CoordinateMapping_SourcePosition_Y:
 		return "/dbaudio1/coordinatemapping/source_position_y";
 	case ROI_CoordinateMapping_SourcePosition_XY:
 		return "/dbaudio1/coordinatemapping/source_position_xy";
-	case ROI_Positioning_SourceSpread:
-		return "/dbaudio1/positioning/source_spread";
-	case ROI_Positioning_SourceDelayMode:
-		return "/dbaudio1/positioning/source_delaymode";
+	case ROI_MatrixSettings_ReverbRoomId:
+		return "/dbaudio1/matrixsettings/reverbroomid";
+	case ROI_MatrixSettings_ReverbPredelayFactor:
+		return "/dbaudio1/matrixsettings/reverbpredelayfactor";
+	case ROI_MatrixSettings_RevebRearLevel:
+		return "/dbaudio1/matrixsettings/reverbrearlevel";
 	case ROI_MatrixInput_ReverbSendGain:
 		return "/dbaudio1/matrixinput/reverbsendgain";
+	case ROI_ReverbInput_Gain:
+		return "/dbaudio1/reverbinput/gain";
+	case ROI_ReverbInputProcessing_Mute:
+		return "/dbaudio1/reverbinputprocessing/mute";
+	case ROI_ReverbInputProcessing_Gain:
+		return "/dbaudio1/reverbinputprocessing/gain";
+	case ROI_ReverbInputProcessing_LevelMeter:
+		return "/dbaudio1/reverbinputprocessing/levelmeter";
+	case ROI_ReverbInputProcessing_EqEnable:
+		return "/dbaudio1/reverbinputprocessing/eqenable";
+	case ROI_Device_Clear:
+		return "/dbaudio1/device/clear";
+	case ROI_Scene_Previous:
+		return "/dbaudio1/scene/previous";
+	case ROI_Scene_Next:
+		return "/dbaudio1/scene/next";
+	case ROI_Scene_Recall:
+		return "/dbaudio1/scene/recall";
+	case ROI_Scene_SceneIndex:
+		return "/dbaudio1/scene/sceneindex";
+	case ROI_Scene_SceneName:
+		return "/dbaudio1/scene/scenename";
+	case ROI_Scene_SceneComment:
+		return "/dbaudio1/scene/scenecomment";
 	default:
 		return "";
 	}
