@@ -641,7 +641,7 @@ String ProcessingEngineConfig::GetObjectDescription(RemoteObjectIdentifier Id)
 		return "Sound Object Spread";
 	case ROI_SoundObject_DelayMode:
 		return "Sound Object Delay Mode";
-	case ROI_ReverbSendGain:
+	case ROI_MatrixInput_ReverbSendGain:
 		return "En-Space Send Gain";
 	default:
 		return "-";

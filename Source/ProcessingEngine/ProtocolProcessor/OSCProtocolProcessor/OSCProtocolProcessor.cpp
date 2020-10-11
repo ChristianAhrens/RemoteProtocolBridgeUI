@@ -432,9 +432,9 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 					newMsgData.payloadSize = sizeof(int);
 				}
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbSendGain)))
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_ReverbSendGain)))
 			{
-				newObjectId = ROI_ReverbSendGain;
+				newObjectId = ROI_MatrixInput_ReverbSendGain;
 
 				if (isContentMessage)
 				{
@@ -481,7 +481,7 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 		return "/dbaudio1/positioning/source_spread";
 	case ROI_SoundObject_DelayMode:
 		return "/dbaudio1/positioning/source_delaymode";
-	case ROI_ReverbSendGain:
+	case ROI_MatrixInput_ReverbSendGain:
 		return "/dbaudio1/matrixinput/reverbsendgain";
 	default:
 		return "";

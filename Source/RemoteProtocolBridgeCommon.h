@@ -104,7 +104,6 @@ enum RemoteObjectIdentifier
 	ROI_Invalid,					/**< Invalid remote object id. This is not the first
 									   * value to allow iteration over enum starting 
 									   * here (e.g. to not show the user the internal-only ping/pong). */
-	ROI_ReverbSendGain,				/**< reverbsendgain remote object id. */
 	ROI_Settings_DeviceName,
 	ROI_Error_GnrlErr,
 	ROI_Error_ErrorText,
@@ -139,6 +138,7 @@ enum RemoteObjectIdentifier
 	ROI_MatrixSettings_ReverbRoomId,
 	ROI_MatrixSettings_ReverbPredelayFactor,
 	ROI_MatrixSettings_RevebRearLevel,
+	ROI_MatrixInput_ReverbSendGain,				/**< reverbsendgain remote object id. */
 	ROI_ReverbInput_Gain,
 	ROI_ReverbInputProcessing_Mute,
 	ROI_ReverbInputProcessing_Gain,

@@ -140,7 +140,7 @@ String OCAProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 		return "Positioning_Source_Spread";
 	case ROI_SoundObject_DelayMode:
 		return "Positioning_Source_DelayMode";
-	case ROI_ReverbSendGain:
+	case ROI_MatrixInput_ReverbSendGain:
 		return "MatrixInput_ReverbSendGain";
 	default:
 		return "";

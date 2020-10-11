@@ -191,7 +191,7 @@ bool DS100_DeviceSimulation::IsDataRequestPollMessage(const RemoteObjectIdentifi
 	case ROI_SoundObject_Position_XY:
 	case ROI_SoundObject_Spread:
 	case ROI_SoundObject_DelayMode:
-	case ROI_ReverbSendGain:
+	case ROI_MatrixInput_ReverbSendGain:
 		remoteObjectRequiresReply = true;
 		break;
 	case ROI_HeartbeatPong:
@@ -234,7 +234,7 @@ void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdenti
 	case ROI_SoundObject_Spread:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " spread reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
 		break;
-	case ROI_ReverbSendGain:
+	case ROI_MatrixInput_ReverbSendGain:
 		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " EnSpace gain reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
 		break;
 	case ROI_SoundObject_DelayMode:
@@ -276,7 +276,7 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	case ROI_SoundObject_Position_X:
 	case ROI_SoundObject_Position_Y:
 	case ROI_SoundObject_Spread:
-	case ROI_ReverbSendGain:
+	case ROI_MatrixInput_ReverbSendGain:
 		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
 		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
 		dataReply.second.addrVal = adressing;
@@ -343,7 +343,7 @@ void DS100_DeviceSimulation::InitDataValues()
 				case ROI_SoundObject_Position_X:
 				case ROI_SoundObject_Position_Y:
 				case ROI_SoundObject_Spread:
-				case ROI_ReverbSendGain:
+				case ROI_MatrixInput_ReverbSendGain:
 					remoteValue.valCount = 1;
 					remoteValue.valType = ROVT_FLOAT;
 					remoteValue.payload = new float;
@@ -405,7 +405,7 @@ void DS100_DeviceSimulation::timerCallback()
 				case ROVT_FLOAT:
 					if (remoteValue.valCount == 1)
 					{
-						if (roi == ROI_ReverbSendGain)
+						if (roi == ROI_MatrixInput_ReverbSendGain)
 							val1 = (val1 * 100.0f) - 100.0f;
 
 						if (roi == ROI_SoundObject_Position_Y)
