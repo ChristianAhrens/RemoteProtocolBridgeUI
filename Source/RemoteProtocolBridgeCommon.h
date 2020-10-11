@@ -104,13 +104,54 @@ enum RemoteObjectIdentifier
 	ROI_Invalid,					/**< Invalid remote object id. This is not the first
 									   * value to allow iteration over enum starting 
 									   * here (e.g. to not show the user the internal-only ping/pong). */
-	ROI_SoundObject_Position_X,		/**< x position remote object id. */
-	ROI_SoundObject_Position_Y,		/**< y position remote object id. */
-	ROI_SoundObject_Position_XY,	/**< combined xy position remote object id. */
-	ROI_SoundObject_Spread,			/**< spread remote object id. */
-	ROI_SoundObject_DelayMode,		/**< delaymode remote object id. */
 	ROI_ReverbSendGain,				/**< reverbsendgain remote object id. */
-	ROI_UserMAX						/**< Value to mark enum max; For iteration purpose. */
+	ROI_Settings_DeviceName,
+	ROI_Error_GnrlErr,
+	ROI_Error_ErrorText,
+	ROI_Status_StatusText,
+	ROI_MatrixInput_Mute,
+	ROI_MatrixInput_Gain,
+	ROI_MatrixInput_Delay,
+	ROI_MatrixInput_DelayEnable,
+	ROI_MatrixInput_EqEnable,
+	ROI_MatrixInput_Polarity,
+	ROI_MatrixInput_ChannelName,
+	ROI_MatrixInput_LevelMeterPreMute,
+	ROI_MatrixInput_LevelMeterPostMute,
+	ROI_MatrixNode_Enable,
+	ROI_MatrixNode_Gain,
+	ROI_MatrixNode_DelayEnable,
+	ROI_MatrixNode_Delay,
+	ROI_MatrixOutput_Mute,
+	ROI_MatrixOutput_Gain,
+	ROI_MatrixOutput_Delay,
+	ROI_MatrixOutput_DelayEnable,
+	ROI_MatrixOutput_EqEnable,
+	ROI_MatrixOutput_Polarity,
+	ROI_MatrixOutput_ChannelName,
+	ROI_MatrixOutput_LevelMeterPreMute,
+	ROI_MatrixOutput_LevelMeterPostMute,
+	ROI_SoundObject_Position_X,					/**< x position remote object id. */
+	ROI_SoundObject_Position_Y,					/**< y position remote object id. */
+	ROI_SoundObject_Position_XY,				/**< combined xy position remote object id. */
+	ROI_SoundObject_Spread,						/**< spread remote object id. */
+	ROI_SoundObject_DelayMode,					/**< delaymode remote object id. */
+	ROI_MatrixSettings_ReverbRoomId,
+	ROI_MatrixSettings_ReverbPredelayFactor,
+	ROI_MatrixSettings_RevebRearLevel,
+	ROI_ReverbInput_Gain,
+	ROI_ReverbInputProcessing_Mute,
+	ROI_ReverbInputProcessing_Gain,
+	ROI_ReverbInputProcessing_LevelMeter,
+	ROI_ReverbInputProcessing_EqEnable,
+	ROI_Device_Clear,
+	ROI_Scene_Previous,
+	ROI_Scene_Next,
+	ROI_Scene_Recall,
+	ROI_Scene_SceneIndex,
+	ROI_Scene_SceneName,
+	ROI_Scene_SceneComment,
+	ROI_UserMAX									/**< Value to mark enum max; For iteration purpose. */
 };
 
 /**
