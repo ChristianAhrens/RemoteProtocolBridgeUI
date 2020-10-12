@@ -463,11 +463,6 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				newObjectId = ROI_Positioning_SourceDelayMode;
 				createIntMessageData(message, newMsgData);
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition)))
-			{
-				newObjectId = ROI_Positioning_SourcePosition;
-				createFloatMessageData(message, newMsgData);
-			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_XY)))
 			{
 				newObjectId = ROI_Positioning_SourcePosition_XY;
@@ -483,14 +478,9 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				newObjectId = ROI_Positioning_SourcePosition_Y;
 				createFloatMessageData(message, newMsgData);
 			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition)))
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition)))
 			{
-				// Parse the Mapping ID
-				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-				jassert(newMsgData.addrVal.second > 0);
-
-				newObjectId = ROI_CoordinateMapping_SourcePosition;
+				newObjectId = ROI_Positioning_SourcePosition;
 				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_XY)))
@@ -521,6 +511,16 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_Y;
+				createFloatMessageData(message, newMsgData);
+			}
+			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition)))
+			{
+				// Parse the Mapping ID
+				addressString = addressString.upToLastOccurrenceOf("/", false, true);
+				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+				jassert(newMsgData.addrVal.second > 0);
+
+				newObjectId = ROI_CoordinateMapping_SourcePosition;
 				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbRoomId)))
