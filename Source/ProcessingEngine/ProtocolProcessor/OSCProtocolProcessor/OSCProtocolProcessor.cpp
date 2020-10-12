@@ -309,9 +309,6 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 		return;
 	}
 
-	int messageSize = message.size();
-	bool isContentMessage = (messageSize > 0); // the value count is reported by JUCE as OSCMessage::size
-
 	RemoteObjectMessageData newMsgData;
 	newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
 	newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
@@ -339,462 +336,152 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 
 			newMsgData.addrVal.first = int16(sourceId);
 			newMsgData.valType = ROVT_FLOAT;
-		
-			float newFloatValue;
-			float newDualFloatValue[2];
-			float newTripleFloatValue[3];
-			int newIntValue;
-			int newDualIntValue[2];
 
 			// Determine which parameter was changed depending on the incoming message's address pattern.
 			//ROI_Settings_DeviceName;
 			if (addressString.startsWith(GetRemoteObjectString(ROI_Error_GnrlErr)))
 			{
 				newObjectId = ROI_Error_GnrlErr;
-
-				if (isContentMessage)
-				{
-					// gnrlerr should be an int
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else
-						newIntValue = 0;
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			//ROI_Error_ErrorText;
 			//ROI_Status_StatusText;
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Mute)))
 			{
 				newObjectId = ROI_MatrixInput_Mute;
-
-				if (isContentMessage)
-				{
-					// matrixinput mute should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Gain)))
 			{
 				newObjectId = ROI_MatrixInput_Gain;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Delay)))
 			{
 				newObjectId = ROI_MatrixInput_Delay;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_DelayEnable)))
 			{
 				newObjectId = ROI_MatrixInput_DelayEnable;
-
-				if (isContentMessage)
-				{
-					// matrixinput delayenable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_EqEnable)))
 			{
 				newObjectId = ROI_MatrixInput_EqEnable;
-
-				if (isContentMessage)
-				{
-					// matrixinput eqenable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Polarity)))
 			{
 				newObjectId = ROI_MatrixInput_Polarity;
-
-				if (isContentMessage)
-				{
-					// matrixinput polarity should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			//ROI_MatrixInput_ChannelName;
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_LevelMeterPreMute)))
 			{
-			newObjectId = ROI_MatrixInput_LevelMeterPreMute;
-
-			if (isContentMessage)
-			{
-				newFloatValue = message[0].getFloat32();
-
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newFloatValue;
-				newMsgData.payloadSize = sizeof(float);
-			}
+				newObjectId = ROI_MatrixInput_LevelMeterPreMute;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_LevelMeterPostMute)))
 			{
-			newObjectId = ROI_MatrixInput_LevelMeterPostMute;
-
-			if (isContentMessage)
-			{
-				newFloatValue = message[0].getFloat32();
-
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newFloatValue;
-				newMsgData.payloadSize = sizeof(float);
-			}
+				newObjectId = ROI_MatrixInput_LevelMeterPostMute;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Enable)))
 			{
 				newObjectId = ROI_MatrixNode_Enable;
-
-				if (isContentMessage)
-				{
-					// matrixnode enable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Gain)))
 			{
-			newObjectId = ROI_MatrixNode_Gain;
-
-			if (isContentMessage)
-			{
-				newFloatValue = message[0].getFloat32();
-
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newFloatValue;
-				newMsgData.payloadSize = sizeof(float);
-			}
+				newObjectId = ROI_MatrixNode_Gain;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_DelayEnable)))
 			{
 				newObjectId = ROI_MatrixNode_DelayEnable;
-
-				if (isContentMessage)
-				{
-					// matrixnode delayenable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Polarity)))
 			{
 				newObjectId = ROI_MatrixInput_Polarity;
-
-				if (isContentMessage)
-				{
-					// matrixinput polarity should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Delay)))
 			{
-			newObjectId = ROI_MatrixNode_Delay;
-
-			if (isContentMessage)
-			{
-				newFloatValue = message[0].getFloat32();
-
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newFloatValue;
-				newMsgData.payloadSize = sizeof(float);
-			}
+				newObjectId = ROI_MatrixNode_Delay;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Mute)))
 			{
 				newObjectId = ROI_MatrixOutput_Mute;
-
-				if (isContentMessage)
-				{
-					// matrixnode enable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Gain)))
 			{
-			newObjectId = ROI_MatrixOutput_Gain;
-
-			if (isContentMessage)
-			{
-				newFloatValue = message[0].getFloat32();
-
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newFloatValue;
-				newMsgData.payloadSize = sizeof(float);
-			}
+				newObjectId = ROI_MatrixOutput_Gain;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Delay)))
 			{
-			newObjectId = ROI_MatrixOutput_Delay;
-
-			if (isContentMessage)
-			{
-				newFloatValue = message[0].getFloat32();
-
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newFloatValue;
-				newMsgData.payloadSize = sizeof(float);
-			}
+				newObjectId = ROI_MatrixOutput_Delay;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_DelayEnable)))
 			{
 				newObjectId = ROI_MatrixOutput_DelayEnable;
-
-				if (isContentMessage)
-				{
-					// matrixnode enable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_EqEnable)))
 			{
 				newObjectId = ROI_MatrixOutput_EqEnable;
-
-				if (isContentMessage)
-				{
-					// matrixnode enable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Polarity)))
 			{
 				newObjectId = ROI_MatrixOutput_Polarity;
-
-				if (isContentMessage)
-				{
-					// matrixnode enable should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			//ROI_MatrixOutput_ChannelName;
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_LevelMeterPreMute)))
 			{
 				newObjectId = ROI_MatrixOutput_LevelMeterPreMute;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_LevelMeterPostMute)))
 			{
 				newObjectId = ROI_MatrixOutput_LevelMeterPostMute;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceSpread)))
 			{
 				newObjectId = ROI_Positioning_SourceSpread;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceDelayMode)))
 			{
 				newObjectId = ROI_Positioning_SourceDelayMode;
-
-				if (isContentMessage)
-				{
-					// delaymode should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition)))
 			{
-			newObjectId = ROI_Positioning_SourcePosition;
-
-			if (isContentMessage)
-			{
-				newTripleFloatValue[0] = message[0].getFloat32();
-				newTripleFloatValue[1] = message[1].getFloat32();
-				newTripleFloatValue[2] = message[2].getFloat32();
-
-				newMsgData.valCount = 3;
-				newMsgData.payload = &newTripleFloatValue;
-				newMsgData.payloadSize = 3 * sizeof(float);
-			}
+				newObjectId = ROI_Positioning_SourcePosition;
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_XY)))
 			{
 				newObjectId = ROI_Positioning_SourcePosition_XY;
-
-				if (isContentMessage)
-				{
-					newDualFloatValue[0] = message[0].getFloat32();
-					newDualFloatValue[1] = message[1].getFloat32();
-
-					newMsgData.valCount = 2;
-					newMsgData.payload = &newDualFloatValue;
-					newMsgData.payloadSize = 2 * sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_X)))
 			{
 				newObjectId = ROI_Positioning_SourcePosition_X;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_Y)))
 			{
 				newObjectId = ROI_Positioning_SourcePosition_Y;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition)))
 			{
@@ -804,17 +491,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition;
-
-				if (isContentMessage)
-				{
-					newTripleFloatValue[0] = message[0].getFloat32();
-					newTripleFloatValue[1] = message[1].getFloat32();
-					newTripleFloatValue[2] = message[2].getFloat32();
-
-					newMsgData.valCount = 2;
-					newMsgData.payload = &newTripleFloatValue;
-					newMsgData.payloadSize = 2 * sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_XY)))
 			{
@@ -824,16 +501,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
-
-				if (isContentMessage)
-				{
-					newDualFloatValue[0] = message[0].getFloat32();
-					newDualFloatValue[1] = message[1].getFloat32();
-
-					newMsgData.valCount = 2;
-					newMsgData.payload = &newDualFloatValue;
-					newMsgData.payloadSize = 2 * sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_X)))
 			{
@@ -843,15 +511,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_X;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_Y)))
 			{
@@ -861,150 +521,52 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_Y;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbRoomId)))
 			{
-			newObjectId = ROI_MatrixSettings_ReverbRoomId;
-
-			if (isContentMessage)
-			{
-				// delaymode should be an int, but since some OSC appliances can only process floats,
-				// we need to be prepared to optionally accept float as well
-				if (message[0].isInt32())
-					newIntValue = message[0].getInt32();
-				else if (message[0].isFloat32())
-					newIntValue = (int)round(message[0].getFloat32());
-
-				newMsgData.valType = ROVT_INT;
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newIntValue;
-				newMsgData.payloadSize = sizeof(int);
-			}
+				newObjectId = ROI_MatrixSettings_ReverbRoomId;
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbPredelayFactor)))
 			{
 				newObjectId = ROI_MatrixSettings_ReverbPredelayFactor;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_RevebRearLevel)))
 			{
 				newObjectId = ROI_MatrixSettings_RevebRearLevel;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_ReverbSendGain)))
 			{
 				newObjectId = ROI_MatrixInput_ReverbSendGain;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInput_Gain)))
 			{
 				newObjectId = ROI_ReverbInput_Gain;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_Mute)))
 			{
 				newObjectId = ROI_ReverbInputProcessing_Mute;
-
-				if (isContentMessage)
-				{
-					// delaymode should be an int, but since some OSC appliances can only process floats,
-					// we need to be prepared to optionally accept float as well
-					if (message[0].isInt32())
-						newIntValue = message[0].getInt32();
-					else if (message[0].isFloat32())
-						newIntValue = (int)round(message[0].getFloat32());
-
-					newMsgData.valType = ROVT_INT;
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newIntValue;
-					newMsgData.payloadSize = sizeof(int);
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_Gain)))
 			{
 				newObjectId = ROI_ReverbInputProcessing_Gain;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_LevelMeter)))
 			{
 				newObjectId = ROI_ReverbInputProcessing_LevelMeter;
-
-				if (isContentMessage)
-				{
-					newFloatValue = message[0].getFloat32();
-
-					newMsgData.valCount = 1;
-					newMsgData.payload = &newFloatValue;
-					newMsgData.payloadSize = sizeof(float);
-				}
+				createFloatMessageData(message, newMsgData);
 			}
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_EqEnable)))
 			{
-			newObjectId = ROI_ReverbInputProcessing_EqEnable;
-
-			if (isContentMessage)
-			{
-				// delaymode should be an int, but since some OSC appliances can only process floats,
-				// we need to be prepared to optionally accept float as well
-				if (message[0].isInt32())
-					newIntValue = message[0].getInt32();
-				else if (message[0].isFloat32())
-					newIntValue = (int)round(message[0].getFloat32());
-
-				newMsgData.valType = ROVT_INT;
-				newMsgData.valCount = 1;
-				newMsgData.payload = &newIntValue;
-				newMsgData.payloadSize = sizeof(int);
-			}
+				newObjectId = ROI_ReverbInputProcessing_EqEnable;
+				createIntMessageData(message, newMsgData);
 			}
 			//ROI_Device_Clear;
 			//ROI_Scene_Previous;
@@ -1013,42 +575,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 			else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_Recall)))
 			{
 				newObjectId = ROI_Scene_Recall;
-
-				if (isContentMessage)
-				{
-					if (message.size() == 1)
-					{
-						// delaymode should be an int, but since some OSC appliances can only process floats,
-						// we need to be prepared to optionally accept float as well
-						if (message[0].isInt32())
-							newIntValue = message[0].getInt32();
-						else if (message[0].isFloat32())
-							newIntValue = (int)round(message[0].getFloat32());
-
-						newMsgData.valType = ROVT_INT;
-						newMsgData.valCount = 1;
-						newMsgData.payload = &newIntValue;
-						newMsgData.payloadSize = sizeof(int);
-					}
-					else if (message.size() == 2)
-					{
-						// delaymode should be an int, but since some OSC appliances can only process floats,
-						// we need to be prepared to optionally accept float as well
-						if (message[0].isInt32())
-							newDualIntValue[0] = message[0].getInt32();
-						else if (message[0].isFloat32())
-							newDualIntValue[0] = (int)round(message[0].getFloat32());
-						if (message[1].isInt32())
-							newDualIntValue[1] = message[1].getInt32();
-						else if (message[1].isFloat32())
-							newDualIntValue[1] = (int)round(message[1].getFloat32());
-
-						newMsgData.valType = ROVT_INT;
-						newMsgData.valCount = 2;
-						newMsgData.payload = &newDualIntValue;
-						newMsgData.payloadSize = 2 * sizeof(int);
-					}
-				}
+				createIntMessageData(message, newMsgData);
 			}
 			//ROI_Scene_SceneIndex;
 			//ROI_Scene_SceneName;
@@ -1205,5 +732,84 @@ void OSCProtocolProcessor::timerCallback()
 		msgData.payloadSize = 0;
 		
 		SendMessage(m_activeRemoteObjects[i].Id, msgData);
+	}
+}
+
+/**
+ * Helper method to fill a new remote object message data struct with data from an osc message.
+ * This method reads a single float from osc message and fills it into the message data struct.
+ * @param messageInput	The osc input message to read from.
+ * @param newMessageData	The message data struct to fill data into.
+ */
+void OSCProtocolProcessor::createFloatMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData)
+{
+	if (messageInput.size() == 1)
+	{
+		m_floatValueBuffer[0] = messageInput[0].getFloat32();
+
+		newMessageData.valCount = 1;
+		newMessageData.payload = m_floatValueBuffer;
+		newMessageData.payloadSize = sizeof(float);
+	}
+	if (messageInput.size() == 2)
+	{
+		m_floatValueBuffer[0] = messageInput[0].getFloat32();
+		m_floatValueBuffer[1] = messageInput[1].getFloat32();
+
+		newMessageData.valCount = 2;
+		newMessageData.payload = m_floatValueBuffer;
+		newMessageData.payloadSize = 2 * sizeof(float);
+	}
+	if (messageInput.size() == 3)
+	{
+		m_floatValueBuffer[0] = messageInput[0].getFloat32();
+		m_floatValueBuffer[1] = messageInput[1].getFloat32();
+		m_floatValueBuffer[2] = messageInput[2].getFloat32();
+
+		newMessageData.valCount = 3;
+		newMessageData.payload = m_floatValueBuffer;
+		newMessageData.payloadSize = 3 * sizeof(float);
+	}
+}
+
+/**
+ * Helper method to fill a new remote object message data struct with data from an osc message.
+ * This method reads two ints from osc message and fills them into the message data struct.
+ * @param messageInput	The osc input message to read from.
+ * @param newMessageData	The message data struct to fill data into.
+ */
+void OSCProtocolProcessor::createIntMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData)
+{
+	if (messageInput.size() == 1)
+	{
+		// value be an int, but since some OSC appliances can only process floats,
+		// we need to be prepared to optionally accept float as well
+		if (messageInput[0].isInt32())
+			m_intValueBuffer[0] = messageInput[0].getInt32();
+		else if (messageInput[0].isFloat32())
+			m_intValueBuffer[0] = static_cast<int>(round(messageInput[0].getFloat32()));
+
+		newMessageData.valType = ROVT_INT;
+		newMessageData.valCount = 1;
+		newMessageData.payload = m_intValueBuffer;
+		newMessageData.payloadSize = sizeof(int);
+	}
+	else if (messageInput.size() == 2)
+	{
+		// value be an int, but since some OSC appliances can only process floats,
+		// we need to be prepared to optionally accept float as well
+		if (messageInput[0].isInt32())
+			m_intValueBuffer[0] = messageInput[0].getInt32();
+		else if (messageInput[0].isFloat32())
+			m_intValueBuffer[0] = (int)round(messageInput[0].getFloat32());
+		if (messageInput[1].isInt32())
+			m_intValueBuffer[1] = messageInput[1].getInt32();
+		else if (messageInput[1].isFloat32())
+			m_intValueBuffer[1] = (int)round(messageInput[1].getFloat32());
+
+		newMessageData.valType = ROVT_INT;
+		newMessageData.valCount = 2;
+		newMessageData.payload = m_intValueBuffer;
+		newMessageData.payloadSize = 2 * sizeof(int);
 	}
 }
