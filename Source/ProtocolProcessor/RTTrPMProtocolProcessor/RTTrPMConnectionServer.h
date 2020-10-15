@@ -9,8 +9,9 @@ Author:  adam.nagy
 
 #pragma once
 
-#include "MainComponent.h"
 #include "RTTrPM.h"
+
+#include <JuceHeader.h>
 
 using namespace std;
 
