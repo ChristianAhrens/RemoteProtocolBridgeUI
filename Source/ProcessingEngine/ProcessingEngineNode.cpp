@@ -47,6 +47,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
 #include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
+#include "ProtocolProcessor/RTTrPMProtocolProcessor/RTTrPMProtocolProcessor.h"
 #include "ProtocolProcessor/MIDIProtocolProcessor/MIDIProtocolProcessor.h"
 
 // **************************************************************************************
@@ -281,6 +282,8 @@ ProtocolProcessor_Abstract *ProcessingEngineNode::CreateProtocolProcessor(Protoc
 			return new OSCProtocolProcessor(m_nodeId, listenerPortNumber);
 		case PT_OCAProtocol:
 			return new OCAProtocolProcessor(m_nodeId);
+		case PT_RTTrPMProtocol:
+			return new RTTrPMProtocolProcessor(m_nodeId, listenerPortNumber);
 		case PT_DummyMidiProtocol:
 			return new MIDIProtocolProcessor(m_nodeId);
 		default:

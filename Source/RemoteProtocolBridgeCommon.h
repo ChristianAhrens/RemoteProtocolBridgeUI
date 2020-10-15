@@ -64,6 +64,7 @@ enum ProtocolType
 	PT_OCAProtocol,			/**< OCA protocol type value. */
 	PT_OSCProtocol,			/**< OSC protocol type value. */
 	PT_DummyMidiProtocol,	/**< Dummy midi protocol type value. */
+	PT_RTTrPMProtocol,		/**< Blacktrax RTTrPMotion protocol type value. */
 	PT_UserMAX				/**< Value to mark enum max; For iteration purpose. */
 };
 

@@ -315,6 +315,7 @@ ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId, c
 	addAndMakeVisible(m_ProtocolDrop.get());
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_OSCProtocol), PT_OSCProtocol);
 	//m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_OCAProtocol), PT_OCAProtocol); // not yet implemented, feel free to step in
+	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_RTTrPMProtocol), PT_RTTrPMProtocol);
 	//m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_DummyMidiProtocol), PT_DummyMidiProtocol); // not yet implemented, feel free to step in
 	m_ProtocolDrop->setColour(Label::textColourId, Colours::white);
 	m_ProtocolDrop->setJustificationType(Justification::right);
