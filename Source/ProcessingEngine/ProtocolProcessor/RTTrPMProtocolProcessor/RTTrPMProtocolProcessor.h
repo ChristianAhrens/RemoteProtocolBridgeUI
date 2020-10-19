@@ -34,10 +34,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../../RemoteProtocolBridgeCommon.h"
+#include "../../../RemoteProtocolBridgeCommon.h"
 #include "../ProtocolProcessor_Abstract.h"
-
-//#include "SenderAwareOSCReceiver.h"
 
 #include <JuceHeader.h>
 
@@ -49,14 +47,17 @@ class RTTrPMProtocolProcessor : /*public SenderAwareOSCReceiver::SAOListener<OSC
 	private Timer
 {
 public:
-	RTTrPMProtocolProcessor(int listenerPortNumber);
+	RTTrPMProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber);
 	~RTTrPMProtocolProcessor();
 
-	void SetProtocolConfigurationData(const ProcessingEngineConfig::ProtocolData& protocolData, const Array<RemoteObject>& activeObjs, NodeId NId, ProtocolId PId) override;
+	bool setStateXml(XmlElement* stateXml) override;
 
 	bool Start() override;
 	bool Stop() override;
-	void SetRemoteObjectsActive(const Array<RemoteObject>& Objs) override;
+
+	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
+	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
+
 	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 	static String GetRemoteObjectString(RemoteObjectIdentifier id);
@@ -74,4 +75,8 @@ private:
 	//												   * via UDP, parse them, and forward the included OSCMessage and OSCBundle objects to its listeners. */
 	//int						m_oscMsgRate;			/**< Interval at which OSC messages are sent to the host, in ms. */
 	Array<RemoteObject>		m_activeRemoteObjects;	/**< List of remote objects to be activly handled. */
+	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
+
+	float m_floatValueBuffer[3] = { 0.0f, 0.0f, 0.0f };
+	int m_intValueBuffer[2] = { 0, 0 };
 };

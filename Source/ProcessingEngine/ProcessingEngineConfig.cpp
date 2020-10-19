@@ -659,6 +659,10 @@ String  ProcessingEngineConfig::ProtocolTypeToString(ProtocolType pt)
 		return "OCA";
 	case PT_OSCProtocol:
 		return "OSC";
+	case PT_RTTrPMProtocol:
+		return "RTTrPM";
+	case PT_DummyMidiProtocol:
+		return "Dummy MIDI";
 	case PT_Invalid:
 		return "Invalid";
 	default:
@@ -675,6 +679,10 @@ ProtocolType  ProcessingEngineConfig::ProtocolTypeFromString(String type)
 		return PT_OCAProtocol;
 	if (type == "OSC")
 		return PT_OSCProtocol;
+	if (type == "RTTrPM")
+		return PT_RTTrPMProtocol;
+	if (type == "Dummy MIDI")
+		return PT_DummyMidiProtocol;
 
 	return PT_Invalid;
 }
