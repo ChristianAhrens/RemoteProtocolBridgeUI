@@ -31,7 +31,7 @@ CRTTrP::CRTTrP()
 * @param	data			: Keeps the caught data information.
 * @param	&startPosToRead	: Reference variable which helps to know from which bytes the next modul read should beginn
 */
-CRTTrP::CRTTrP(vector<unsigned char> data, int &startPosToRead)
+CRTTrP::CRTTrP(std::vector<unsigned char> data, int &startPosToRead)
 {
 	CRTTrP();	// initialise the variables with null
 	std::copy(data.begin(), data.begin() + 2, (unsigned char*)&this->m_intHeader);
@@ -92,9 +92,9 @@ uint8_t CRTTrP::GetNumOfTrackableMods()
 * @param	data			: Keeps the caught data information.
 * @param	&startPosToRead	: Reference variable which helps to know from which bytes the next modul read should beginn
 */
-CPacketModuleTrackable::CPacketModuleTrackable(vector<unsigned char> data, int &startPosToRead) : CPacketModule(data, startPosToRead)
+CPacketModuleTrackable::CPacketModuleTrackable(std::vector<unsigned char> data, int &startPosToRead) : CPacketModule(data, startPosToRead)
 {
-	if(GetModuleType() == 0x51)
+	if(GetModuleType() == PMT_withTimestamp)
 	{
 		copy(data.begin() + startPosToRead, data.begin() + startPosToRead + 1, (uint8_t *)&this->m_lengthOfname);
 		data.erase(data.begin() + startPosToRead, data.begin() + startPosToRead+1);
@@ -108,7 +108,7 @@ CPacketModuleTrackable::CPacketModuleTrackable(vector<unsigned char> data, int &
 		startPosToRead = 28;	// So the read starts by the first byte (type) of the next sub-module
 	}
 
-	else if(GetModuleType() == 0x01)
+	else if(GetModuleType() == PMT_withoutTimestamp)
 	{
 		copy(data.begin() + startPosToRead, data.begin() + startPosToRead + 1, (uint8_t *)&this->m_lengthOfname);
 		data.erase(data.begin() + startPosToRead, data.begin() + startPosToRead + 1);
@@ -153,7 +153,7 @@ CPacketModule::CPacketModule()
 * @param	data			: Keeps the caught data information.
 * @param	&startPosToRead	: Reference variable which helps to know from which bytes the next modul read should beginn
 */
-CPacketModule::CPacketModule(vector<unsigned char> data, int &startPosToRead)
+CPacketModule::CPacketModule(std::vector<unsigned char> data, int &startPosToRead)
 {
 	copy(data.begin() + startPosToRead, data.begin() + startPosToRead + 1, (uint8_t *)&this->m_moduleType);
 	data.erase(data.begin() + startPosToRead, data.begin() + startPosToRead+1);
@@ -161,7 +161,7 @@ CPacketModule::CPacketModule(vector<unsigned char> data, int &startPosToRead)
 	m_moduleSize = *(data.begin() + startPosToRead);		// Reads the first byte
 
 	// Adjust the startPosToRead if the current module type is trackable
-	if(m_moduleType == 0x51 || m_moduleType == 0x01)
+	if(m_moduleType == PMT_withTimestamp || m_moduleType == PMT_withoutTimestamp)
 	{
 		startPosToRead = 21;	// So the next read starts by the name (3th. byte of the module) of the trackable module
 	}
@@ -178,7 +178,7 @@ CPacketModule::~CPacketModule()
 * Returns the type of the module
 *
 */
-uint8_t CPacketModule::GetModuleType()
+CPacketModule::PacketModuleType CPacketModule::GetModuleType()
 {
 	return m_moduleType;
 }
@@ -204,18 +204,18 @@ CCentroidMod::CCentroidMod()
 * Constructor of the class CCentroidMod
 * @param	data	: keeps the caught data information.
 */
-CCentroidMod::CCentroidMod(vector<unsigned char> *data)
+CCentroidMod::CCentroidMod(std::vector<unsigned char> *data)
 {
 	SetClearAllVariables();		// initialise the variables with null
 
 	data->erase(data->begin(), data->begin() + 2);
-	copy(data->begin(), data->begin() + 8, (unsigned char *)&this->m_coordinateX);
+	std::copy(data->begin(), data->begin() + 8, (unsigned char *)&this->m_coordinateX);
 	data->erase(data->begin(), data->begin() + 8);
 
-	copy(data->begin(), data->begin() + 8, (unsigned char *)&this->m_coordinateY);
+	std::copy(data->begin(), data->begin() + 8, (unsigned char *)&this->m_coordinateY);
 	data->erase(data->begin(), data->begin() + 8);
 
-	copy(data->begin(), data->begin() + 8, (unsigned char *)&this->m_coordinateZ);
+	std::copy(data->begin(), data->begin() + 8, (unsigned char *)&this->m_coordinateZ);
 	data->erase(data->begin(), data->begin() + 8);
 }
 

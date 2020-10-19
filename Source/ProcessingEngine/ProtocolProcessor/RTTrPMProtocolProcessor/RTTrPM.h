@@ -13,7 +13,6 @@ Author:  adam.nagy
 
 #pragma once
 
-using namespace std;
 
 // **************************************************************
 // class CRTTrP 
@@ -26,7 +25,7 @@ class CRTTrP
 {
 public:
 	CRTTrP();
-	CRTTrP(vector<unsigned char> data, int &startPosToRead);
+	CRTTrP(std::vector<unsigned char> data, int &startPosToRead);
 	~CRTTrP();
 	uint8_t GetNumOfTrackableMods();
 
@@ -51,15 +50,26 @@ private:
 class CPacketModule
 {
 public:
+	typedef uint8_t	PacketModuleType;
+	static constexpr PacketModuleType PMT_withTimestamp							= 0x51;
+	static constexpr PacketModuleType PMT_withoutTimestamp						= 0x1;
+	static constexpr PacketModuleType PMT_centroidPosition						= 0x02;
+	static constexpr PacketModuleType PMT_trackedPointPosition					= 0x06;
+	static constexpr PacketModuleType PMT_orientationQuaternion					= 0x03;
+	static constexpr PacketModuleType PMT_orientationEuler						= 0x04;
+	static constexpr PacketModuleType PMT_centroidAccelerationAndVelocity		= 0x20;
+	static constexpr PacketModuleType PMT_trackedPointAccelerationandVelocity	= 0x21;
+
+public:
 	CPacketModule();
-	CPacketModule(vector<unsigned char> data, int &startPosToRead);
+	CPacketModule(std::vector<unsigned char> data, int &startPosToRead);
 	~CPacketModule();
-	uint8_t GetModuleType();
+	PacketModuleType GetModuleType();
 	uint16_t GetModuleSize();
 
 protected:
-	uint8_t m_moduleType;	//	Type of the packet module
-	uint16_t m_moduleSize;	//	Size of the module
+	PacketModuleType	m_moduleType;	//	Type of the packet module
+	uint16_t			m_moduleSize;	//	Size of the module
 };
 
 // **************************************************************
@@ -71,7 +81,7 @@ protected:
 class CPacketModuleTrackable : CPacketModule
 {
 public:
-	CPacketModuleTrackable(vector<unsigned char> data, int &startPosToRead);
+	CPacketModuleTrackable(std::vector<unsigned char> data, int &startPosToRead);
 	~CPacketModuleTrackable();
 	int GetNumberOfSubModules();
 
@@ -92,7 +102,7 @@ class CCentroidMod : public CPacketModule
 {
 public:
 	CCentroidMod();
-	CCentroidMod(vector<unsigned char> *data);
+	CCentroidMod(std::vector<unsigned char> *data);
 	~CCentroidMod();
 
 	void SetClearAllVariables();

@@ -33,9 +33,9 @@ CRTTrPMConnectionServer::~CRTTrPMConnectionServer()
 *
 * @return	packetModules	: Returns the size of the packet modules
 */
-int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, vector<CCentroidMod*>& packetModules)
+int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<CCentroidMod*>& packetModules)
 {
-	vector<unsigned char> data(dataBuffer, dataBuffer + bytesRead);			// data: Vector that has all the caught data information
+	std::vector<unsigned char> data(dataBuffer, dataBuffer + bytesRead);			// data: Vector that has all the caught data information
 	int startPosToRead = 0;													// Counter variable to know from which byte the next module has to be read
 	CRTTrP cRTTrPObject = CRTTrP(data, startPosToRead);						// Sort all RTTrP header information
 
@@ -54,40 +54,40 @@ int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t byte
 
 			switch(packetModuleToRead.GetModuleType())						// Decides between the different type of sub-modules
 			{
-			case packetModule_centroidPosition:
+			case CPacketModule::PMT_centroidPosition:
 				{
-					vector<unsigned char> centroidmoddata(data.begin() + 31, data.end());	// centroidmoddata :  Vector that receives the position of the coordinates.
+					std::vector<unsigned char> centroidmoddata(data.begin() + 31, data.end());	// centroidmoddata :  Vector that receives the position of the coordinates.
 					CCentroidMod *mod = new CCentroidMod(&centroidmoddata);
 					packetModules.push_back(mod);						
 					startPosToRead += packetModuleToRead.GetModuleSize();
 					break;
 				}
 			
-				case packetModule_trackedPointPosition:
+				case CPacketModule::PMT_trackedPointPosition:
 				{
 					startPosToRead += packetModuleToRead.GetModuleSize();
 					break;
 				}
 				
-				case packetModule_orientationQuaternion:
+				case CPacketModule::PMT_orientationQuaternion:
 				{
 					startPosToRead += packetModuleToRead.GetModuleSize();
 					break;
 				}
 				
-				case packetModule_orientationEuler:
+				case CPacketModule::PMT_orientationEuler:
 				{
 					startPosToRead += packetModuleToRead.GetModuleSize();
 					break;
 				}
 				
-				case packetModule_centroidAccelerationAndVelocity:
+				case CPacketModule::PMT_centroidAccelerationAndVelocity:
 				{
 					startPosToRead += packetModuleToRead.GetModuleSize();
 					break;
 				}
 				
-				case packetModule_trackedPointAccelerationandVelocity:
+				case CPacketModule::PMT_trackedPointAccelerationandVelocity:
 				{
 					startPosToRead += packetModuleToRead.GetModuleSize();
 					break;
@@ -188,7 +188,7 @@ void CRTTrPMConnectionServer::stop()
 /**
 * Returns the centroid packet module vector, which keeps the x, y, z coordinates
 */
-vector<CCentroidMod*>CRTTrPMConnectionServer::GetCentroidPosCoordinates()
+std::vector<CCentroidMod*>CRTTrPMConnectionServer::GetCentroidPosCoordinates()
 {
 	return m_modulesFromDatenpacket;
 }
