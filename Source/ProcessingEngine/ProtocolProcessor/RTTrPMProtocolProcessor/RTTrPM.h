@@ -30,14 +30,14 @@ public:
 	uint8_t GetNumOfTrackableMods();
 
 private:
-	uint16_t m_intHeader; // The RTTrP Header has two types, one with float and one with integer
-	uint16_t m_fltHeader;
-	uint16_t m_version;
-	uint32_t m_packetID;
-	uint8_t m_packetForm;
-	uint16_t m_packetSize;
-	uint32_t m_context;
-	uint8_t m_numMods;
+	uint16_t m_intHeader{ 0 }; // The RTTrP Header has two types, one with float and one with integer
+	uint16_t m_fltHeader{ 0 };
+	uint16_t m_version{ 0 };
+	uint32_t m_packetID{ 0 };
+	uint8_t m_packetForm{ 0 };
+	uint16_t m_packetSize{ 0 };
+	uint32_t m_context{ 0 };
+	uint8_t m_numMods{ 0 };
 };
 
 
@@ -51,8 +51,9 @@ class CPacketModule
 {
 public:
 	typedef uint8_t	PacketModuleType;
+	static constexpr PacketModuleType PMT_invalid								= 0x00;
 	static constexpr PacketModuleType PMT_withTimestamp							= 0x51;
-	static constexpr PacketModuleType PMT_withoutTimestamp						= 0x1;
+	static constexpr PacketModuleType PMT_withoutTimestamp						= 0x01;
 	static constexpr PacketModuleType PMT_centroidPosition						= 0x02;
 	static constexpr PacketModuleType PMT_trackedPointPosition					= 0x06;
 	static constexpr PacketModuleType PMT_orientationQuaternion					= 0x03;
@@ -64,12 +65,15 @@ public:
 	CPacketModule();
 	CPacketModule(std::vector<unsigned char> data, int &startPosToRead);
 	~CPacketModule();
-	PacketModuleType GetModuleType();
-	uint16_t GetModuleSize();
 
-protected:
-	PacketModuleType	m_moduleType;	//	Type of the packet module
-	uint16_t			m_moduleSize;	//	Size of the module
+	PacketModuleType GetModuleType() const;
+	uint16_t GetModuleSize() const;
+
+	virtual bool isValid() const;
+
+private:
+	PacketModuleType	m_moduleType{ PMT_invalid };	//	Type of the packet module
+	uint16_t			m_moduleSize{ 0 };	//	Size of the module
 };
 
 // **************************************************************
@@ -78,12 +82,15 @@ protected:
 /**
 * A class to save the trackable packet module information
 */
-class CPacketModuleTrackable : CPacketModule
+class CPacketModuleTrackable : public CPacketModule
 {
 public:
 	CPacketModuleTrackable(std::vector<unsigned char> data, int &startPosToRead);
 	~CPacketModuleTrackable();
-	int GetNumberOfSubModules();
+
+	int GetNumberOfSubModules() const;
+
+	bool isValid() const override;
 
 private:
 	uint8_t m_lengthOfname;
@@ -106,9 +113,11 @@ public:
 	~CCentroidMod();
 
 	void SetClearAllVariables();
-	double GetXCoordinat();
-	double GetYCoordinat();
-	double GetZCoordinat();
+	double GetXCoordinate() const;
+	double GetYCoordinate() const;
+	double GetZCoordinate() const;
+
+	bool isValid() const override;
 
 private:
 	double m_coordinateX; 

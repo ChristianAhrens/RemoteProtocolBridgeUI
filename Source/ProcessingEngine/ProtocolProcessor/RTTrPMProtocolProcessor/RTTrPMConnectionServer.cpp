@@ -12,9 +12,11 @@ Author:  adam.nagy
 /**
 * Constructor of the CRTTrPMConnectionServer class
 */
-CRTTrPMConnectionServer::CRTTrPMConnectionServer() : Thread("RTTrPM_Connection_Server")
+CRTTrPMConnectionServer::CRTTrPMConnectionServer(int portNumber) : Thread("RTTrPM_Connection_Server")
 {
-	
+	m_socket = std::make_unique<DatagramSocket>();
+	m_listeningPort = portNumber;
+	m_hostAddress = "127.0.0.1";
 }
 
 /**
@@ -24,16 +26,59 @@ CRTTrPMConnectionServer::~CRTTrPMConnectionServer()
 {
 }
 
+/**
+* Method to start the listener thread
+*/
+bool CRTTrPMConnectionServer::start()
+{
+	return BeginWaitingForSocket(m_listeningPort, m_hostAddress);
+}
+
+/**
+* Method to terminate the listener thread
+*/
+bool CRTTrPMConnectionServer::stop()
+{
+	signalThreadShouldExit();
+
+	if (m_socket != nullptr)
+		m_socket->shutdown();
+
+	stopThread(4000);
+	m_socket.reset();
+
+	return true;
+}
+
+/**
+ * Method to add a Listener to internal list.
+ *
+ * @param listenerToAdd	The listener object to add.
+ */
+void CRTTrPMConnectionServer::addListener(CRTTrPMConnectionServer::RTTrPMListener* listenerToAdd)
+{
+	m_listeners.add(listenerToAdd);
+}
+
+/**
+ * Method to remove a Listener from internal list.
+ *
+ * @param listenerToRemove	The listener object to remove.
+ */
+void CRTTrPMConnectionServer::removeListener(CRTTrPMConnectionServer::RTTrPMListener* listenerToRemove)
+{
+	m_listeners.remove(listenerToRemove);
+}
 
 /**
 * Reads all packet modules and sorts them within the CCentroidMod class, saves all modules into packetModules vector
 * @param	dataBuffer		: An array which keeps the caught data information.
 * @param	bytesRead		: Keeps the number of read bytes
-* @param	packetModules	: Keeps the read modules from the packet
+* @param	packetModules	: Module vector that is filled with the modules read from the buffer
 *
-* @return	packetModules	: Returns the size of the packet modules
+* @return	packetModules	: Returns the count of packet modules read into given target module content vector
 */
-int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<CCentroidMod*>& packetModules)
+int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<CPacketModule*>& packetModules)
 {
 	std::vector<unsigned char> data(dataBuffer, dataBuffer + bytesRead);			// data: Vector that has all the caught data information
 	int startPosToRead = 0;													// Counter variable to know from which byte the next module has to be read
@@ -48,7 +93,7 @@ int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t byte
 	{
 		CPacketModuleTrackable trackableModule(data, startPosToRead);		// Reads the name, name length and number of sub-modules
 
-		for(int i = 0; i < trackableModule.GetNumberOfSubModules(); i++)	// As many sub-modules as the packet has
+		for(int j = 0; j < trackableModule.GetNumberOfSubModules(); j++)	// As many sub-modules as the packet has
 		{
 			CPacketModule packetModuleToRead(data, startPosToRead);			// Reads the module type and size
 
@@ -95,7 +140,8 @@ int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t byte
 			}
 		}
 	}
-	return packetModules.size();
+
+	return static_cast<int>(packetModules.size());
 }
 
 /**
@@ -106,10 +152,11 @@ void CRTTrPMConnectionServer::run()
 {
 	int maxBytesToRead = 512;		// Variable for the maximal size of data -> notice: if its too small data can't be read!
 	unsigned char dataBuffer[512];	// An array which keeps the caught data information.
+	std::vector<CPacketModule*>	modulesReadBuffer;
 
 	while(!threadShouldExit())
 	{
-		int readyReturnValue = socket->waitUntilReady(true, 100);	//	waitUntilReady() -> true: It will wait until the socket is ready for reading, 100: give up time in ms.
+		int readyReturnValue = m_socket->waitUntilReady(true, 100);	//	waitUntilReady() -> true: It will wait until the socket is ready for reading, 100: give up time in ms.
 
 		if(readyReturnValue == 0)
 		{
@@ -120,7 +167,7 @@ void CRTTrPMConnectionServer::run()
 		else if(readyReturnValue == 1)
 		{
 			//	bytesRead returns the number of read bytes, or -1 if there was an error.
-			int bytesRead = socket->read(dataBuffer, maxBytesToRead, false);	//	read() -> false: the method will return as much data as is currently available without blocking.
+			int bytesRead = m_socket->read(dataBuffer, maxBytesToRead, false);	//	read() -> false: the method will return as much data as is currently available without blocking.
 
 			if(bytesRead == -1)
 			{
@@ -132,11 +179,16 @@ void CRTTrPMConnectionServer::run()
 			}
 			else
 			{
-				m_packetSize = HandleBuffer(dataBuffer, bytesRead, m_modulesFromDatenpacket);
-				if(m_packetSize == 0)
+				int moduleCount = HandleBuffer(dataBuffer, bytesRead, modulesReadBuffer);
+				if (moduleCount > 0)
 				{
-					jassert(m_packetSize == 0);
-					continue;
+					for (auto const& mod : modulesReadBuffer)
+					{
+						// now post the message that will trigger the handleMessage callback
+						// dealing with the non-realtime listeners.
+						if (m_listeners.size() > 0)
+							postMessage(new CallbackMessage(*mod, m_hostAddress, m_listeningPort));
+					}
 				}
 			}
 		}
@@ -159,36 +211,40 @@ bool CRTTrPMConnectionServer::BeginWaitingForSocket(const int portNumber, const 
 {
 	stop();
 
-	socket.reset(new DatagramSocket());	//  deletes the old object that it was previously pointing to if there was one. 
+	m_socket.reset(new DatagramSocket());	//  deletes the old object that it was previously pointing to if there was one. 
 
-	if(socket->bindToPort(portNumber, bindAddress))
+	if(m_socket->bindToPort(portNumber, bindAddress))
 	{
 		startThread();
 		return true;
 	}
 
-	socket.reset();
+	m_socket.reset();
 	return false;
 }
 
 /**
-* Method to terminate the listener thread
+* 
 */
-void CRTTrPMConnectionServer::stop()
+void CRTTrPMConnectionServer::handleMessage(const Message& msg)
 {
-	signalThreadShouldExit();
+	if (auto* callbackMessage = dynamic_cast<const CallbackMessage*> (&msg))
+	{
+		auto& contentModule = callbackMessage->contentModule;
+		auto& senderIPAddress = callbackMessage->senderIPAddress;
+		auto& senderPort = callbackMessage->senderPort;
 
-	if(socket != nullptr)
-		socket->shutdown();
-
-	stopThread(4000);
-	socket.reset();
+		callListeners(contentModule, senderIPAddress, senderPort);
+	}
 }
 
 /**
-* Returns the centroid packet module vector, which keeps the x, y, z coordinates
+* 
 */
-std::vector<CCentroidMod*>CRTTrPMConnectionServer::GetCentroidPosCoordinates()
+void CRTTrPMConnectionServer::callListeners(const CPacketModule& contentModule, const String& senderIPAddress, const int& senderPort)
 {
-	return m_modulesFromDatenpacket;
+	if (contentModule.isValid())
+	{
+		m_listeners.call([&](CRTTrPMConnectionServer::RTTrPMListener& l) { l.RTTrPMModuleReceived(contentModule, senderIPAddress, senderPort); });
+	}
 }

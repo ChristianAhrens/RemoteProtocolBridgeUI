@@ -84,7 +84,7 @@ public:
 	std::unique_ptr<XmlElement> createStateXml() override { return nullptr; };
 	virtual bool setStateXml(XmlElement* stateXml) override;
 
-	virtual bool SendMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
+	virtual bool SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
 
 protected:
 	Listener				*m_messageListener;		/**< The parent node object. Needed for e.g. triggering receive notifications. */

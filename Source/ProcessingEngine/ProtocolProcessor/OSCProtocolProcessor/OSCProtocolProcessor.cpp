@@ -173,7 +173,7 @@ void OSCProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsX
  * @param Id		The id of the object to send a message for
  * @param msgData	The message payload and metadata
  */
-bool OSCProtocolProcessor::SendMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+bool OSCProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
 	if (!m_IsRunning)
 		return false;
@@ -731,7 +731,7 @@ void OSCProtocolProcessor::timerCallback()
 		msgData.payload = 0;
 		msgData.payloadSize = 0;
 		
-		SendMessage(m_activeRemoteObjects[i].Id, msgData);
+		SendRemoteObjectMessage(m_activeRemoteObjects[i].Id, msgData);
 	}
 }
 

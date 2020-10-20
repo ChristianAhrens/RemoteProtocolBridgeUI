@@ -37,14 +37,15 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../../RemoteProtocolBridgeCommon.h"
 #include "../ProtocolProcessor_Abstract.h"
 
+#include "RTTrPMConnectionServer.h"
+
 #include <JuceHeader.h>
 
 /**
  * Class RTTrPMProtocolProcessor is a derived class for OSC protocol interaction.
  */
-class RTTrPMProtocolProcessor : /*public SenderAwareOSCReceiver::SAOListener<OSCReceiver::MessageLoopCallback>,*/
-	public ProtocolProcessor_Abstract,
-	private Timer
+class RTTrPMProtocolProcessor : public CRTTrPMConnectionServer::RTTrPMListener,
+	public ProtocolProcessor_Abstract
 {
 public:
 	RTTrPMProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber);
@@ -58,22 +59,13 @@ public:
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
 	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
-	bool SendMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
+	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
-	static String GetRemoteObjectString(RemoteObjectIdentifier id);
-
-	//virtual void oscBundleReceived(const OSCBundle &bundle, const String& senderIPAddress, const int& senderPort) override;
-	//virtual void oscMessageReceived(const OSCMessage &message, const String& senderIPAddress, const int& senderPort) override;
+	void RTTrPMModuleReceived(const CPacketModule& RTTrPMmodule, const String& senderIPAddress, const int& senderPort) override;
 
 private:
-	void timerCallback() override;
-
-private:
-	//OSCSender				m_oscSender;			/**< An OSCSender object can connect to a network port. It then can send OSC
-	//												   * messages and bundles to a specified host over an UDP socket. */
-	//SenderAwareOSCReceiver	m_oscReceiver;			/**< An OSCReceiver object can connect to a network port, receive incoming OSC packets from the network
-	//												   * via UDP, parse them, and forward the included OSCMessage and OSCBundle objects to its listeners. */
-	//int						m_oscMsgRate;			/**< Interval at which OSC messages are sent to the host, in ms. */
+	CRTTrPMConnectionServer	m_rttrpmReceiver;		/**< An receiver object for BlackTrax RTTrPM protocol that binds to a network port to receive data
+													   * via UDP, parse it, and forwards the included RTTrPM packet modules to its listeners. */
 	Array<RemoteObject>		m_activeRemoteObjects;	/**< List of remote objects to be activly handled. */
 	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
 

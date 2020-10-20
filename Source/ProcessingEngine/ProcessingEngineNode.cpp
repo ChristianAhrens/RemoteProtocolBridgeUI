@@ -349,9 +349,9 @@ void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessor_Abstract*
 bool ProcessingEngineNode::SendMessageTo(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
 	if (m_typeAProtocols.count(PId))
-		return m_typeAProtocols[PId]->SendMessage(Id, msgData);
+		return m_typeAProtocols[PId]->SendRemoteObjectMessage(Id, msgData);
 	else if (m_typeBProtocols.count(PId))
-		return m_typeBProtocols[PId]->SendMessage(Id, msgData);
+		return m_typeBProtocols[PId]->SendRemoteObjectMessage(Id, msgData);
 	else
 		return false;
 }

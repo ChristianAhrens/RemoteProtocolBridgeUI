@@ -44,13 +44,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Derived RTTrPM remote protocol processing class
  */
 RTTrPMProtocolProcessor::RTTrPMProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber)
-	: ProtocolProcessor_Abstract(parentNodeId)/*, m_oscReceiver(listenerPortNumber)*/
+	: ProtocolProcessor_Abstract(parentNodeId), m_rttrpmReceiver(listenerPortNumber)
 {
 	m_type = ProtocolType::PT_RTTrPMProtocol;
-	//m_oscMsgRate = ET_DefaultPollingRate;
 
 	// RTTrPMProtocolProcessor derives from OSCReceiver::Listener
-	//m_oscReceiver.addListener(this);
+	m_rttrpmReceiver.addListener(this);
 }
 
 /**
@@ -60,7 +59,7 @@ RTTrPMProtocolProcessor::~RTTrPMProtocolProcessor()
 {
 	Stop();
 
-	//m_oscReceiver.removeListener(this);
+	m_rttrpmReceiver.removeListener(this);
 }
 
 /**
@@ -69,17 +68,7 @@ RTTrPMProtocolProcessor::~RTTrPMProtocolProcessor()
  */
 bool RTTrPMProtocolProcessor::Start()
 {
-	bool successS = false;
-	bool successR = false;
-
-	//// Connect both sender and receiver  
-	//successS = m_oscSender.connect(m_ipAddress, m_clientPort);
-	//jassert(successS);
-	//
-	//successR = m_oscReceiver.connect();
-	//jassert(successR);
-
-	m_IsRunning = (successS && successR);
+	m_IsRunning = m_rttrpmReceiver.start();
 
 	return m_IsRunning;
 }
@@ -89,19 +78,9 @@ bool RTTrPMProtocolProcessor::Start()
  */
 bool RTTrPMProtocolProcessor::Stop()
 {
-	m_IsRunning = false;
+	m_IsRunning = !m_rttrpmReceiver.stop();
 
-	bool successS = false;
-	bool successR = false;
-
-	//// Connect both sender and receiver  
-	//successS = m_oscSender.disconnect();
-	//jassert(successS);
-	//
-	//successR = m_oscReceiver.disconnect();
-	//jassert(successR);
-
-	return (successS && successR);
+	return m_IsRunning;
 }
 
 /**
@@ -120,14 +99,6 @@ bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
 		return false;
 	else
 	{
-		//auto pollingIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
-		//if (pollingIntervalXmlElement)
-		//{
-		//	m_oscMsgRate = pollingIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL));
-		//	return true;
-		//}
-		//else
-		//	return false;
 		return true;
 	}
 }
@@ -144,16 +115,6 @@ bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
 void RTTrPMProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElement)
 {
 	ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, m_activeRemoteObjects);
-
-	// Start timer callback if objects are to be polled
-	if (m_activeRemoteObjects.size() > 0)
-	{
-		//startTimer(m_oscMsgRate);
-	}
-	else
-	{
-		//stopTimer();
-	}
 }
 
 /**
@@ -174,429 +135,99 @@ void RTTrPMProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjC
  * @param Id		The id of the object to send a message for
  * @param msgData	The message payload and metadata
  */
-bool RTTrPMProtocolProcessor::SendMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+bool RTTrPMProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
-	if (!m_IsRunning)
-		return false;
+	ignoreUnused(Id);
+	ignoreUnused(msgData);
 
-	bool sendSuccess = false;
-
-	String addressString = GetRemoteObjectString(Id);
-
-	if (msgData.addrVal.second != INVALID_ADDRESS_VALUE)
-		addressString += String::formatted("/%d", msgData.addrVal.second);
-
-	if (msgData.addrVal.first != INVALID_ADDRESS_VALUE)
-		addressString += String::formatted("/%d", msgData.addrVal.first);
-
-	uint16 valSize;
-	switch (msgData.valType)
-	{
-	case ROVT_INT:
-		valSize = sizeof(int);
-		break;
-	case ROVT_FLOAT:
-		valSize = sizeof(float);
-		break;
-	case ROVT_STRING:
-		jassertfalse; // String not (yet?) supported
-		valSize = 0;
-		break;
-	case ROVT_NONE:
-	default:
-		valSize = 0;
-		break;
-	}
-
-	jassert((msgData.valCount*valSize) == msgData.payloadSize);
-
-	switch (msgData.valType)
-	{
-	case ROVT_INT:
-		{
-		jassert(msgData.valCount < 4); // max known d&b OSC msg val cnt would be positioning xyz
-		int multivalues[3];
-
-		for (int i = 0; i < msgData.valCount; ++i)
-			multivalues[i] = ((int*)msgData.payload)[i];
-
-		//if (msgData.valCount == 1)
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0]));
-		//else if (msgData.valCount == 2)
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1]));
-		//else if (msgData.valCount == 3)
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1], multivalues[2]));
-		//else
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString));
-		}
-		break;
-	case ROVT_FLOAT:
-		{
-		jassert(msgData.valCount < 4); // max known d&b OSC msg val cnt would be positioning xyz
-		float multivalues[3];
-
-		for (int i = 0; i < msgData.valCount; ++i)
-			multivalues[i] = ((float*)msgData.payload)[i];
-
-		//if (msgData.valCount == 1)
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0]));
-		//else if (msgData.valCount == 2)
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1]));
-		//else if (msgData.valCount == 3)
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1], multivalues[2]));
-		//else
-		//	sendSuccess = m_oscSender.send(OSCMessage(addressString));
-		}
-		break;
-	case ROVT_NONE:
-		//sendSuccess = m_oscSender.send(OSCMessage(addressString));
-		break;
-	case ROVT_STRING:
-	default:
-		break;
-	}
-
-	return sendSuccess;
+	// currently, RTTrPM Protocol implementation does not support sending data
+	return false;
 }
 
 /**
-* Called when the OSCReceiver receives a new OSC bundle.
-* The bundle is processed and all contained individual messages passed on
-* to oscMessageReceived for further handling.
-*
-* @param bundle				The received OSC bundle.
-* @param senderIPAddress	The ip the bundle originates from.
-* @param senderPort			The port this bundle was received on.
-*/
-//void RTTrPMProtocolProcessor::oscBundleReceived(const OSCBundle &bundle, const String& senderIPAddress, const int& senderPort)
-//{
-//	if (senderIPAddress != m_ipAddress)
-//	{
-//#ifdef DEBUG
-//		DBG("NId"+String(m_parentNodeId) 
-//			+ " PId"+String(m_protocolProcessorId) + ": ignore unexpected OSC bundle from " 
-//			+ senderIPAddress + " (" + m_ipAddress + " expected)");
-//#endif
-//		return;
-//	}
-//
-//	for (int i = 0; i < bundle.size(); ++i)
-//	{
-//		if (bundle[i].isBundle())
-//			oscBundleReceived(bundle[i].getBundle(), senderIPAddress, senderPort);
-//		else if (bundle[i].isMessage())
-//			oscMessageReceived(bundle[i].getMessage(), senderIPAddress, senderPort);
-//	}
-//}
-
-/**
- * Called when the OSCReceiver receives a new OSC message and parses its contents to
- * pass the received data to parent node for further handling
+ * Called when the RTTrPM server receives a new RTTrPM packet module
  *
- * @param message			The received OSC message.
-* @param senderIPAddress	The ip the message originates from.
-* @param senderPort			The port this message was received on.
+ * @param module			The received RTTrPM module.
+ * @param senderIPAddress	The ip the message originates from.
+ * @param senderPort			The port this message was received on.
  */
-//void RTTrPMProtocolProcessor::oscMessageReceived(const OSCMessage &message, const String& senderIPAddress, const int& senderPort)
-//{
-//	ignoreUnused(senderPort);
-//	if (senderIPAddress != m_ipAddress)
-//	{
-//#ifdef DEBUG
-//		DBG("NId" + String(m_parentNodeId)
-//			+ " PId" + String(m_protocolProcessorId) + ": ignore unexpected OSC message from " 
-//			+ senderIPAddress + " (" + m_ipAddress + " expected)");
-//#endif
-//		return;
-//	}
-//
-//	int messageSize = message.size();
-//	bool isContentMessage = (messageSize > 0); // the value count is reported by JUCE as OSCMessage::size
-//
-//	RemoteObjectMessageData newMsgData;
-//	newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
-//	newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
-//	newMsgData.valType = ROVT_NONE;
-//	newMsgData.valCount = 0;
-//	newMsgData.payload = 0;
-//	newMsgData.payloadSize = 0;
-//
-//	String addressString = message.getAddressPattern().toString();
-//	// Check if the incoming message is a response to a sent "ping" heartbeat.
-//	if (addressString.startsWith(GetRemoteObjectString(ROI_HeartbeatPong)) && m_messageListener)
-//		m_messageListener->OnProtocolMessageReceived(this, ROI_HeartbeatPong, newMsgData);
-//	// Check if the incoming message is a response to a sent "pong" heartbeat.
-//	else if (addressString.startsWith(GetRemoteObjectString(ROI_HeartbeatPing)) && m_messageListener)
-//		m_messageListener->OnProtocolMessageReceived(this, ROI_HeartbeatPing, newMsgData);
-//	// Check if the incoming message contains parameters.
-//	else if (messageSize > 0)
-//	{
-//		// Parse the Source ID
-//		int sourceId = (addressString.fromLastOccurrenceOf("/", false, true)).getIntValue();
-//		jassert(sourceId > 0);
-//		if (sourceId > 0)
-//		{
-//			RemoteObjectIdentifier newObjectId;
-//
-//			newMsgData.addrVal.first = int16(sourceId);
-//			newMsgData.valType = ROVT_FLOAT;
-//		
-//			float newFloatValue;
-//			float newDualFloatValue[2];
-//			int newIntValue;
-//
-//			// Determine which parameter was changed depending on the incoming message's address pattern.
-//			if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Position_XY)))
-//			{
-//				// Parse the Mapping ID
-//				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-//				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-//				jassert(newMsgData.addrVal.second > 0);
-//
-//				newObjectId = ROI_SoundObject_Position_XY;
-//
-//				if (isContentMessage)
-//				{
-//					newDualFloatValue[0] = message[0].getFloat32();
-//					newDualFloatValue[1] = message[1].getFloat32();
-//
-//					newMsgData.valCount = 2;
-//					newMsgData.payload = &newDualFloatValue;
-//					newMsgData.payloadSize = 2 * sizeof(float);
-//				}
-//			}
-//			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Position_X)))
-//			{
-//				// Parse the Mapping ID
-//				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-//				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-//				jassert(newMsgData.addrVal.second > 0);
-//
-//				newObjectId = ROI_SoundObject_Position_X;
-//				
-//				if (isContentMessage)
-//				{
-//					newFloatValue = message[0].getFloat32();
-//
-//					newMsgData.valCount = 1;
-//					newMsgData.payload = &newFloatValue;
-//					newMsgData.payloadSize = sizeof(float);
-//				}
-//			}
-//			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Position_Y)))
-//			{
-//				// Parse the Mapping ID
-//				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-//				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-//				jassert(newMsgData.addrVal.second > 0);
-//
-//				newObjectId = ROI_SoundObject_Position_Y;
-//
-//				if (isContentMessage)
-//				{
-//					newFloatValue = message[0].getFloat32();
-//
-//					newMsgData.valCount = 1;
-//					newMsgData.payload = &newFloatValue;
-//					newMsgData.payloadSize = sizeof(float);
-//				}
-//			}
-//			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_Spread)))
-//			{
-//				newObjectId = ROI_SoundObject_Spread;
-//
-//				if (isContentMessage)
-//				{
-//					newFloatValue = message[0].getFloat32();
-//
-//					newMsgData.valCount = 1;
-//					newMsgData.payload = &newFloatValue;
-//					newMsgData.payloadSize = sizeof(float);
-//				}
-//			}
-//			else if (addressString.startsWith(GetRemoteObjectString(ROI_SoundObject_DelayMode)))
-//			{
-//				newObjectId = ROI_SoundObject_DelayMode;
-//
-//				if (isContentMessage)
-//				{
-//					// delaymode should be an int, but since some OSC appliances can only process floats,
-//					// we need to be prepared to optionally accept float as well
-//					if (message[0].isInt32())
-//						newIntValue = message[0].getInt32();
-//					else if (message[0].isFloat32())
-//						newIntValue = (int)round(message[0].getFloat32());
-//
-//					newMsgData.valType = ROVT_INT;
-//					newMsgData.valCount = 1;
-//					newMsgData.payload = &newIntValue;
-//					newMsgData.payloadSize = sizeof(int);
-//				}
-//			}
-//			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbSendGain)))
-//			{
-//				newObjectId = ROI_ReverbSendGain;
-//
-//				if (isContentMessage)
-//				{
-//					newFloatValue = message[0].getFloat32();
-//
-//					newMsgData.valCount = 1;
-//					newMsgData.payload = &newFloatValue;
-//					newMsgData.payloadSize = sizeof(float);
-//				}
-//			}
-//			else
-//			{
-//				newObjectId = ROI_Invalid;
-//			}
-//
-//			// provide the received message to parent node
-//			if (m_messageListener)
-//				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
-//		}
-//	}
-//}
-
-/**
- * Private method to get OSC object specific ObjectName string
- *
- * @param id	The object id to get the OSC specific object name
- * @return		The OSC specific object name
- */
-String RTTrPMProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
+void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const CPacketModule& RTTrPMmodule, const String& senderIPAddress, const int& senderPort)
 {
-	switch (id)
+	ignoreUnused(senderPort);
+	if (senderIPAddress != m_ipAddress)
 	{
-	//case ROI_HeartbeatPong:
-	//	return "/pong";
-	//case ROI_HeartbeatPing:
-	//	return "/ping";
-	//case ROI_Settings_DeviceName:
-	//	return "/dbaudio1/settings/devicename";
-	//case ROI_Error_GnrlErr:
-	//	return "/dbaudio1/error/gnrlerr";
-	//case ROI_Error_ErrorText:
-	//	return "/dbaudio1/error/errortext";
-	//case ROI_Status_StatusText:
-	//	return "/dbaudio1/status/statustext";
-	//case ROI_MatrixInput_Mute:
-	//	return "/dbaudio1/matrixinput/mute";
-	//case ROI_MatrixInput_Gain:
-	//	return "/dbaudio1/matrixinput/gain";
-	//case ROI_MatrixInput_Delay:
-	//	return "/dbaudio1/matrixinput/delay";
-	//case ROI_MatrixInput_DelayEnable:
-	//	return "/dbaudio1/matrixinput/delayenable";
-	//case ROI_MatrixInput_EqEnable:
-	//	return "/dbaudio1/matrixinput/eqenable";
-	//case ROI_MatrixInput_Polarity:
-	//	return "/dbaudio1/matrixinput/polarity";
-	//case ROI_MatrixInput_ChannelName:
-	//	return "/dbaudio1/matrixinput/channelname";
-	//case ROI_MatrixInput_LevelMeterPreMute:
-	//	return "/dbaudio1/matrixinput/levelmeterpremute";
-	//case ROI_MatrixInput_LevelMeterPostMute:
-	//	return "/dbaudio1/matrixinput/levelmeterpostmute";
-	//case ROI_MatrixNode_Enable:
-	//	return "/dbaudio1/matrixnode/enable";
-	//case ROI_MatrixNode_Gain:
-	//	return "/dbaudio1/matrixnode/gain";
-	//case ROI_MatrixNode_DelayEnable:
-	//	return "/dbaudio1/matrixnode/delayenable";
-	//case ROI_MatrixNode_Delay:
-	//	return "/dbaudio1/matrixnode/delay";
-	//case ROI_MatrixOutput_Mute:
-	//	return "/dbaudio1/matrixoutput/mute";
-	//case ROI_MatrixOutput_Gain:
-	//	return "/dbaudio1/matrixoutput/gain";
-	//case ROI_MatrixOutput_Delay:
-	//	return "/dbaudio1/matrixoutput/delay";
-	//case ROI_MatrixOutput_DelayEnable:
-	//	return "/dbaudio1/matrixoutput/delayenable";
-	//case ROI_MatrixOutput_EqEnable:
-	//	return "/dbaudio1/matrixoutput/eqenable";
-	//case ROI_MatrixOutput_Polarity:
-	//	return "/dbaudio1/matrixoutput/polarity";
-	//case ROI_MatrixOutput_ChannelName:
-	//	return "/dbaudio1/matrixoutput/channelname";
-	//case ROI_MatrixOutput_LevelMeterPreMute:
-	//	return "/dbaudio1/matrixoutput/levelmeterpremute";
-	//case ROI_MatrixOutput_LevelMeterPostMute:
-	//	return "/dbaudio1/matrixoutput/levelmeterpostmute";
-	//case ROI_Positioning_SourceSpread:
-	//	return "/dbaudio1/positioning/source_spread";
-	//case ROI_Positioning_SourceDelayMode:
-	//	return "/dbaudio1/positioning/source_delaymode";
-	//case ROI_Positioning_SourcePosition:
-	//	return "/dbaudio1/positioning/source_position";
-	//case ROI_Positioning_SourcePosition_XY:
-	//	return "/dbaudio1/positioning/source_position_xy";
-	//case ROI_Positioning_SourcePosition_X:
-	//	return "/dbaudio1/positioning/source_position_x";
-	//case ROI_Positioning_SourcePosition_Y:
-	//	return "/dbaudio1/positioning/source_position_y";
-	//case ROI_CoordinateMapping_SourcePosition:
-	//	return "/dbaudio1/coordinatemapping/source_position";
-	//case ROI_CoordinateMapping_SourcePosition_X:
-	//	return "/dbaudio1/coordinatemapping/source_position_x";
-	//case ROI_CoordinateMapping_SourcePosition_Y:
-	//	return "/dbaudio1/coordinatemapping/source_position_y";
-	//case ROI_CoordinateMapping_SourcePosition_XY:
-	//	return "/dbaudio1/coordinatemapping/source_position_xy";
-	//case ROI_MatrixSettings_ReverbRoomId:
-	//	return "/dbaudio1/matrixsettings/reverbroomid";
-	//case ROI_MatrixSettings_ReverbPredelayFactor:
-	//	return "/dbaudio1/matrixsettings/reverbpredelayfactor";
-	//case ROI_MatrixSettings_RevebRearLevel:
-	//	return "/dbaudio1/matrixsettings/reverbrearlevel";
-	//case ROI_MatrixInput_ReverbSendGain:
-	//	return "/dbaudio1/matrixinput/reverbsendgain";
-	//case ROI_ReverbInput_Gain:
-	//	return "/dbaudio1/reverbinput/gain";
-	//case ROI_ReverbInputProcessing_Mute:
-	//	return "/dbaudio1/reverbinputprocessing/mute";
-	//case ROI_ReverbInputProcessing_Gain:
-	//	return "/dbaudio1/reverbinputprocessing/gain";
-	//case ROI_ReverbInputProcessing_LevelMeter:
-	//	return "/dbaudio1/reverbinputprocessing/levelmeter";
-	//case ROI_ReverbInputProcessing_EqEnable:
-	//	return "/dbaudio1/reverbinputprocessing/eqenable";
-	//case ROI_Device_Clear:
-	//	return "/dbaudio1/device/clear";
-	//case ROI_Scene_Previous:
-	//	return "/dbaudio1/scene/previous";
-	//case ROI_Scene_Next:
-	//	return "/dbaudio1/scene/next";
-	//case ROI_Scene_Recall:
-	//	return "/dbaudio1/scene/recall";
-	//case ROI_Scene_SceneIndex:
-	//	return "/dbaudio1/scene/sceneindex";
-	//case ROI_Scene_SceneName:
-	//	return "/dbaudio1/scene/scenename";
-	//case ROI_Scene_SceneComment:
-	//	return "/dbaudio1/scene/scenecomment";
-	default:
-		return "";
+#ifdef DEBUG
+		DBG("NId" + String(m_parentNodeId)
+			+ " PId" + String(m_protocolProcessorId) + ": ignore unexpected OSC message from " 
+			+ senderIPAddress + " (" + m_ipAddress + " expected)");
+#endif
+		return;
 	}
-}
 
-/**
- * Timer callback function, which will be called at regular intervals to
- * send out OSC poll messages.
- */
-void RTTrPMProtocolProcessor::timerCallback()
-{
-	int objectCount = m_activeRemoteObjects.size();
-	for (int i = 0; i < objectCount; i++)
+	RemoteObjectMessageData newMsgData;
+	newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
+	newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
+	newMsgData.valType = ROVT_NONE;
+	newMsgData.valCount = 0;
+	newMsgData.payload = 0;
+	newMsgData.payloadSize = 0;
+
+	RemoteObjectIdentifier newObjectId = ROI_Invalid;
+	
+	//float newFloatValue;
+	float newDualFloatValue[2];
+	//int newIntValue;
+
+	if (RTTrPMmodule.isValid())
 	{
-		RemoteObjectMessageData msgData;
-		msgData.addrVal = m_activeRemoteObjects[i].Addr;
-		msgData.valCount = 0;
-		msgData.valType = ROVT_NONE;
-		msgData.payload = 0;
-		msgData.payloadSize = 0;
-		
-		SendMessage(m_activeRemoteObjects[i].Id, msgData);
+		switch (RTTrPMmodule.GetModuleType())
+		{
+		case CPacketModule::PMT_withTimestamp:
+			break;
+		case CPacketModule::PMT_withoutTimestamp:
+			break;
+		case CPacketModule::PMT_centroidPosition:
+			{
+			const CCentroidMod* centroid = dynamic_cast<const CCentroidMod*>(&RTTrPMmodule);
+				if (centroid)
+				{
+					newObjectId = ROI_Positioning_SourcePosition_XY;
+
+					/*dbg*/newMsgData.addrVal.first = int16(1);
+					/*dbg*/newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
+
+					newDualFloatValue[0] = static_cast<float>(centroid->GetXCoordinate());
+					newDualFloatValue[1] = static_cast<float>(centroid->GetYCoordinate());
+
+					newMsgData.valType = ROVT_FLOAT;
+					newMsgData.valCount = 2;
+					newMsgData.payload = &newDualFloatValue;
+					newMsgData.payloadSize = 2 * sizeof(float);
+				}
+			}
+			break;
+		case CPacketModule::PMT_trackedPointPosition:
+			break;
+		case CPacketModule::PMT_orientationQuaternion:
+			break;
+		case CPacketModule::PMT_orientationEuler:
+			break;
+		case CPacketModule::PMT_centroidAccelerationAndVelocity:
+			break;
+		case CPacketModule::PMT_trackedPointAccelerationandVelocity:
+			break;
+		case CPacketModule::PMT_invalid:
+			break;
+		default:
+			break;
+		}
 	}
+	else
+	{
+		newObjectId = ROI_Invalid;
+	}
+
+	// provide the received message to parent node
+	if (m_messageListener)
+		m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 }

@@ -10,19 +10,10 @@ Author:  adam.nagy
 #include "RTTrPM.h"
 
 /**
-* Constructor of the class CRTTrP
-* Initialize the member variables with null.
+* Default constructor of the class CRTTrP
 */
 CRTTrP::CRTTrP()
 {
-	this->m_intHeader = NULL;
-	this->m_fltHeader = NULL;
-	this->m_version = NULL;
-	this->m_packetID = NULL;
-	this->m_packetForm = NULL;
-	this->m_packetSize = NULL;
-	this->m_context = NULL;
-	this->m_numMods = NULL;
 }
 
 /**
@@ -33,7 +24,6 @@ CRTTrP::CRTTrP()
 */
 CRTTrP::CRTTrP(std::vector<unsigned char> data, int &startPosToRead)
 {
-	CRTTrP();	// initialise the variables with null
 	std::copy(data.begin(), data.begin() + 2, (unsigned char*)&this->m_intHeader);
 	data.erase(data.begin(), data.begin() + 2);
 
@@ -86,6 +76,68 @@ uint8_t CRTTrP::GetNumOfTrackableMods()
 	return m_numMods; 
 }
 
+
+/**
+* Constructor of the CPacketModule class
+*/
+CPacketModule::CPacketModule()
+{
+}
+
+/**
+* Constructor of the CPacketModule class. It saves the type and size of the module.
+*
+* @param	data			: Keeps the caught data information.
+* @param	&startPosToRead	: Reference variable which helps to know from which bytes the next modul read should beginn
+*/
+CPacketModule::CPacketModule(std::vector<unsigned char> data, int& startPosToRead)
+{
+	copy(data.begin() + startPosToRead, data.begin() + startPosToRead + 1, (uint8_t*)&this->m_moduleType);
+	data.erase(data.begin() + startPosToRead, data.begin() + startPosToRead + 1);
+
+	m_moduleSize = *(data.begin() + startPosToRead);		// Reads the first byte
+
+	// Adjust the startPosToRead if the current module type is trackable
+	if (m_moduleType == PMT_withTimestamp || m_moduleType == PMT_withoutTimestamp)
+	{
+		startPosToRead = 21;	// So the next read starts by the name (3th. byte of the module) of the trackable module
+	}
+}
+
+/**
+* Destructor of the CPacketModule class
+*/
+CPacketModule::~CPacketModule()
+{
+}
+
+/**
+ * Helper method to check validity of the packet module based on size greater zero and correct type.
+ */
+bool CPacketModule::isValid() const
+{
+	return ((m_moduleSize > 0) && (m_moduleType != PMT_invalid));
+}
+
+/**
+* Returns the type of the module
+*
+*/
+CPacketModule::PacketModuleType CPacketModule::GetModuleType() const
+{
+	return m_moduleType;
+}
+
+/**
+* Returns the size of the module
+*
+*/
+uint16_t CPacketModule::GetModuleSize() const
+{
+	return m_moduleSize;
+}
+
+
 /**
 * Constructor of the CPacketModuleTrackable class. It reads the number of sub-modules in the packet.
 *
@@ -134,63 +186,19 @@ CPacketModuleTrackable::~CPacketModuleTrackable()
 *
 * @return	m_numberOfSubModules :	Number of sub-modules
 */
-int CPacketModuleTrackable::GetNumberOfSubModules()
+int CPacketModuleTrackable::GetNumberOfSubModules() const
 {
 	return m_numberOfSubModules;
 }
 
 /**
-* Constructor of the CPacketModule class
-*
-*/
-CPacketModule::CPacketModule()
+ * Reimplemented helper method to check validity of the packet module based on size greater zero and correct type.
+ */
+bool CPacketModuleTrackable::isValid() const
 {
+	return ((GetModuleSize() > 0) && ((GetModuleType() == PMT_withTimestamp) || (GetModuleType() == PMT_withoutTimestamp)));
 }
 
-/**
-* Constructor of the CPacketModule class. It saves the type and size of the module.
-*
-* @param	data			: Keeps the caught data information.
-* @param	&startPosToRead	: Reference variable which helps to know from which bytes the next modul read should beginn
-*/
-CPacketModule::CPacketModule(std::vector<unsigned char> data, int &startPosToRead)
-{
-	copy(data.begin() + startPosToRead, data.begin() + startPosToRead + 1, (uint8_t *)&this->m_moduleType);
-	data.erase(data.begin() + startPosToRead, data.begin() + startPosToRead+1);
-
-	m_moduleSize = *(data.begin() + startPosToRead);		// Reads the first byte
-
-	// Adjust the startPosToRead if the current module type is trackable
-	if(m_moduleType == PMT_withTimestamp || m_moduleType == PMT_withoutTimestamp)
-	{
-		startPosToRead = 21;	// So the next read starts by the name (3th. byte of the module) of the trackable module
-	}
-}
-
-/**
-* Destructor of the CPacketModule class
-*/
-CPacketModule::~CPacketModule()
-{
-}
-
-/**
-* Returns the type of the module
-*
-*/
-CPacketModule::PacketModuleType CPacketModule::GetModuleType()
-{
-	return m_moduleType;
-}
-
-/**
-* Returns the size of the module
-*
-*/
-uint16_t CPacketModule::GetModuleSize()
-{
-	return m_moduleSize;
-}
 
 /**
 * Constructor of the CCentroidMod class
@@ -227,6 +235,14 @@ CCentroidMod::~CCentroidMod()
 }
 
 /**
+ * Reimplemented helper method to check validity of the packet module based on size greater zero and correct type.
+ */
+bool CCentroidMod::isValid() const
+{
+	return ((GetModuleSize() > 0) && (GetModuleType() == PMT_centroidPosition));
+}
+
+/**
 * Clears all member variables, before calling them up in the CCentroidMod constructor
 */
 void CCentroidMod::SetClearAllVariables()
@@ -239,7 +255,7 @@ void CCentroidMod::SetClearAllVariables()
 /**
 * Returns the X coordinate
 */
-double CCentroidMod::GetXCoordinat()
+double CCentroidMod::GetXCoordinate() const
 { 
 	return m_coordinateX; 
 }
@@ -247,7 +263,7 @@ double CCentroidMod::GetXCoordinat()
 /**
 * Returns the Y coordinate
 */
-double CCentroidMod::GetYCoordinat()
+double CCentroidMod::GetYCoordinate() const
 {
 	return m_coordinateY; 
 }
@@ -255,7 +271,7 @@ double CCentroidMod::GetYCoordinat()
 /**
 * Returns the Z coordinate
 */
-double CCentroidMod::GetZCoordinat()
+double CCentroidMod::GetZCoordinate() const
 { 
 	return m_coordinateZ; 
 }

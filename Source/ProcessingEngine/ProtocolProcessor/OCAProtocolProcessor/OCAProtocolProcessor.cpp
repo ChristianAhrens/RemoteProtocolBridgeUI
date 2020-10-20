@@ -114,7 +114,7 @@ void OCAProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsX
  * @param Id		The id of the object to send a message for
  * @param msgData	The message payload and metadata
  */
-bool OCAProtocolProcessor::SendMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+bool OCAProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
 	ignoreUnused(Id);
 	ignoreUnused(msgData);
