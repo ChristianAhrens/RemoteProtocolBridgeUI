@@ -631,20 +631,114 @@ String ProcessingEngineConfig::GetObjectDescription(RemoteObjectIdentifier Id)
 		return "PING";
 	case ROI_HeartbeatPong:
 		return "PONG";
-	case ROI_CoordinateMapping_SourcePosition_X:
-		return "Sound Object Position X";
-	case ROI_CoordinateMapping_SourcePosition_Y:
-		return "Sound Object Position Y";
-	case ROI_CoordinateMapping_SourcePosition_XY:
-		return "Sound Object Position XY";
+	case ROI_Settings_DeviceName:
+		return "Device Name";
+	case ROI_Error_GnrlErr:
+		return "General Error";
+	case ROI_Error_ErrorText:
+		return "Error Text";
+	case ROI_Status_StatusText:
+		return "Status Text";
+	case ROI_MatrixInput_Mute:
+		return "Matrix Input Mute";
+	case ROI_MatrixInput_Gain:
+		return "Matrix Input Gain";
+	case ROI_MatrixInput_Delay:
+		return "Matrix Input Delay";
+	case ROI_MatrixInput_DelayEnable:
+		return "Matrix Input DelayEnable";
+	case ROI_MatrixInput_EqEnable:
+		return "Matrix Input EqEnable";
+	case ROI_MatrixInput_Polarity:
+		return "Matrix Input Polarity";
+	case ROI_MatrixInput_ChannelName:
+		return "Matrix Input ChannelName";
+	case ROI_MatrixInput_LevelMeterPreMute:
+		return "Matrix Input LevelMeterPreMute";
+	case ROI_MatrixInput_LevelMeterPostMute:
+		return "Matrix Input LevelMeterPostMute";
+	case ROI_MatrixNode_Enable:
+		return "Matrix Node Enable";
+	case ROI_MatrixNode_Gain:
+		return "Matrix Node Gain";
+	case ROI_MatrixNode_DelayEnable:
+		return "Matrix Node DelayEnable";
+	case ROI_MatrixNode_Delay:
+		return "Matrix Node Delay";
+	case ROI_MatrixOutput_Mute:
+		return "Matrix Output Mute";
+	case ROI_MatrixOutput_Gain:
+		return "Matrix Output Gain";
+	case ROI_MatrixOutput_Delay:
+		return "Matrix Output Delay";
+	case ROI_MatrixOutput_DelayEnable:
+		return "Matrix Output DelayEnable";
+	case ROI_MatrixOutput_EqEnable:
+		return "Matrix Output EqEnable";
+	case ROI_MatrixOutput_Polarity:
+		return "Matrix Output Polarity";
+	case ROI_MatrixOutput_ChannelName:
+		return "Matrix Output ChannelName";
+	case ROI_MatrixOutput_LevelMeterPreMute:
+		return "Matrix Output LevelMeterPreMute";
+	case ROI_MatrixOutput_LevelMeterPostMute:
+		return "Matrix Output LevelMeterPostMute";
 	case ROI_Positioning_SourceSpread:
 		return "Sound Object Spread";
 	case ROI_Positioning_SourceDelayMode:
 		return "Sound Object Delay Mode";
+	case ROI_Positioning_SourcePosition:
+		return "Absolute Sound Object Position XYZ";
+	case ROI_Positioning_SourcePosition_XY:
+		return "Absolute Sound Object Position XY";
+	case ROI_Positioning_SourcePosition_X:
+		return "Absolute Sound Object Position X";
+	case ROI_Positioning_SourcePosition_Y:
+		return "Absolute Sound Object Position Y";
+	case ROI_CoordinateMapping_SourcePosition:
+		return "Mapped Sound Object Position XYZ";
+	case ROI_CoordinateMapping_SourcePosition_XY:
+		return "Mapped Sound Object Position XY";
+	case ROI_CoordinateMapping_SourcePosition_X:
+		return "Mapped Sound Object Position X";
+	case ROI_CoordinateMapping_SourcePosition_Y:
+		return "Mapped Sound Object Position Y";
+	case ROI_MatrixSettings_ReverbRoomId:
+		return "Matrix Settings ReverbRoomId";
+	case ROI_MatrixSettings_ReverbPredelayFactor:
+		return "Matrix Settings ReverbPredelayFactor";
+	case ROI_MatrixSettings_RevebRearLevel:
+		return "Matrix Settings ReverbRearLevel";
 	case ROI_MatrixInput_ReverbSendGain:
-		return "En-Space Send Gain";
+		return "Matrix Input ReverbSendGain";
+	case ROI_ReverbInput_Gain:
+		return "Reverb Input Gain";
+	case ROI_ReverbInputProcessing_Mute:
+		return "Reverb Input Processing Mute";
+	case ROI_ReverbInputProcessing_Gain:
+		return "Reverb Input Processing Gain";
+	case ROI_ReverbInputProcessing_LevelMeter:
+		return "Reverb Input Processing LevelMeter";
+	case ROI_ReverbInputProcessing_EqEnable:
+		return "Reverb Input Processing EqEnable";
+	case ROI_Device_Clear:
+		return "Device Clear";
+	case ROI_Scene_Previous:
+		return "Scene Previous";
+	case ROI_Scene_Next:
+		return "Scene Next";
+	case ROI_Scene_Recall:
+		return "Scene Recall";
+	case ROI_Scene_SceneIndex:
+		return "Scene SceneIndex";
+	case ROI_Scene_SceneName:
+		return "Scene SceneName";
+	case ROI_Scene_SceneComment:
+		return "Scene SceneComment";
+	case ROI_Invalid:
 	default:
-		return "-";
+		jassertfalse;
+		return "";
 	}
 }
 
