@@ -276,7 +276,7 @@ enum UISizes
 	UIS_WideAttachedLabelWidth	= 140,	/** The width of a wide text label when attached to other elms. */
 	UIS_NodeModeDropWidthOffset	= 120,	/** The offset used for node mode drop in x dim. */
 	UIS_PortEditWidth			= 90,	/** The width used for port edits. */
-	UIS_ProtocolDropWidth		= 60,	/** The width used for protocol type drop. */
+	UIS_ProtocolDropWidth		= 80,	/** The width used for protocol type drop. */
 	UIS_ConfigButtonWidth		= 80,	/** Protocols' open-config button width. */
 	UIS_ProtocolLabelWidth		= 100,	/** The width used for protocol label. */
 	UIS_OSCConfigWidth			= 420,	/** The width of the osc specific config window (component). */
