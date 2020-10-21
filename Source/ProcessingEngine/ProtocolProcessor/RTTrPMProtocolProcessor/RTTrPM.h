@@ -9,7 +9,6 @@ Author:  adam.nagy
 #include <iostream>
 #include <cstdint>
 #include <vector>
-#include <winsock2.h>
 
 #pragma once
 
