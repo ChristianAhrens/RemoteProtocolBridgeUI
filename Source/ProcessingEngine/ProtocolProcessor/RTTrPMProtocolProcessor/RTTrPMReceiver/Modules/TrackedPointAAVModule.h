@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    TrackedPointAccelerationandVelocityModule.h
+    TrackedPointAccelAndVeloModule.h
     Created: 23 Oct 2020 10:12:50am
     Author:  Christian Ahrens
 
@@ -16,17 +16,17 @@
 
 
 // **************************************************************
-// class TrackedPointAccelerationandVelocityModule
+// class TrackedPointAccelAndVeloModule
 // **************************************************************
 /**
 * A class to sort the information from RTTrPM - tracked point with acceleration and velocity module
 *
 */
-class TrackedPointAccelerationandVelocityModule : public PacketModule
+class TrackedPointAccelAndVeloModule : public PacketModule
 {
 public:
-	TrackedPointAccelerationandVelocityModule(std::vector<unsigned char>& data, int& readPos);
-	~TrackedPointAccelerationandVelocityModule();
+	TrackedPointAccelAndVeloModule(std::vector<unsigned char>& data, int& readPos);
+	~TrackedPointAccelAndVeloModule();
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

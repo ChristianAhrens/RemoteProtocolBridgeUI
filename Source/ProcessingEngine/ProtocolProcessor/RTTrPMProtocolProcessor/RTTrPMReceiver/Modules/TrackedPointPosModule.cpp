@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "TrackedPointPositionModule.h"
+#include "TrackedPointPosModule.h"
 
 
 /**

@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "OrientationQuaternionModule.h"
+#include "OrientationQuaternModule.h"
 
 
 /**

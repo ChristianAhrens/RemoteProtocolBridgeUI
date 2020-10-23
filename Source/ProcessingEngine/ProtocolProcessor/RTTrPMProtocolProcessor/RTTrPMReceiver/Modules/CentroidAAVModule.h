@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    CentroidAccelerationAndVelocityModule.h
+    CentroidAccelAndVeloModule.h
     Created: 23 Oct 2020 10:12:37am
     Author:  Christian Ahrens
 
@@ -16,17 +16,17 @@
 
 
 // **************************************************************
-// class CentroidAccelerationAndVelocityModule
+// class CentroidAccelAndVeloModule
 // **************************************************************
 /**
 * A class to sort the information from RTTrPM - centroid with acceleration and velocity module
 *
 */
-class CentroidAccelerationAndVelocityModule : public PacketModule
+class CentroidAccelAndVeloModule : public PacketModule
 {
 public:
-	CentroidAccelerationAndVelocityModule(std::vector<unsigned char>& data, int& readPos);
-	~CentroidAccelerationAndVelocityModule();
+	CentroidAccelAndVeloModule(std::vector<unsigned char>& data, int& readPos);
+	~CentroidAccelAndVeloModule();
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

@@ -1,22 +1,22 @@
 /*
   ==============================================================================
 
-    CentroidAccelerationAndVelocityModule.cpp
+    CentroidAccelAndVeloModule.cpp
     Created: 23 Oct 2020 10:12:37am
     Author:  Christian Ahrens
 
   ==============================================================================
 */
 
-#include "CentroidAccelerationAndVelocityModule.h"
+#include "CentroidAAVModule.h"
 
 
 /**
-* Constructor of the class CentroidAccelerationAndVelocityModule
+* Constructor of the class CentroidAccelAndVeloModule
 * @param	data	Input byte data as vector reference.
 * @param	readPos	Reference variable which helps to know from which bytes the next modul read should beginn
 */
-CentroidAccelerationAndVelocityModule::CentroidAccelerationAndVelocityModule(std::vector<unsigned char>& data, int& readPos)
+CentroidAccelAndVeloModule::CentroidAccelAndVeloModule(std::vector<unsigned char>& data, int& readPos)
 	: PacketModule(data, readPos)
 {
 	readData(data, readPos);
@@ -27,7 +27,7 @@ CentroidAccelerationAndVelocityModule::CentroidAccelerationAndVelocityModule(std
  * @param data	The input data in a byte vector.
  * @param readPos	The position in the given vector where reading shall be started.
  */
-void CentroidAccelerationAndVelocityModule::readData(std::vector<unsigned char>& data, int& readPos)
+void CentroidAccelAndVeloModule::readData(std::vector<unsigned char>& data, int& readPos)
 {
 	auto readIter = data.begin() + readPos;
 
@@ -62,9 +62,9 @@ void CentroidAccelerationAndVelocityModule::readData(std::vector<unsigned char>&
 }
 
 /**
-* Destructor of the CentroidAccelerationAndVelocityModule class
+* Destructor of the CentroidAccelAndVeloModule class
 */
-CentroidAccelerationAndVelocityModule::~CentroidAccelerationAndVelocityModule()
+CentroidAccelAndVeloModule::~CentroidAccelAndVeloModule()
 {
 }
 
@@ -72,7 +72,7 @@ CentroidAccelerationAndVelocityModule::~CentroidAccelerationAndVelocityModule()
  * Reimplemented helper method to check validity of the packet module based on size greater zero and correct type.
  * @return True if valid, false if not
  */
-bool CentroidAccelerationAndVelocityModule::isValid() const
+bool CentroidAccelAndVeloModule::isValid() const
 {
 	return (PacketModule::isValid() && (GetModuleType() == CentroidAccelerationAndVelocity));
 }
@@ -81,7 +81,7 @@ bool CentroidAccelerationAndVelocityModule::isValid() const
 * Returns the position of the X coordinate
 * @return The x coordinate value
 */
-double CentroidAccelerationAndVelocityModule::GetXCoordinate() const
+double CentroidAccelAndVeloModule::GetXCoordinate() const
 {
 	return m_coordinateX;
 }
@@ -90,7 +90,7 @@ double CentroidAccelerationAndVelocityModule::GetXCoordinate() const
 * Returns the position of the Y coordinate
 * @return The y coordinate value
 */
-double CentroidAccelerationAndVelocityModule::GetYCoordinate() const
+double CentroidAccelAndVeloModule::GetYCoordinate() const
 {
 	return m_coordinateY;
 }
@@ -99,7 +99,7 @@ double CentroidAccelerationAndVelocityModule::GetYCoordinate() const
 * Returns the position of the Z coordinate
 * @return The z coordinate value
 */
-double CentroidAccelerationAndVelocityModule::GetZCoordinate() const
+double CentroidAccelAndVeloModule::GetZCoordinate() const
 {
 	return m_coordinateZ;
 }
@@ -108,7 +108,7 @@ double CentroidAccelerationAndVelocityModule::GetZCoordinate() const
 * Returns the calculated centroid acceleration in the X direction
 * @return The x acceleration value
 */
-float CentroidAccelerationAndVelocityModule::GetXAcceleration() const
+float CentroidAccelAndVeloModule::GetXAcceleration() const
 {
 	return m_accelerationX;
 }
@@ -117,7 +117,7 @@ float CentroidAccelerationAndVelocityModule::GetXAcceleration() const
 * Returns the calculated centroid acceleration in the Y direction
 * @return The y acceleration value
 */
-float CentroidAccelerationAndVelocityModule::GetYAcceleration() const
+float CentroidAccelAndVeloModule::GetYAcceleration() const
 {
 	return m_accelerationY;
 }
@@ -126,7 +126,7 @@ float CentroidAccelerationAndVelocityModule::GetYAcceleration() const
 * Returns the calculated centroid acceleration in the Z direction
 * @return The z acceleration value
 */
-float CentroidAccelerationAndVelocityModule::GetZAcceleration() const
+float CentroidAccelAndVeloModule::GetZAcceleration() const
 {
 	return m_accelerationZ;
 }
@@ -135,7 +135,7 @@ float CentroidAccelerationAndVelocityModule::GetZAcceleration() const
 * Returns the calculated centroid velocity in the X direction
 * @return The x velocity value
 */
-float CentroidAccelerationAndVelocityModule::GetXVelocity() const
+float CentroidAccelAndVeloModule::GetXVelocity() const
 {
 	return m_velocityX;
 }
@@ -144,7 +144,7 @@ float CentroidAccelerationAndVelocityModule::GetXVelocity() const
 * Returns the calculated centroid velocity in the Y direction
 * @return The y velocity value
 */
-float CentroidAccelerationAndVelocityModule::GetYVelocity() const
+float CentroidAccelAndVeloModule::GetYVelocity() const
 {
 	return m_velocityY;
 }
@@ -153,7 +153,7 @@ float CentroidAccelerationAndVelocityModule::GetYVelocity() const
 * Returns the calculated centroid velocity in the Z direction
 * @return The z velocity value
 */
-float CentroidAccelerationAndVelocityModule::GetZVelocity() const
+float CentroidAccelAndVeloModule::GetZVelocity() const
 {
 	return m_velocityZ;
 }

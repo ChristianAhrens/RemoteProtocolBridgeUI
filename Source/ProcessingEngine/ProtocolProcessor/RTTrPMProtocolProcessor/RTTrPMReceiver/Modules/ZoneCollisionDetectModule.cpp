@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "ZoneCollisionDetectionModule.h"
+#include "ZoneCollisionDetectModule.h"
 
 
 /**

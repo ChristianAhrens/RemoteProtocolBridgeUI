@@ -1,22 +1,22 @@
 /*
   ==============================================================================
 
-    TrackedPointAccelerationandVelocityModule.cpp
+    TrackedPointAccelAndVeloModule.cpp
     Created: 23 Oct 2020 10:12:50am
     Author:  Christian Ahrens
 
   ==============================================================================
 */
 
-#include "TrackedPointAccelerationandVelocityModule.h"
+#include "TrackedPointAAVModule.h"
 
 
 /**
-* Constructor of the class TrackedPointAccelerationandVelocityModule
+* Constructor of the class TrackedPointAccelAndVeloModule
 * @param	data	Input byte data as vector reference.
 * @param	readPos	Reference variable which helps to know from which bytes the next modul read should beginn
 */
-TrackedPointAccelerationandVelocityModule::TrackedPointAccelerationandVelocityModule(std::vector<unsigned char>& data, int& readPos)
+TrackedPointAccelAndVeloModule::TrackedPointAccelAndVeloModule(std::vector<unsigned char>& data, int& readPos)
 	: PacketModule(data, readPos)
 {
 	readData(data, readPos);
@@ -27,7 +27,7 @@ TrackedPointAccelerationandVelocityModule::TrackedPointAccelerationandVelocityMo
  * @param data	The input data in a byte vector.
  * @param readPos	The position in the given vector where reading shall be started.
  */
-void TrackedPointAccelerationandVelocityModule::readData(std::vector<unsigned char>& data, int& readPos)
+void TrackedPointAccelAndVeloModule::readData(std::vector<unsigned char>& data, int& readPos)
 {
 	auto readIter = data.begin() + readPos;
 
@@ -65,9 +65,9 @@ void TrackedPointAccelerationandVelocityModule::readData(std::vector<unsigned ch
 }
 
 /**
-* Destructor of the TrackedPointAccelerationandVelocityModule class
+* Destructor of the TrackedPointAccelAndVeloModule class
 */
-TrackedPointAccelerationandVelocityModule::~TrackedPointAccelerationandVelocityModule()
+TrackedPointAccelAndVeloModule::~TrackedPointAccelAndVeloModule()
 {
 }
 
@@ -75,7 +75,7 @@ TrackedPointAccelerationandVelocityModule::~TrackedPointAccelerationandVelocityM
  * Reimplemented helper method to check validity of the packet module based on size greater zero and correct type.
  * @return True if valid, false if not
  */
-bool TrackedPointAccelerationandVelocityModule::isValid() const
+bool TrackedPointAccelAndVeloModule::isValid() const
 {
 	return (PacketModule::isValid() && (GetModuleType() == TrackedPointAccelerationandVelocity));
 }
@@ -84,7 +84,7 @@ bool TrackedPointAccelerationandVelocityModule::isValid() const
 * Returns the position of the X coordinate
 * @return The x coordinate value
 */
-double TrackedPointAccelerationandVelocityModule::GetXCoordinate() const
+double TrackedPointAccelAndVeloModule::GetXCoordinate() const
 {
 	return m_coordinateX;
 }
@@ -93,7 +93,7 @@ double TrackedPointAccelerationandVelocityModule::GetXCoordinate() const
 * Returns the position of the Y coordinate
 * @return The y coordinate value
 */
-double TrackedPointAccelerationandVelocityModule::GetYCoordinate() const
+double TrackedPointAccelAndVeloModule::GetYCoordinate() const
 {
 	return m_coordinateY;
 }
@@ -102,7 +102,7 @@ double TrackedPointAccelerationandVelocityModule::GetYCoordinate() const
 * Returns the position of the Z coordinate
 * @return The z coordinate value
 */
-double TrackedPointAccelerationandVelocityModule::GetZCoordinate() const
+double TrackedPointAccelAndVeloModule::GetZCoordinate() const
 {
 	return m_coordinateZ;
 }
@@ -111,7 +111,7 @@ double TrackedPointAccelerationandVelocityModule::GetZCoordinate() const
 * Returns the calculated centroid acceleration in the X direction
 * @return The x acceleration value
 */
-float TrackedPointAccelerationandVelocityModule::GetXAcceleration() const
+float TrackedPointAccelAndVeloModule::GetXAcceleration() const
 {
 	return m_accelerationX;
 }
@@ -120,7 +120,7 @@ float TrackedPointAccelerationandVelocityModule::GetXAcceleration() const
 * Returns the calculated centroid acceleration in the Y direction
 * @return The y acceleration value
 */
-float TrackedPointAccelerationandVelocityModule::GetYAcceleration() const
+float TrackedPointAccelAndVeloModule::GetYAcceleration() const
 {
 	return m_accelerationY;
 }
@@ -129,7 +129,7 @@ float TrackedPointAccelerationandVelocityModule::GetYAcceleration() const
 * Returns the calculated centroid acceleration in the Z direction
 * @return The z acceleration value
 */
-float TrackedPointAccelerationandVelocityModule::GetZAcceleration() const
+float TrackedPointAccelAndVeloModule::GetZAcceleration() const
 {
 	return m_accelerationZ;
 }
@@ -138,7 +138,7 @@ float TrackedPointAccelerationandVelocityModule::GetZAcceleration() const
 * Returns the calculated centroid velocity in the X direction
 * @return The x velocity value
 */
-float TrackedPointAccelerationandVelocityModule::GetXVelocity() const
+float TrackedPointAccelAndVeloModule::GetXVelocity() const
 {
 	return m_velocityX;
 }
@@ -147,7 +147,7 @@ float TrackedPointAccelerationandVelocityModule::GetXVelocity() const
 * Returns the calculated centroid velocity in the Y direction
 * @return The y velocity value
 */
-float TrackedPointAccelerationandVelocityModule::GetYVelocity() const
+float TrackedPointAccelAndVeloModule::GetYVelocity() const
 {
 	return m_velocityY;
 }
@@ -156,7 +156,7 @@ float TrackedPointAccelerationandVelocityModule::GetYVelocity() const
 * Returns the calculated centroid velocity in the Z direction
 * @return The z velocity value
 */
-float TrackedPointAccelerationandVelocityModule::GetZVelocity() const
+float TrackedPointAccelAndVeloModule::GetZVelocity() const
 {
 	return m_velocityZ;
 }
@@ -165,7 +165,7 @@ float TrackedPointAccelerationandVelocityModule::GetZVelocity() const
 * Returns the point index
 * @return The point index
 */
-uint8_t TrackedPointAccelerationandVelocityModule::GetPointIndex() const
+uint8_t TrackedPointAccelAndVeloModule::GetPointIndex() const
 {
 	return m_index;
 }

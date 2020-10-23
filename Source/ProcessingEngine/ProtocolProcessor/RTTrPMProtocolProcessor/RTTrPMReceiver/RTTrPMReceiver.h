@@ -12,8 +12,8 @@
 
 #include <JuceHeader.h>
 
-#include "PacketModules/RTTrPMHeader.h"
-#include "PacketModules/PacketModules.h"
+#include "Modules/RTTrPMHeader.h"
+#include "Modules/PacketModules.h"
 
 
 // **************************************************************

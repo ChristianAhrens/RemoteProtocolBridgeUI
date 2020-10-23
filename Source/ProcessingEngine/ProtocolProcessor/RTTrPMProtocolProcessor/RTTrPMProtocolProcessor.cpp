@@ -266,25 +266,25 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 				break;
 			case PacketModule::CentroidAccelerationAndVelocity:
 				{
-					const CentroidAccelerationAndVelocityModule* centroidAccelerationAndVelocityModule = dynamic_cast<const CentroidAccelerationAndVelocityModule*>(RTTrPMmodule.get());
-					if (centroidAccelerationAndVelocityModule)
+					const CentroidAccelAndVeloModule* centroidAccelAndVeloModule = dynamic_cast<const CentroidAccelAndVeloModule*>(RTTrPMmodule.get());
+					if (centroidAccelAndVeloModule)
 					{
-						//DBG("CentroidAccelerationAndVelocityModule:"
-						//	+ String::formatted(" xc%f,yc%f,zc%f", centroidAccelerationAndVelocityModule->GetXCoordinate(), centroidAccelerationAndVelocityModule->GetYCoordinate(), centroidAccelerationAndVelocityModule->GetZCoordinate())
-						//	+ String::formatted(" xa%f,ya%f,za%f", centroidAccelerationAndVelocityModule->GetXAcceleration(), centroidAccelerationAndVelocityModule->GetYAcceleration(), centroidAccelerationAndVelocityModule->GetZAcceleration())
-						//	+ String::formatted(" xv%f,yv%f,zv%f", centroidAccelerationAndVelocityModule->GetXVelocity(), centroidAccelerationAndVelocityModule->GetYVelocity(), centroidAccelerationAndVelocityModule->GetZVelocity()));
+						//DBG("CentroidAccelAndVeloModule:"
+						//	+ String::formatted(" xc%f,yc%f,zc%f", CentroidAccelAndVeloModule->GetXCoordinate(), CentroidAccelAndVeloModule->GetYCoordinate(), CentroidAccelAndVeloModule->GetZCoordinate())
+						//	+ String::formatted(" xa%f,ya%f,za%f", CentroidAccelAndVeloModule->GetXAcceleration(), CentroidAccelAndVeloModule->GetYAcceleration(), CentroidAccelAndVeloModule->GetZAcceleration())
+						//	+ String::formatted(" xv%f,yv%f,zv%f", CentroidAccelAndVeloModule->GetXVelocity(), CentroidAccelAndVeloModule->GetYVelocity(), CentroidAccelAndVeloModule->GetZVelocity()));
 					}
 				}
 				break;
 			case PacketModule::TrackedPointAccelerationandVelocity:
 				{
-					const TrackedPointAccelerationandVelocityModule* trackedPointAccelerationandVelocityModule = dynamic_cast<const TrackedPointAccelerationandVelocityModule*>(RTTrPMmodule.get());
-					if (trackedPointAccelerationandVelocityModule)
+					const TrackedPointAccelAndVeloModule* trackedPointAccelAndVeloModule = dynamic_cast<const TrackedPointAccelAndVeloModule*>(RTTrPMmodule.get());
+					if (trackedPointAccelAndVeloModule)
 					{
-						//DBG("TrackedPointAccelerationandVelocityModule: idx" + String(trackedPointAccelerationandVelocityModule->GetPointIndex())
-						//	+ String::formatted(" xc%f,yc%f,zc%f", trackedPointAccelerationandVelocityModule->GetXCoordinate(), trackedPointAccelerationandVelocityModule->GetYCoordinate(), trackedPointAccelerationandVelocityModule->GetZCoordinate())
-						//	+ String::formatted(" xa%f,ya%f,za%f", trackedPointAccelerationandVelocityModule->GetXAcceleration(), trackedPointAccelerationandVelocityModule->GetYAcceleration(), trackedPointAccelerationandVelocityModule->GetZAcceleration())
-						//	+ String::formatted(" xv%f,yv%f,zv%f", trackedPointAccelerationandVelocityModule->GetXVelocity(), trackedPointAccelerationandVelocityModule->GetYVelocity(), trackedPointAccelerationandVelocityModule->GetZVelocity()));
+						//DBG("TrackedPointAccelAndVeloModule: idx" + String(TrackedPointAccelAndVeloModule->GetPointIndex())
+						//	+ String::formatted(" xc%f,yc%f,zc%f", TrackedPointAccelAndVeloModule->GetXCoordinate(), TrackedPointAccelAndVeloModule->GetYCoordinate(), TrackedPointAccelAndVeloModule->GetZCoordinate())
+						//	+ String::formatted(" xa%f,ya%f,za%f", TrackedPointAccelAndVeloModule->GetXAcceleration(), TrackedPointAccelAndVeloModule->GetYAcceleration(), TrackedPointAccelAndVeloModule->GetZAcceleration())
+						//	+ String::formatted(" xv%f,yv%f,zv%f", TrackedPointAccelAndVeloModule->GetXVelocity(), TrackedPointAccelAndVeloModule->GetYVelocity(), TrackedPointAccelAndVeloModule->GetZVelocity()));
 					}
 				}
 				break;

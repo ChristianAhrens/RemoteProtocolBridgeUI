@@ -10,7 +10,7 @@
 
 #include "RTTrPMReceiver.h"
 
-#include "PacketModules/RTTrPMHeader.h"
+#include "Modules/RTTrPMHeader.h"
 
 
 /**
@@ -111,13 +111,13 @@ int RTTrPMReceiver::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, RT
 					packetModules.push_back(std::make_unique<CentroidPositionModule>(data, readPos));
 					break;
 				case PacketModule::CentroidAccelerationAndVelocity:
-					packetModules.push_back(std::make_unique<CentroidAccelerationAndVelocityModule>(data, readPos));
+					packetModules.push_back(std::make_unique<CentroidAccelAndVeloModule>(data, readPos));
 					break;
 				case PacketModule::TrackedPointPosition:
 					packetModules.push_back(std::make_unique<TrackedPointPositionModule>(data, readPos));
 					break;
 				case PacketModule::TrackedPointAccelerationandVelocity:
-					packetModules.push_back(std::make_unique<TrackedPointAccelerationandVelocityModule>(data, readPos));
+					packetModules.push_back(std::make_unique<TrackedPointAccelAndVeloModule>(data, readPos));
 					break;
 				case PacketModule::OrientationQuaternion:
 					packetModules.push_back(std::make_unique<OrientationQuaternionModule>(data, readPos));
