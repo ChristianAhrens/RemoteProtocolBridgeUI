@@ -44,7 +44,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Class RTTrPMProtocolProcessor is a derived class for OSC protocol interaction.
  */
-class RTTrPMProtocolProcessor : public RTTrPMReceiver::RTTrPMListener,
+class RTTrPMProtocolProcessor : public RTTrPMReceiver::DataListener,
 	public ProtocolProcessor_Abstract
 {
 public:

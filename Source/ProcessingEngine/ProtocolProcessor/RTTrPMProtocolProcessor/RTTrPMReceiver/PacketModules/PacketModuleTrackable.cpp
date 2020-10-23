@@ -38,9 +38,7 @@ void PacketModuleTrackable::readData(std::vector<unsigned char>& data, int& read
 		std::copy(readIter, readIter + 1, (uint8_t *)&m_nameLength);
 		readIter += 1;
 
-		std::unique_ptr<char> nameBuf = std::make_unique<char>(m_nameLength);
-		std::copy(readIter, readIter + m_nameLength, nameBuf.get());
-		m_name = std::string(nameBuf.get(), m_nameLength);
+		m_name = std::string((const char*)(&(*readIter)), m_nameLength);
 		readIter += m_nameLength;
 
 		std::copy(readIter, readIter + 4, (uint32_t*)&m_seqNumber);
@@ -57,7 +55,7 @@ void PacketModuleTrackable::readData(std::vector<unsigned char>& data, int& read
 		std::copy(readIter, readIter + 1, (uint8_t*)&m_nameLength);
 		readIter += 1;
 
-		std::copy(readIter, readIter + m_nameLength, (unsigned char*)&m_name);
+		m_name = std::string((const char*)(&(*readIter)), m_nameLength);
 		readIter += m_nameLength;
 
 		std::copy(readIter, readIter + 1, (int*)&m_numberOfSubModules);

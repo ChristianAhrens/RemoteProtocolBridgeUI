@@ -76,11 +76,11 @@ public:
 	/** 
 	 * A class for receiving RTTrPM data from RTTrPMReceiver.
 	 */
-	class RTTrPMListener
+	class DataListener
 	{
 	public:
 		/** Destructor. */
-		virtual ~RTTrPMListener() = default;
+		virtual ~DataListener() = default;
 
 		/** Called when the RTTrPMReceiver receives new RTTrPM module(s). */
 		virtual void RTTrPMModuleReceived(const RTTrPMMessage& module, const String& senderIPAddress, const int& senderPort) = 0;
@@ -95,8 +95,8 @@ public:
 	bool stop();
 
 	//==============================================================================
-	void addListener(RTTrPMReceiver::RTTrPMListener* listenerToAdd);
-	void removeListener(RTTrPMReceiver::RTTrPMListener* listenerToRemove);
+	void addListener(RTTrPMReceiver::DataListener* listenerToAdd);
+	void removeListener(RTTrPMReceiver::DataListener* listenerToRemove);
 
 private:
 	//==============================================================================
@@ -113,8 +113,8 @@ private:
 	std::unique_ptr<DatagramSocket>	m_socket;
 
 	//==============================================================================
-	int												m_listeningPort{ 0 };
-	ListenerList<RTTrPMReceiver::RTTrPMListener>	m_listeners;
+	int											m_listeningPort{ 0 };
+	ListenerList<RTTrPMReceiver::DataListener>	m_listeners;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RTTrPMReceiver)
 };

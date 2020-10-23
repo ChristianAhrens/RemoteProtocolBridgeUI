@@ -193,6 +193,11 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const PacketModuleTrackable* trackableModule = dynamic_cast<const PacketModuleTrackable*>(RTTrPMmodule.get());
 					if (trackableModule)
 					{
+						//DBG("PacketModuleTrackable('" + String(trackableModule->GetName()) + "'): seqNo" 
+						//	+ String(trackableModule->GetSeqNumber()) + " with " + String(trackableModule->GetNumberOfSubModules()) + " submodules");
+
+						newMsgData.addrVal.first = int16(String(trackableModule->GetName()).getIntValue());
+						newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
 					}
 				}
 				break;
@@ -201,6 +206,9 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const CentroidPositionModule* centroidPositionModule = dynamic_cast<const CentroidPositionModule*>(RTTrPMmodule.get());
 					if (centroidPositionModule)
 					{
+						//DBG("CentroidPositionModule: latency" 
+						//	+ String(centroidPositionModule->GetLatency()) 
+						//	+ String::formatted(" x%f,y%f,z%f", centroidPositionModule->GetX(), centroidPositionModule->GetY(), centroidPositionModule->GetZ()));
 					}
 				}
 				break;
@@ -209,10 +217,15 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const TrackedPointPositionModule* trackedPointPositionModule = dynamic_cast<const TrackedPointPositionModule*>(RTTrPMmodule.get());
 					if (trackedPointPositionModule)
 					{
+						//DBG("TrackedPointPositionModule: idx" 
+						//	+ String(trackedPointPositionModule->GetPointIndex()) 
+						//	+ " latency" + String(trackedPointPositionModule->GetLatency()) 
+						//	+ String::formatted(" x%f,y%f,z%f", trackedPointPositionModule->GetX(), trackedPointPositionModule->GetY(), trackedPointPositionModule->GetZ()));
+
 						newObjectId = ROI_Positioning_SourcePosition_XY;
 
-						newMsgData.addrVal.first = int16(trackedPointPositionModule->GetPointIndex() + 1);
-						newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
+						//newMsgData.addrVal.first = int16(trackedPointPositionModule->GetPointIndex() + 1);
+						//newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
 
 						newDualFloatValue[0] = static_cast<float>(trackedPointPositionModule->GetX());
 						newDualFloatValue[1] = static_cast<float>(trackedPointPositionModule->GetY());
@@ -233,6 +246,9 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const OrientationQuaternionModule* orientationQuaternionModule = dynamic_cast<const OrientationQuaternionModule*>(RTTrPMmodule.get());
 					if (orientationQuaternionModule)
 					{
+						//DBG("OrientationQuaternionModule: latency" 
+						//	+ String(orientationQuaternionModule->GetLatency()) 
+						//	+ String::formatted(" qx%f,qy%f,qz%f,qw%f", orientationQuaternionModule->GetQx(), orientationQuaternionModule->GetQy(), orientationQuaternionModule->GetQz(), orientationQuaternionModule->GetQw()));
 					}
 				}
 				break;
@@ -241,6 +257,10 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const OrientationEulerModule* orientationEulerModule = dynamic_cast<const OrientationEulerModule*>(RTTrPMmodule.get());
 					if (orientationEulerModule)
 					{
+						//DBG("OrientationEulerModule: latency" 
+						//	+ String(orientationEulerModule->GetLatency()) + " order" 
+						//	+ String(orientationEulerModule->GetOrder()) 
+						//	+ String::formatted(" r1%f,r2%f,r3%f", orientationEulerModule->GetR1(), orientationEulerModule->GetR2(), orientationEulerModule->GetR3()));
 					}
 				}
 				break;
@@ -249,6 +269,10 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const CentroidAccelerationAndVelocityModule* centroidAccelerationAndVelocityModule = dynamic_cast<const CentroidAccelerationAndVelocityModule*>(RTTrPMmodule.get());
 					if (centroidAccelerationAndVelocityModule)
 					{
+						//DBG("CentroidAccelerationAndVelocityModule:"
+						//	+ String::formatted(" xc%f,yc%f,zc%f", centroidAccelerationAndVelocityModule->GetXCoordinate(), centroidAccelerationAndVelocityModule->GetYCoordinate(), centroidAccelerationAndVelocityModule->GetZCoordinate())
+						//	+ String::formatted(" xa%f,ya%f,za%f", centroidAccelerationAndVelocityModule->GetXAcceleration(), centroidAccelerationAndVelocityModule->GetYAcceleration(), centroidAccelerationAndVelocityModule->GetZAcceleration())
+						//	+ String::formatted(" xv%f,yv%f,zv%f", centroidAccelerationAndVelocityModule->GetXVelocity(), centroidAccelerationAndVelocityModule->GetYVelocity(), centroidAccelerationAndVelocityModule->GetZVelocity()));
 					}
 				}
 				break;
@@ -257,6 +281,10 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const TrackedPointAccelerationandVelocityModule* trackedPointAccelerationandVelocityModule = dynamic_cast<const TrackedPointAccelerationandVelocityModule*>(RTTrPMmodule.get());
 					if (trackedPointAccelerationandVelocityModule)
 					{
+						//DBG("TrackedPointAccelerationandVelocityModule: idx" + String(trackedPointAccelerationandVelocityModule->GetPointIndex())
+						//	+ String::formatted(" xc%f,yc%f,zc%f", trackedPointAccelerationandVelocityModule->GetXCoordinate(), trackedPointAccelerationandVelocityModule->GetYCoordinate(), trackedPointAccelerationandVelocityModule->GetZCoordinate())
+						//	+ String::formatted(" xa%f,ya%f,za%f", trackedPointAccelerationandVelocityModule->GetXAcceleration(), trackedPointAccelerationandVelocityModule->GetYAcceleration(), trackedPointAccelerationandVelocityModule->GetZAcceleration())
+						//	+ String::formatted(" xv%f,yv%f,zv%f", trackedPointAccelerationandVelocityModule->GetXVelocity(), trackedPointAccelerationandVelocityModule->GetYVelocity(), trackedPointAccelerationandVelocityModule->GetZVelocity()));
 					}
 				}
 				break;
@@ -265,11 +293,12 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 					const ZoneCollisionDetectionModule* zoneCollisionDetectionModule = dynamic_cast<const ZoneCollisionDetectionModule*>(RTTrPMmodule.get());
 					if (zoneCollisionDetectionModule)
 					{
-
+						//DBG("ZoneCollisionDetectionModule: contains " + String(zoneCollisionDetectionModule->GetZoneSubModules().size()) + "submodules");
 					}
 				}
 				break;
 			case PacketModule::Invalid:
+				DBG("Invalid PacketModule!");
 				break;
 			default:
 				break;

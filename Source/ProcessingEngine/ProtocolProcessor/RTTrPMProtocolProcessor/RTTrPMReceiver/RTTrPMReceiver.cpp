@@ -60,7 +60,7 @@ bool RTTrPMReceiver::stop()
  * Method to add a Listener to internal list.
  * @param listenerToAdd	The listener object to add.
  */
-void RTTrPMReceiver::addListener(RTTrPMReceiver::RTTrPMListener* listenerToAdd)
+void RTTrPMReceiver::addListener(RTTrPMReceiver::DataListener* listenerToAdd)
 {
 	m_listeners.add(listenerToAdd);
 }
@@ -69,7 +69,7 @@ void RTTrPMReceiver::addListener(RTTrPMReceiver::RTTrPMListener* listenerToAdd)
  * Method to remove a Listener from internal list.
  * @param listenerToRemove	The listener object to remove.
  */
-void RTTrPMReceiver::removeListener(RTTrPMReceiver::RTTrPMListener* listenerToRemove)
+void RTTrPMReceiver::removeListener(RTTrPMReceiver::DataListener* listenerToRemove)
 {
 	m_listeners.remove(listenerToRemove);
 }
@@ -98,6 +98,7 @@ int RTTrPMReceiver::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, RT
 	for(int i = 0; i < header.GetNumberOfModules(); i++)	
 	{
 		PacketModuleTrackable trackableModule(data, readPos);
+		packetModules.push_back(std::make_unique<PacketModuleTrackable>(trackableModule));
 
 		for(int j = 0; j < trackableModule.GetNumberOfSubModules(); j++)
 		{
@@ -216,5 +217,5 @@ void RTTrPMReceiver::handleMessage(const Message& msg)
 */
 void RTTrPMReceiver::callListeners(const RTTrPMMessage& contentMessage, const String& senderIPAddress, const int& senderPort)
 {
-	m_listeners.call([&](RTTrPMReceiver::RTTrPMListener& l) { l.RTTrPMModuleReceived(contentMessage, senderIPAddress, senderPort); });
+	m_listeners.call([&](RTTrPMReceiver::DataListener& l) { l.RTTrPMModuleReceived(contentMessage, senderIPAddress, senderPort); });
 }
