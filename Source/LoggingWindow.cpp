@@ -356,6 +356,9 @@ void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType
 			objectString += OCAProtocolProcessor::GetRemoteObjectString(Id) +
 				String::formatted(" | ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
 			break;
+		case PT_RTTrPMProtocol:
+			objectString += String::formatted("ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
+			break;
 		default:
 			break;
 		}

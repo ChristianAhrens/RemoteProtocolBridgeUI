@@ -151,9 +151,9 @@ bool RTTrPMProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id,
  * @param senderIPAddress	The ip the message originates from.
  * @param senderPort			The port this message was received on.
  */
-void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const std::unique_ptr<PacketModule>& RTTrPMmodule, const String& senderIPAddress, const int& senderPort)
+void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMMessage& rttrpmMessage, const String& senderIPAddress, const int& senderPort)
 {
-	if (!RTTrPMmodule)
+	if (rttrpmMessage.header.GetPacketSize() == 0)
 		return;
 
 	ignoreUnused(senderPort);
@@ -181,56 +181,103 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const std::unique_ptr<PacketM
 	float newDualFloatValue[2];
 	//int newIntValue;
 
-	if (RTTrPMmodule->isValid())
+	for (auto const& RTTrPMmodule : rttrpmMessage.modules)
 	{
-		switch (RTTrPMmodule->GetModuleType())
+		if (RTTrPMmodule->isValid())
 		{
-		case PacketModule::WithTimestamp:
-			break;
-		case PacketModule::WithoutTimestamp:
-			break;
-		case PacketModule::CentroidPosition:
+			switch (RTTrPMmodule->GetModuleType())
 			{
-				const CentroidModule* centroid = dynamic_cast<const CentroidModule*>(RTTrPMmodule.get());
-				if (centroid)
+			case PacketModule::WithTimestamp:
+			case PacketModule::WithoutTimestamp:
 				{
-					newObjectId = ROI_Positioning_SourcePosition_XY;
-
-					/*dbg*/newMsgData.addrVal.first = int16(1);
-					/*dbg*/newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
-
-					newDualFloatValue[0] = static_cast<float>(centroid->GetX());
-					newDualFloatValue[1] = static_cast<float>(centroid->GetY());
-
-					newMsgData.valType = ROVT_FLOAT;
-					newMsgData.valCount = 2;
-					newMsgData.payload = &newDualFloatValue;
-					newMsgData.payloadSize = 2 * sizeof(float);
+					const PacketModuleTrackable* trackableModule = dynamic_cast<const PacketModuleTrackable*>(RTTrPMmodule.get());
+					if (trackableModule)
+					{
+					}
 				}
+				break;
+			case PacketModule::CentroidPosition:
+				{
+					const CentroidPositionModule* centroidPositionModule = dynamic_cast<const CentroidPositionModule*>(RTTrPMmodule.get());
+					if (centroidPositionModule)
+					{
+					}
+				}
+				break;
+			case PacketModule::TrackedPointPosition:
+				{
+					const TrackedPointPositionModule* trackedPointPositionModule = dynamic_cast<const TrackedPointPositionModule*>(RTTrPMmodule.get());
+					if (trackedPointPositionModule)
+					{
+						newObjectId = ROI_Positioning_SourcePosition_XY;
+
+						newMsgData.addrVal.first = int16(trackedPointPositionModule->GetPointIndex() + 1);
+						newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
+
+						newDualFloatValue[0] = static_cast<float>(trackedPointPositionModule->GetX());
+						newDualFloatValue[1] = static_cast<float>(trackedPointPositionModule->GetY());
+
+						newMsgData.valType = ROVT_FLOAT;
+						newMsgData.valCount = 2;
+						newMsgData.payload = &newDualFloatValue;
+						newMsgData.payloadSize = 2 * sizeof(float);
+
+						// provide the received message to parent node
+						if (m_messageListener)
+							m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+					}
+				}
+				break;
+			case PacketModule::OrientationQuaternion:
+				{
+					const OrientationQuaternionModule* orientationQuaternionModule = dynamic_cast<const OrientationQuaternionModule*>(RTTrPMmodule.get());
+					if (orientationQuaternionModule)
+					{
+					}
+				}
+				break;
+			case PacketModule::OrientationEuler:
+				{
+					const OrientationEulerModule* orientationEulerModule = dynamic_cast<const OrientationEulerModule*>(RTTrPMmodule.get());
+					if (orientationEulerModule)
+					{
+					}
+				}
+				break;
+			case PacketModule::CentroidAccelerationAndVelocity:
+				{
+					const CentroidAccelerationAndVelocityModule* centroidAccelerationAndVelocityModule = dynamic_cast<const CentroidAccelerationAndVelocityModule*>(RTTrPMmodule.get());
+					if (centroidAccelerationAndVelocityModule)
+					{
+					}
+				}
+				break;
+			case PacketModule::TrackedPointAccelerationandVelocity:
+				{
+					const TrackedPointAccelerationandVelocityModule* trackedPointAccelerationandVelocityModule = dynamic_cast<const TrackedPointAccelerationandVelocityModule*>(RTTrPMmodule.get());
+					if (trackedPointAccelerationandVelocityModule)
+					{
+					}
+				}
+				break;
+			case PacketModule::ZoneCollisionDetection:
+				{
+					const ZoneCollisionDetectionModule* zoneCollisionDetectionModule = dynamic_cast<const ZoneCollisionDetectionModule*>(RTTrPMmodule.get());
+					if (zoneCollisionDetectionModule)
+					{
+
+					}
+				}
+				break;
+			case PacketModule::Invalid:
+				break;
+			default:
+				break;
 			}
-			break;
-		case PacketModule::TrackedPointPosition:
-			break;
-		case PacketModule::OrientationQuaternion:
-			break;
-		case PacketModule::OrientationEuler:
-			break;
-		case PacketModule::CentroidAccelerationAndVelocity:
-			break;
-		case PacketModule::TrackedPointAccelerationandVelocity:
-			break;
-		case PacketModule::Invalid:
-			break;
-		default:
-			break;
+		}
+		else
+		{
+			newObjectId = ROI_Invalid;
 		}
 	}
-	else
-	{
-		newObjectId = ROI_Invalid;
-	}
-
-	// provide the received message to parent node
-	if (m_messageListener)
-		m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 }
