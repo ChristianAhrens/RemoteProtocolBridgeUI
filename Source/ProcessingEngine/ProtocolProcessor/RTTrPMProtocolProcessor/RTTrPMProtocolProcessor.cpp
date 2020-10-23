@@ -151,8 +151,11 @@ bool RTTrPMProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id,
  * @param senderIPAddress	The ip the message originates from.
  * @param senderPort			The port this message was received on.
  */
-void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const CPacketModule& RTTrPMmodule, const String& senderIPAddress, const int& senderPort)
+void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const std::unique_ptr<PacketModule>& RTTrPMmodule, const String& senderIPAddress, const int& senderPort)
 {
+	if (!RTTrPMmodule)
+		return;
+
 	ignoreUnused(senderPort);
 	if (senderIPAddress != m_ipAddress)
 	{
@@ -178,17 +181,17 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const CPacketModule& RTTrPMmo
 	float newDualFloatValue[2];
 	//int newIntValue;
 
-	if (RTTrPMmodule.isValid())
+	if (RTTrPMmodule->isValid())
 	{
-		switch (RTTrPMmodule.GetModuleType())
+		switch (RTTrPMmodule->GetModuleType())
 		{
-		case CPacketModule::PMT_withTimestamp:
+		case PacketModule::WithTimestamp:
 			break;
-		case CPacketModule::PMT_withoutTimestamp:
+		case PacketModule::WithoutTimestamp:
 			break;
-		case CPacketModule::PMT_centroidPosition:
+		case PacketModule::CentroidPosition:
 			{
-			const CCentroidMod* centroid = dynamic_cast<const CCentroidMod*>(&RTTrPMmodule);
+				const CentroidModule* centroid = dynamic_cast<const CentroidModule*>(RTTrPMmodule.get());
 				if (centroid)
 				{
 					newObjectId = ROI_Positioning_SourcePosition_XY;
@@ -196,8 +199,8 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const CPacketModule& RTTrPMmo
 					/*dbg*/newMsgData.addrVal.first = int16(1);
 					/*dbg*/newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
 
-					newDualFloatValue[0] = static_cast<float>(centroid->GetXCoordinate());
-					newDualFloatValue[1] = static_cast<float>(centroid->GetYCoordinate());
+					newDualFloatValue[0] = static_cast<float>(centroid->GetX());
+					newDualFloatValue[1] = static_cast<float>(centroid->GetY());
 
 					newMsgData.valType = ROVT_FLOAT;
 					newMsgData.valCount = 2;
@@ -206,17 +209,17 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const CPacketModule& RTTrPMmo
 				}
 			}
 			break;
-		case CPacketModule::PMT_trackedPointPosition:
+		case PacketModule::TrackedPointPosition:
 			break;
-		case CPacketModule::PMT_orientationQuaternion:
+		case PacketModule::OrientationQuaternion:
 			break;
-		case CPacketModule::PMT_orientationEuler:
+		case PacketModule::OrientationEuler:
 			break;
-		case CPacketModule::PMT_centroidAccelerationAndVelocity:
+		case PacketModule::CentroidAccelerationAndVelocity:
 			break;
-		case CPacketModule::PMT_trackedPointAccelerationandVelocity:
+		case PacketModule::TrackedPointAccelerationandVelocity:
 			break;
-		case CPacketModule::PMT_invalid:
+		case PacketModule::Invalid:
 			break;
 		default:
 			break;

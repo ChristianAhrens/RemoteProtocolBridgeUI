@@ -78,65 +78,48 @@ void CRTTrPMConnectionServer::removeListener(CRTTrPMConnectionServer::RTTrPMList
 *
 * @return	packetModules	: Returns the count of packet modules read into given target module content vector
 */
-int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<CPacketModule*>& packetModules)
+int CRTTrPMConnectionServer::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<std::unique_ptr<PacketModule>>& packetModules)
 {
 	std::vector<unsigned char> data(dataBuffer, dataBuffer + bytesRead);			// data: Vector that has all the caught data information
-	int startPosToRead = 0;													// Counter variable to know from which byte the next module has to be read
-	CRTTrP cRTTrPObject = CRTTrP(data, startPosToRead);						// Sort all RTTrP header information
+	int readPos = 0;													// Counter variable to know from which byte the next module has to be read
+	RTTrPMHeader header = RTTrPMHeader(data, readPos);						// Sort all RTTrP header information
 
-	if(startPosToRead == 0)	//	If true, Signature from RTTrP header was not right. Process will be returned to the run methode
+	if(readPos == 0)	//	If true, Signature from RTTrP header was not right. Process will be returned to the run methode
 	{
 		return 0;
 	}
 
-	for(int i = 0; i < cRTTrPObject.GetNumOfTrackableMods(); i++)			// As many trackable modules as the packet has
+	for(int i = 0; i < header.GetNumOfTrackableMods(); i++)			// As many trackable modules as the packet has
 	{
-		CPacketModuleTrackable trackableModule(data, startPosToRead);		// Reads the name, name length and number of sub-modules
+		PacketModuleTrackable trackableModule(data, readPos);		// Reads the name, name length and number of sub-modules
 
 		for(int j = 0; j < trackableModule.GetNumberOfSubModules(); j++)	// As many sub-modules as the packet has
 		{
-			CPacketModule packetModuleToRead(data, startPosToRead);			// Reads the module type and size
+			auto metaInfoReadPos = readPos;
+			PacketModule packetModuleMetaInfo(data, metaInfoReadPos);			// Reads the module type and size
 
-			switch(packetModuleToRead.GetModuleType())						// Decides between the different type of sub-modules
+			switch(packetModuleMetaInfo.GetModuleType())						// Decides between the different type of sub-modules
 			{
-			case CPacketModule::PMT_centroidPosition:
-				{
-					std::vector<unsigned char> centroidmoddata(data.begin() + 31, data.end());	// centroidmoddata :  Vector that receives the position of the coordinates.
-					CCentroidMod *mod = new CCentroidMod(&centroidmoddata);
-					packetModules.push_back(mod);						
-					startPosToRead += packetModuleToRead.GetModuleSize();
+				case PacketModule::CentroidPosition:
+					packetModules.push_back(std::make_unique<CentroidModule>(data, readPos));
 					break;
-				}
-			
-				case CPacketModule::PMT_trackedPointPosition:
-				{
-					startPosToRead += packetModuleToRead.GetModuleSize();
+				case PacketModule::TrackedPointPosition:
+					readPos += packetModuleMetaInfo.GetModuleSize();
 					break;
-				}
-				
-				case CPacketModule::PMT_orientationQuaternion:
-				{
-					startPosToRead += packetModuleToRead.GetModuleSize();
+				case PacketModule::OrientationQuaternion:
+					readPos += packetModuleMetaInfo.GetModuleSize();
 					break;
-				}
-				
-				case CPacketModule::PMT_orientationEuler:
-				{
-					startPosToRead += packetModuleToRead.GetModuleSize();
+				case PacketModule::OrientationEuler:
+					readPos += packetModuleMetaInfo.GetModuleSize();
 					break;
-				}
-				
-				case CPacketModule::PMT_centroidAccelerationAndVelocity:
-				{
-					startPosToRead += packetModuleToRead.GetModuleSize();
+				case PacketModule::CentroidAccelerationAndVelocity:
+					readPos += packetModuleMetaInfo.GetModuleSize();
 					break;
-				}
-				
-				case CPacketModule::PMT_trackedPointAccelerationandVelocity:
-				{
-					startPosToRead += packetModuleToRead.GetModuleSize();
+				case PacketModule::TrackedPointAccelerationandVelocity:
+					readPos += packetModuleMetaInfo.GetModuleSize();
 					break;
-				}
+				default:
+					break;
 			}
 		}
 	}
@@ -152,7 +135,7 @@ void CRTTrPMConnectionServer::run()
 {
 	int maxBytesToRead = 512;		// Variable for the maximal size of data -> notice: if its too small data can't be read!
 	unsigned char dataBuffer[512];	// An array which keeps the caught data information.
-	std::vector<CPacketModule*>	modulesReadBuffer;
+	std::vector<std::unique_ptr<PacketModule>>	modulesReadBuffer;
 
 	while(!threadShouldExit())
 	{
@@ -182,12 +165,12 @@ void CRTTrPMConnectionServer::run()
 				int moduleCount = HandleBuffer(dataBuffer, bytesRead, modulesReadBuffer);
 				if (moduleCount > 0)
 				{
-					for (auto const& mod : modulesReadBuffer)
+					for (auto& mod : modulesReadBuffer)
 					{
 						// now post the message that will trigger the handleMessage callback
 						// dealing with the non-realtime listeners.
 						if (m_listeners.size() > 0)
-							postMessage(new CallbackMessage(*mod, m_hostAddress, m_listeningPort));
+							postMessage(new CallbackMessage(std::move(mod), m_hostAddress, m_listeningPort));
 					}
 				}
 			}
@@ -241,9 +224,9 @@ void CRTTrPMConnectionServer::handleMessage(const Message& msg)
 /**
 * 
 */
-void CRTTrPMConnectionServer::callListeners(const CPacketModule& contentModule, const String& senderIPAddress, const int& senderPort)
+void CRTTrPMConnectionServer::callListeners(const std::unique_ptr<PacketModule>& contentModule, const String& senderIPAddress, const int& senderPort)
 {
-	if (contentModule.isValid())
+	if (contentModule && contentModule->isValid())
 	{
 		m_listeners.call([&](CRTTrPMConnectionServer::RTTrPMListener& l) { l.RTTrPMModuleReceived(contentModule, senderIPAddress, senderPort); });
 	}

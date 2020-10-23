@@ -38,7 +38,7 @@ public:
 		*
 		* @param rttrpmModule	The rttrpm module data to use in this message.
 		*/
-		CallbackMessage(CPacketModule rttrpmModule) : contentModule(rttrpmModule), senderIPAddress(String()), senderPort(0) {}
+		CallbackMessage(std::unique_ptr<PacketModule> rttrpmModule) : contentModule(std::move(rttrpmModule)), senderIPAddress(String()), senderPort(0) {}
 
 		/**
 		* Constructor with default initialization of sender ip and port.
@@ -47,11 +47,11 @@ public:
 		* @param sndIP	The sender ip of this message.
 		* @param sndPort The port this message was received on.
 		*/
-		CallbackMessage(CPacketModule rttrpmModule, String sndIP, int sndPort) : contentModule(rttrpmModule), senderIPAddress(sndIP), senderPort(sndPort) {}
+		CallbackMessage(std::unique_ptr<PacketModule> rttrpmModule, String sndIP, int sndPort) : contentModule(std::move(rttrpmModule)), senderIPAddress(sndIP), senderPort(sndPort) {}
 
-		CPacketModule	contentModule;			/**< The payload of the message. */
-		String			senderIPAddress;	/**< The sender ip address from whom the message was received. */
-		int				senderPort;			/**< The sender port from where the message was received. */
+		std::unique_ptr<PacketModule>	contentModule;		/**< The payload of the message. */
+		String							senderIPAddress;	/**< The sender ip address from whom the message was received. */
+		int								senderPort;			/**< The sender port from where the message was received. */
 	};
 	
 	//==============================================================================
@@ -65,7 +65,7 @@ public:
 		virtual ~RTTrPMListener() = default;
 
 		/** Called when the CRTTrPMConnectionServer receives new RTTrPM module(s). */
-		virtual void RTTrPMModuleReceived(const CPacketModule& module, const String& senderIPAddress, const int& senderPort) = 0;
+		virtual void RTTrPMModuleReceived(const std::unique_ptr<PacketModule>& module, const String& senderIPAddress, const int& senderPort) = 0;
 	};
 
 public:
@@ -85,11 +85,11 @@ private:
 	bool BeginWaitingForSocket(const int portNumber, const String &bindAddress);
 
 	void run() override;
-	int HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<CPacketModule*>& packetModules);
+	int HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, std::vector<std::unique_ptr<PacketModule>>& packetModules);
 
 	//==============================================================================
 	void handleMessage(const Message& msg) override;
-	void callListeners(const CPacketModule& content, const String& senderIPAddress, const int& senderPort);
+	void callListeners(const std::unique_ptr<PacketModule>& content, const String& senderIPAddress, const int& senderPort);
 
 	//==============================================================================
 	std::unique_ptr<DatagramSocket>	m_socket;

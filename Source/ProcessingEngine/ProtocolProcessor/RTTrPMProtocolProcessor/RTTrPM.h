@@ -14,26 +14,42 @@ Author:  adam.nagy
 
 
 // **************************************************************
-// class CRTTrP 
+// class RTTrPMHeader
 // **************************************************************
 /**
-* A class to sort the header information from RTTrP
+* A class to read a databuffer containing RTTrPM packet modules
 * 
 */
-class CRTTrP
+class RTTrPMHeader
 {
 public:
-	CRTTrP();
-	CRTTrP(std::vector<unsigned char> data, int &startPosToRead);
-	~CRTTrP();
+	static constexpr uint16_t PacketModuleHeaderVersion = 0x0002;
+
+	typedef uint16_t PacketModuleSignature;
+	static constexpr PacketModuleSignature BigEndianInt			= 0x4154;
+	static constexpr PacketModuleSignature LittleEndianInt		= 0x5441;
+	static constexpr PacketModuleSignature BigEndianFloat		= 0x4334;
+	static constexpr PacketModuleSignature LittleEndianFloat	= 0x3443;
+
+	typedef uint8_t PacketModuleFormat;
+	static constexpr PacketModuleFormat Raw			= 0x00;
+	static constexpr PacketModuleFormat Protobuf	= 0x01;
+	static constexpr PacketModuleFormat Thrift		= 0x02;
+
+public:
+	RTTrPMHeader(std::vector<unsigned char>& data, int& readPos);
+	~RTTrPMHeader();
+
+	void readData(std::vector<unsigned char>& data, int& readPos);
+
 	uint8_t GetNumOfTrackableMods();
 
 private:
-	uint16_t m_intHeader{ 0 }; // The RTTrP Header has two types, one with float and one with integer
-	uint16_t m_fltHeader{ 0 };
+	PacketModuleSignature m_intSignature{ 0 };
+	PacketModuleSignature m_floatSignature{ 0 };
 	uint16_t m_version{ 0 };
 	uint32_t m_packetID{ 0 };
-	uint8_t m_packetForm{ 0 };
+	PacketModuleFormat m_packetFormat{ 0 };
 	uint16_t m_packetSize{ 0 };
 	uint32_t m_context{ 0 };
 	uint8_t m_numMods{ 0 };
@@ -41,29 +57,31 @@ private:
 
 
 // **************************************************************
-// class CPacketModule 
+// class PacketModule 
 // **************************************************************
 /**
 * A class to save the basic packet module information
 */
-class CPacketModule
+class PacketModule
 {
 public:
 	typedef uint8_t	PacketModuleType;
-	static constexpr PacketModuleType PMT_invalid								= 0x00;
-	static constexpr PacketModuleType PMT_withTimestamp							= 0x51;
-	static constexpr PacketModuleType PMT_withoutTimestamp						= 0x01;
-	static constexpr PacketModuleType PMT_centroidPosition						= 0x02;
-	static constexpr PacketModuleType PMT_trackedPointPosition					= 0x06;
-	static constexpr PacketModuleType PMT_orientationQuaternion					= 0x03;
-	static constexpr PacketModuleType PMT_orientationEuler						= 0x04;
-	static constexpr PacketModuleType PMT_centroidAccelerationAndVelocity		= 0x20;
-	static constexpr PacketModuleType PMT_trackedPointAccelerationandVelocity	= 0x21;
+	static constexpr PacketModuleType Invalid								= 0x00;
+	static constexpr PacketModuleType WithTimestamp							= 0x51;
+	static constexpr PacketModuleType WithoutTimestamp						= 0x01;
+	static constexpr PacketModuleType CentroidPosition						= 0x02;
+	static constexpr PacketModuleType TrackedPointPosition					= 0x06;
+	static constexpr PacketModuleType OrientationQuaternion					= 0x03;
+	static constexpr PacketModuleType OrientationEuler						= 0x04;
+	static constexpr PacketModuleType CentroidAccelerationAndVelocity		= 0x20;
+	static constexpr PacketModuleType TrackedPointAccelerationandVelocity	= 0x21;
 
 public:
-	CPacketModule();
-	CPacketModule(std::vector<unsigned char> data, int &startPosToRead);
-	~CPacketModule();
+	PacketModule();
+	PacketModule(std::vector<unsigned char>& data, int & readPos);
+	~PacketModule();
+
+	virtual void readData(std::vector<unsigned char>& data, int& readPos);
 
 	PacketModuleType GetModuleType() const;
 	uint16_t GetModuleSize() const;
@@ -71,55 +89,64 @@ public:
 	virtual bool isValid() const;
 
 private:
-	PacketModuleType	m_moduleType{ PMT_invalid };	//	Type of the packet module
+	PacketModuleType	m_moduleType{ Invalid };	//	Type of the packet module
 	uint16_t			m_moduleSize{ 0 };	//	Size of the module
 };
 
+
 // **************************************************************
-// class CPacketModuleTrackable 
+// class PacketModuleTrackable 
 // **************************************************************
 /**
 * A class to save the trackable packet module information
 */
-class CPacketModuleTrackable : public CPacketModule
+class PacketModuleTrackable : public PacketModule
 {
 public:
-	CPacketModuleTrackable(std::vector<unsigned char> data, int &startPosToRead);
-	~CPacketModuleTrackable();
+	PacketModuleTrackable(std::vector<unsigned char>& data, int & readPos);
+	~PacketModuleTrackable();
 
-	int GetNumberOfSubModules() const;
+	void readData(std::vector<unsigned char>& data, int& readPos) override;
+
+	std::string GetName() const;
+	uint32_t GetSeqNumber() const;
+	uint8_t GetNumberOfSubModules() const;
 
 	bool isValid() const override;
 
 private:
-	uint8_t m_lengthOfname;
-	char m_name;
-	int m_numberOfSubModules;
+	uint8_t		m_lengthOfname{ 0 };
+	std::string	m_name;
+	uint32_t	m_seqNumber{ 0 };
+	uint8_t		m_numberOfSubModules{ 0 };
 };
 
+
 // **************************************************************
-// class CCentroidMod
+// class CentroidModule
 // **************************************************************
 /**
 * A class to sort the information from RTTrPM - Centroid module 
 *
 */
-class CCentroidMod : public CPacketModule
+class CentroidModule : public PacketModule
 {
 public:
-	CCentroidMod();
-	CCentroidMod(std::vector<unsigned char> *data);
-	~CCentroidMod();
+	CentroidModule(std::vector<unsigned char>& data, int& readPos);
+	~CentroidModule();
 
-	void SetClearAllVariables();
-	double GetXCoordinate() const;
-	double GetYCoordinate() const;
-	double GetZCoordinate() const;
+	void readData(std::vector<unsigned char>& data, int& readPos) override;
+
+	uint16_t GetLatency() const;
+	double GetX() const;
+	double GetY() const;
+	double GetZ() const;
 
 	bool isValid() const override;
 
 private:
-	double m_coordinateX; 
-	double m_coordinateY;
-	double m_coordinateZ;
+	uint16_t	m_latency{ 0 };
+	double		m_coordinateX{ 0 }; 
+	double		m_coordinateY{ 0 };
+	double		m_coordinateZ{ 0 };
 };

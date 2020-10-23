@@ -61,7 +61,7 @@ public:
 
 	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
-	void RTTrPMModuleReceived(const CPacketModule& RTTrPMmodule, const String& senderIPAddress, const int& senderPort) override;
+	void RTTrPMModuleReceived(const std::unique_ptr<PacketModule>& RTTrPMmodule, const String& senderIPAddress, const int& senderPort) override;
 
 private:
 	CRTTrPMConnectionServer	m_rttrpmReceiver;		/**< An receiver object for BlackTrax RTTrPM protocol that binds to a network port to receive data
