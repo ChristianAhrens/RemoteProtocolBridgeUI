@@ -120,7 +120,8 @@ bool DS100_DeviceSimulation::setStateXml(XmlElement* stateXml)
 
 	InitDataValues();
 
-	startTimer(m_refreshInterval);
+	if (m_refreshInterval > 0)
+		startTimer(m_refreshInterval);
 
 	return true;
 }
@@ -143,6 +144,8 @@ bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, Remot
 		}
 		else
 		{
+			SetDataValue(PId, Id, msgData);
+
 			if (m_protocolAIds.contains(PId))
 			{
 				// Send to all typeB protocols
@@ -376,6 +379,55 @@ void DS100_DeviceSimulation::InitDataValues()
 	}
 
 	return;
+}
+
+/**
+ * Helper method to set the data from an incoming message to internal map of simulated values.
+ * (If timer is active, this will be overwritten on next timer timeout - otherwise 
+ * a new poll request will trigger an answer with the value set in this method.)
+ *
+ * @param PId	The id of the protocol that received the message.
+ * @param Id	The ROI that was received
+ * @param msgData	The received message data from which the value shall be taken
+ */
+void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
+{
+	RemoteObjectMessageData newMsgData = msgData;
+	switch (msgData.valType)
+	{
+	case ROVT_INT:
+			newMsgData.payload = new int[msgData.valCount];
+			newMsgData.payloadSize = msgData.valCount * sizeof(int);
+			std::memcpy(newMsgData.payload, msgData.payload, newMsgData.payloadSize);
+			break;
+		case ROVT_FLOAT:
+			newMsgData.payload = new float[msgData.valCount];
+			newMsgData.payloadSize = msgData.valCount * sizeof(float);
+			std::memcpy(newMsgData.payload, msgData.payload, newMsgData.payloadSize);
+			break;
+		case ROVT_STRING:
+		case ROVT_NONE:
+			newMsgData.payload = nullptr;
+			newMsgData.payloadSize = 0;
+			break;
+	}
+
+	if (m_currentValues.count(Id) > 0)
+	{
+		if (m_currentValues.at(Id).count(msgData.addrVal) > 0)
+		{
+			m_currentValues.at(Id).at(msgData.addrVal) = newMsgData;
+		}
+		else
+		{
+			m_currentValues.at(Id).insert(std::make_pair(msgData.addrVal, newMsgData));
+		}
+	}
+	else
+	{
+		m_currentValues.insert(std::pair<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>(Id, std::map<RemoteObjectAddressing, RemoteObjectMessageData>()));
+		m_currentValues.at(Id).insert(std::make_pair(msgData.addrVal, newMsgData));
+	}
 }
 
 /**

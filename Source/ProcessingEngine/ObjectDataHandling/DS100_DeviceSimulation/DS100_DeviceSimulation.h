@@ -66,6 +66,7 @@ private:
 	bool ReplyToDataRequest(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectAddressing adressing);
 
 	void InitDataValues();
+	void SetDataValue(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
 
 	void PrintMessageInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
 	
