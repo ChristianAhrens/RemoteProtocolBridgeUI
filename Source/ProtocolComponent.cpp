@@ -355,25 +355,93 @@ ProtocolComponent::~ProtocolComponent()
 }
 
 /**
+ * Helper method to set the current protocol type to use for zeroconf
+ * @param type	The new protocol type
+ * @return True on success, false on failure
+ */
+bool ProtocolComponent::setZeroConfProtocolType(ProtocolType type)
+{
+	auto hostPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	if (hostPortXmlElement)
+	{
+		auto protocolHostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+		if (m_ZeroconfIpDiscovery)
+		{
+			switch (type)
+			{
+			case PT_OSCProtocol:
+				m_ZeroconfIpDiscovery->clearServices();
+				m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OSC, static_cast<unsigned short>(protocolHostPort));
+				m_ZeroconfIpDiscovery->setVisible(true);
+				break;
+			case PT_OCAProtocol:
+				m_ZeroconfIpDiscovery->clearServices();
+				m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA, static_cast<unsigned short>(protocolHostPort));
+				m_ZeroconfIpDiscovery->setVisible(true);
+				break;
+			case PT_RTTrPMProtocol:
+			case PT_DummyMidiProtocol:
+				m_ZeroconfIpDiscovery->clearServices();
+				m_ZeroconfIpDiscovery->setVisible(false);
+				break;
+			case PT_UserMAX:
+			case PT_Invalid:
+				return false;
+			}
+		}
+		else
+			return false;
+	}
+	else
+		return false;
+
+	resized();
+
+	return true;
+}
+
+/**
  * Overloaded method to resize contents
  */
 void ProtocolComponent::resized()
 {
 	Component::resized();
 
+	auto useZeroconf = false;
+	if (m_ProtocolDrop)
+	{
+		auto selectedType = static_cast<ProtocolType>(m_ProtocolDrop->getSelectedId());
+		switch (selectedType)
+		{
+		case PT_OSCProtocol:
+		case PT_OCAProtocol:
+			useZeroconf = true;
+			break;
+		case PT_RTTrPMProtocol:
+		case PT_DummyMidiProtocol:
+		case PT_UserMAX:
+		case PT_Invalid:
+			useZeroconf = false;
+			break;
+		}
+	}
+
 	int xPos = getWidth() - UIS_ConfigButtonWidth - UIS_Margin_s;
 	if (m_ProtocolConfigEditButton)
 		m_ProtocolConfigEditButton->setBounds(xPos, 0, UIS_ConfigButtonWidth, UIS_ElmSize);
 
-	int IpEditWidth = getWidth() - UIS_ProtocolLabelWidth - UIS_Margin_s - UIS_ProtocolDropWidth - UIS_Margin_s - UIS_ElmSize - UIS_Margin_s - UIS_ConfigButtonWidth - UIS_Margin_s;
+	int IpEditWidth = getWidth() - UIS_ProtocolLabelWidth - UIS_Margin_s - UIS_ProtocolDropWidth - UIS_Margin_s - (useZeroconf ? (UIS_ElmSize + UIS_Margin_s) : 0) - UIS_ConfigButtonWidth - UIS_Margin_s;
 	xPos = (UIS_ProtocolLabelWidth + UIS_Margin_s + UIS_ProtocolDropWidth);
 	if (m_IpEdit)
 		m_IpEdit->setBounds(xPos, 0, IpEditWidth, UIS_ElmSize);
-    
-    xPos += IpEditWidth + UIS_Margin_s;
-    if (m_ZeroconfIpDiscovery)
-        m_ZeroconfIpDiscovery->setBounds(xPos, 0, UIS_ElmSize, UIS_ElmSize);
 
+	xPos += IpEditWidth + UIS_Margin_s;
+	if (m_ZeroconfIpDiscovery && useZeroconf)
+	{
+		m_ZeroconfIpDiscovery->setBounds(xPos, 0, UIS_ElmSize, UIS_ElmSize);
+		m_ZeroconfIpDiscovery->resized();
+	}
+	
 	xPos = UIS_ProtocolLabelWidth;
 	if (m_ProtocolDrop)
 		m_ProtocolDrop->setBounds(UIS_ProtocolLabelWidth, 0, UIS_ProtocolDropWidth, UIS_ElmSize);
@@ -442,34 +510,8 @@ bool ProtocolComponent::setStateXml(XmlElement* stateXml)
 	}
 	else
 		return false;
-    
-    auto hostPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
-    if (hostPortXmlElement)
-    {
-        auto protocolHostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
-        if (m_ZeroconfIpDiscovery)
-        {
-            switch (protocolType)
-            {
-                case PT_OSCProtocol:
-                    m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OSC, protocolHostPort);
-                    break;
-                case PT_OCAProtocol:
-                    m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA, protocolHostPort);
-                    break;
-                case PT_DummyMidiProtocol:
-                case PT_UserMAX:
-                case PT_Invalid:
-                    break;
-            }
-        }
-        else
-            return false;
-    }
-    else
-        return false;
 
-	return true;
+	return setZeroConfProtocolType(protocolType);
 }
 
 /**
@@ -513,7 +555,11 @@ void ProtocolComponent::buttonClicked(Button* button)
  */
 void ProtocolComponent::comboBoxChanged(ComboBox* comboBox)
 {
-	ignoreUnused(comboBox);
+	if (comboBox == m_ProtocolDrop.get())
+	{
+		auto protocolType = static_cast<ProtocolType>(m_ProtocolDrop->getSelectedId());
+		setZeroConfProtocolType(protocolType);
+	}
 
 	auto config = ProcessingEngineConfig::getInstance();
 	if (config)
@@ -630,6 +676,8 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
  */
 void ProtocolComponent::handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info)
 {
+	ignoreUnused(serviceType);
+
     if (info && m_IpEdit)
         m_IpEdit->setText(info->ip);
 }

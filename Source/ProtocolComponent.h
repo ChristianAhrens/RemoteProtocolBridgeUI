@@ -143,6 +143,7 @@ private:
 
 	std::unique_ptr<XmlElement>				m_protocolXmlElement;
 
+	bool setZeroConfProtocolType(ProtocolType type);
 
 	void buttonClicked(Button* button) override;
 	void comboBoxChanged(ComboBox* comboBox) override;
