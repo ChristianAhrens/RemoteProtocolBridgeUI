@@ -226,9 +226,25 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		if (protocolExists && currentProtocolTypeMatches)
 		{
 			if (protocolExistsAsA)
+			{
 				m_typeAProtocols.at(protocolId)->setStateXml(protocolXmlElement);
+
+				// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
+				if (m_dataHandling)
+					m_dataHandling->AddProtocolAId(protocolId);
+				else
+					retVal = false;
+			}
 			else if (protocolExistsAsB)
+			{
 				m_typeBProtocols.at(protocolId)->setStateXml(protocolXmlElement);
+
+				// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
+				if (m_dataHandling)
+					m_dataHandling->AddProtocolBId(protocolId);
+				else
+					retVal = false;
+			}
 		}
 		else
 		{
@@ -240,15 +256,26 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 				protocol->AddListener(this);
 				protocol->setStateXml(protocolXmlElement);
 				if (protocol->GetRole() == ProtocolRole::PR_A)
+				{
 					m_typeAProtocols.insert(std::make_pair(protocolId, std::move(protocol)));
+
+					// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
+					if (m_dataHandling)
+						m_dataHandling->AddProtocolAId(protocolId);
+					else
+						retVal = false;
+				}
 				else if (protocol->GetRole() == ProtocolRole::PR_B)
+				{
 					m_typeBProtocols.insert(std::make_pair(protocolId, std::move(protocol)));
 
-				// add the protocolnodetype A to datahandlings' list of ProtocolIds for A protocols
-				if (m_dataHandling)
-					m_dataHandling->AddProtocolAId(protocolId);
-				else
-					retVal = false;
+					// add the protocolnodetype B to datahandlings' list of ProtocolIds for B protocols
+					if (m_dataHandling)
+						m_dataHandling->AddProtocolBId(protocolId);
+					else
+						retVal = false;
+				}
+
 			}
 			else
 				retVal = false;
