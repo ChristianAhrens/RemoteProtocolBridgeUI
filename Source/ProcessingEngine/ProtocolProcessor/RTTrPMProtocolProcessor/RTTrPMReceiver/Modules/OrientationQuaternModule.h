@@ -26,7 +26,7 @@ class OrientationQuaternionModule : public PacketModule
 {
 public:
 	OrientationQuaternionModule(std::vector<unsigned char>& data, int& readPos);
-	~OrientationQuaternionModule();
+	~OrientationQuaternionModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

@@ -103,7 +103,7 @@ int RTTrPMReceiver::HandleBuffer(unsigned char* dataBuffer, size_t bytesRead, RT
 		for(int j = 0; j < trackableModule.GetNumberOfSubModules(); j++)
 		{
 			auto metaInfoReadPos = readPos;
-			PacketModule packetModuleMetaInfo(data, metaInfoReadPos);	
+			PacketModule packetModuleMetaInfo(data, metaInfoReadPos);
 
 			switch(packetModuleMetaInfo.GetModuleType())				
 			{
@@ -151,7 +151,7 @@ void RTTrPMReceiver::run()
 	String senderIPAddress;
 	int senderPortNumber;
 
-	while(!threadShouldExit())
+	while (!threadShouldExit())
 	{
 		jassert(m_socket != nullptr);
 		auto ready = m_socket->waitUntilReady(true, 100);
@@ -171,7 +171,7 @@ void RTTrPMReceiver::run()
 			if (moduleCount > 0)
 			{
 				if (m_listeners.size() > 0)
-					postMessage(new CallbackMessage(receivedMessage, senderIPAddress, senderPortNumber));
+					postMessage(std::make_unique<CallbackMessage>(receivedMessage, senderIPAddress, senderPortNumber).release());
 			}
 		}
 	}
@@ -189,7 +189,7 @@ bool RTTrPMReceiver::BeginWaitingForSocket(const int portNumber, const String &b
 {
 	stop();
 
-	m_socket.reset(new DatagramSocket());	//  deletes the old object that it was previously pointing to if there was one. 
+	m_socket = std::make_unique<DatagramSocket>();	//  deletes the old object that it was previously pointing to if there was one. 
 
 	if(m_socket->bindToPort(portNumber, bindAddress))
 	{
@@ -202,8 +202,9 @@ bool RTTrPMReceiver::BeginWaitingForSocket(const int portNumber, const String &b
 }
 
 /**
-* 
-*/
+ * Reimplemented from MessageListener to handle messages posted to queue.
+ * @param msg	The incoming message to handle
+ */
 void RTTrPMReceiver::handleMessage(const Message& msg)
 {
 	if (auto* callbackMessage = dynamic_cast<const CallbackMessage*> (&msg))
@@ -213,8 +214,11 @@ void RTTrPMReceiver::handleMessage(const Message& msg)
 }
 
 /**
-* 
-*/
+ * Helper method that handles distributing given message data to all registered datamessage listeners.
+ * @param contentMessage	The message to distribute.
+ * @param senderIPAddress	The ip address the data message was received from.
+ * @param senderPort		The port the data message was received from.
+ */
 void RTTrPMReceiver::callListeners(const RTTrPMMessage& contentMessage, const String& senderIPAddress, const int& senderPort)
 {
 	m_listeners.call([&](RTTrPMReceiver::DataListener& l) { l.RTTrPMModuleReceived(contentMessage, senderIPAddress, senderPort); });

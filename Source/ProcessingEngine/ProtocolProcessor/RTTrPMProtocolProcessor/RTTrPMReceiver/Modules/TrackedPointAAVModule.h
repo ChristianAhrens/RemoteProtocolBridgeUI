@@ -26,7 +26,7 @@ class TrackedPointAccelAndVeloModule : public PacketModule
 {
 public:
 	TrackedPointAccelAndVeloModule(std::vector<unsigned char>& data, int& readPos);
-	~TrackedPointAccelAndVeloModule();
+	~TrackedPointAccelAndVeloModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

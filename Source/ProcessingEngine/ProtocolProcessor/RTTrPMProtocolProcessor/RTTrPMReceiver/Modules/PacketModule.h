@@ -37,7 +37,7 @@ public:
 public:
 	PacketModule();
 	PacketModule(std::vector<unsigned char>& data, int & readPos);
-	~PacketModule();
+	virtual ~PacketModule();
 
 	virtual void readData(std::vector<unsigned char>& data, int& readPos);
 

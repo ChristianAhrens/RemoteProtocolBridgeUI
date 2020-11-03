@@ -25,7 +25,7 @@ class PacketModuleTrackable : public PacketModule
 {
 public:
 	PacketModuleTrackable(std::vector<unsigned char>& data, int & readPos);
-	~PacketModuleTrackable();
+	~PacketModuleTrackable() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

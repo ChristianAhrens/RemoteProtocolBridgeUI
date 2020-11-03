@@ -56,7 +56,7 @@ public:
 
 public:
 	OrientationEulerModule(std::vector<unsigned char>& data, int& readPos);
-	~OrientationEulerModule();
+	~OrientationEulerModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

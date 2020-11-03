@@ -26,7 +26,7 @@ class TrackedPointPositionModule : public PacketModule
 {
 public:
 	TrackedPointPositionModule(std::vector<unsigned char>& data, int& readPos);
-	~TrackedPointPositionModule();
+	~TrackedPointPositionModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

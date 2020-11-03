@@ -26,7 +26,7 @@ class CentroidPositionModule : public PacketModule
 {
 public:
 	CentroidPositionModule(std::vector<unsigned char>& data, int& readPos);
-	~CentroidPositionModule();
+	~CentroidPositionModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

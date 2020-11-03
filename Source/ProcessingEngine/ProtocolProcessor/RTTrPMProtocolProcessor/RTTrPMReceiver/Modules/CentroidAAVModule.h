@@ -26,7 +26,7 @@ class CentroidAccelAndVeloModule : public PacketModule
 {
 public:
 	CentroidAccelAndVeloModule(std::vector<unsigned char>& data, int& readPos);
-	~CentroidAccelAndVeloModule();
+	~CentroidAccelAndVeloModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 

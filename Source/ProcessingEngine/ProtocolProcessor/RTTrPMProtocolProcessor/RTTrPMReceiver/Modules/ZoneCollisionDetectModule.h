@@ -28,7 +28,7 @@ class ZoneObjectSubModule : public PacketModule
 {
 public:
 	ZoneObjectSubModule(std::vector<unsigned char>& data, int& readPos);
-	~ZoneObjectSubModule();
+	~ZoneObjectSubModule() override;
 
 	void readData(std::vector<unsigned char>& data, int& readPos) override;
 
