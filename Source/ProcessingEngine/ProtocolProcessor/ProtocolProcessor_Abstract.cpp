@@ -88,10 +88,8 @@ void ProtocolProcessor_Abstract::AddListener(Listener *messageListener)
 /**
  * Sets the configuration data for the protocol processor object.
  *
- * @param protocolData	The configuration data struct with config data
- * @param activeObjs	The objects to use as 'active' for this protocol
- * @param NId			The node id of the parent node this protocol processing object is child of (needed to access data from config)
- * @param PId			The protocol id of this protocol processing object (needed to access data from config)
+ * @param stateXml	The configuration data to parse and set active
+ * @return True on success, false on failure
  */
 bool ProtocolProcessor_Abstract::setStateXml(XmlElement* stateXml)
 {
@@ -125,15 +123,6 @@ bool ProtocolProcessor_Abstract::setStateXml(XmlElement* stateXml)
 		m_hostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
 	else
 		return false;
-
-	if (stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1)
-	{
-		auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
-		if (activeObjsXmlElement)
-			SetRemoteObjectsActive(activeObjsXmlElement);
-		else
-			return false;
-	}
 
 	auto mutedObjChsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MUTEDCHANNELS));
 	if (mutedObjChsXmlElement)

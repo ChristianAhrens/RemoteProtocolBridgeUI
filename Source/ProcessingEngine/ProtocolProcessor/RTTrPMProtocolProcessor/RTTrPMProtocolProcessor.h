@@ -48,6 +48,16 @@ class RTTrPMProtocolProcessor : public RTTrPMReceiver::DataListener,
 	public ProtocolProcessor_Abstract
 {
 public:
+	enum MappingAreaId
+	{
+		MAI_Invalid = -1,
+		MAI_First,
+		MAI_Second,
+		MAI_Third,
+		MAI_Fourth,
+	};
+
+public:
 	RTTrPMProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber);
 	~RTTrPMProtocolProcessor();
 
@@ -66,8 +76,9 @@ public:
 private:
 	RTTrPMReceiver	m_rttrpmReceiver;		/**< An receiver object for BlackTrax RTTrPM protocol that binds to a network port to receive data
 													   * via UDP, parse it, and forwards the included RTTrPM packet modules to its listeners. */
-	Array<RemoteObject>		m_activeRemoteObjects;	/**< List of remote objects to be activly handled. */
 	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
+
+	MappingAreaId m_mappingAreaId{ MAI_Invalid };
 
 	float m_floatValueBuffer[3] = { 0.0f, 0.0f, 0.0f };
 	int m_intValueBuffer[2] = { 0, 0 };

@@ -202,6 +202,48 @@ private:
 };
 
 /**
+ * Class RTTrPMProtocolConfigComponent is a container used to hold the GUI controls
+ * specifically used to configure Blacktrax RTTrPM protocol configuration.
+ */
+class RTTrPMProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
+	public TextEditor::Listener
+{
+public:
+	RTTrPMProtocolConfigComponent(ProtocolRole role);
+	~RTTrPMProtocolConfigComponent();
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
+
+	//==============================================================================
+	const std::pair<int, int> GetSuggestedSize() override;
+
+	//==============================================================================
+	void AddListener(ProtocolConfigWindow* listener) override;
+
+protected:
+	//==============================================================================
+	bool				DumpActiveHandlingUsed() override;
+	Array<RemoteObject> DumpActiveRemoteObjects() override;
+	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
+
+private:
+	virtual void resized() override;
+
+	virtual void textEditorFocusLost(TextEditor&) override;
+	virtual void textEditorReturnKeyPressed(TextEditor&) override;
+
+	void buttonClicked(Button* button) override;
+
+	void FillMappingAreaId(int MappingAreaId);
+	int DumpMappingAreaId();
+
+	std::unique_ptr<Label>		m_MappingAreaIdLabel;		/**< Label as description of MappingArea id edit. */
+	std::unique_ptr<TextEditor> m_MappingAreaIdEdit;		/**< Edit for editing of MappingArea id. */
+};
+
+/**
  * Class ProtocolConfigWindow provides a window that embedds a ProtocolConfigComponent_Abstract
  */
 class ProtocolConfigWindow : public DialogWindow, public ProcessingEngineConfig::XmlConfigurableElement

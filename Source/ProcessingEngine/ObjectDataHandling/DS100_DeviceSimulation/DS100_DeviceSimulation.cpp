@@ -392,6 +392,8 @@ void DS100_DeviceSimulation::InitDataValues()
  */
 void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
+	ignoreUnused(PId);
+
 	RemoteObjectMessageData newMsgData = msgData;
 	switch (msgData.valType)
 	{

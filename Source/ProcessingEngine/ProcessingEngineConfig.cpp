@@ -95,12 +95,6 @@ bool ProcessingEngineConfig::isValid()
 				XmlElement* hostPortSectionElement = protocolASectionElement->getChildByName(getTagName(TagID::HOSTPORT));
 				if (!hostPortSectionElement)
 					return false;
-				XmlElement* pollingSectionElement = protocolASectionElement->getChildByName(getTagName(TagID::POLLINGINTERVAL));
-				if (!pollingSectionElement)
-					return false;
-				XmlElement* activeObjSectionElement = protocolASectionElement->getChildByName(getTagName(TagID::ACTIVEOBJECTS));
-				if (!activeObjSectionElement)
-					return false;
 			}
 			else
 				return false;

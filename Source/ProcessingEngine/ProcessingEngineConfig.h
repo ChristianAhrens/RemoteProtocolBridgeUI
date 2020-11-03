@@ -69,6 +69,7 @@ public:
 		SIMCHCNT,
 		SIMMAPCNT,
 		REFRESHINTERVAL,
+		MAPPINGAREA,
 	};
 	static String getTagName(TagID Id)
 	{
@@ -110,6 +111,8 @@ public:
 			return "SimulatedMappingsCount";
 		case REFRESHINTERVAL:
 			return "RefreshInterval";
+		case MAPPINGAREA:
+			return "MappingArea";
 		default:
 			return "INVALID";
 		}

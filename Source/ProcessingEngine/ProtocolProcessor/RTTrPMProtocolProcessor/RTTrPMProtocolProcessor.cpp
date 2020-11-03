@@ -99,7 +99,14 @@ bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
 		return false;
 	else
 	{
-		return true;
+		auto mappingAreaXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
+		if (mappingAreaXmlElement)
+		{
+			m_mappingAreaId = static_cast<MappingAreaId>(mappingAreaXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID)));
+			return true;
+		}
+		else
+			return false;
 	}
 }
 
@@ -114,7 +121,7 @@ bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
  */
 void RTTrPMProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlElement)
 {
-	ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, m_activeRemoteObjects);
+	ignoreUnused(activeObjsXmlElement);
 }
 
 /**
@@ -197,7 +204,7 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 						//	+ String(trackableModule->GetSeqNumber()) + " with " + String(trackableModule->GetNumberOfSubModules()) + " submodules");
 
 						newMsgData.addrVal.first = int16(String(trackableModule->GetName()).getIntValue());
-						newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
+						newMsgData.addrVal.second = int16(m_mappingAreaId);
 					}
 				}
 				break;
@@ -222,10 +229,13 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 						//	+ " latency" + String(trackedPointPositionModule->GetLatency()) 
 						//	+ String::formatted(" x%f,y%f,z%f", trackedPointPositionModule->GetX(), trackedPointPositionModule->GetY(), trackedPointPositionModule->GetZ()));
 
-						newObjectId = ROI_Positioning_SourcePosition_XY;
+						if (m_mappingAreaId == MAI_Invalid)
+							newObjectId = ROI_Positioning_SourcePosition_XY;
+						else
+							newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
 
 						//newMsgData.addrVal.first = int16(trackedPointPositionModule->GetPointIndex() + 1);
-						//newMsgData.addrVal.second = int16(INVALID_ADDRESS_VALUE);
+						//newMsgData.addrVal.second = int16(m_mappingAreaId);
 
 						newDualFloatValue[0] = static_cast<float>(trackedPointPositionModule->GetX());
 						newDualFloatValue[1] = static_cast<float>(trackedPointPositionModule->GetY());

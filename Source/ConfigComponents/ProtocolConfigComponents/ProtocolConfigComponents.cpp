@@ -197,25 +197,16 @@ void ProtocolConfigComponent_Abstract::SetActiveHandlingUsed(bool active)
 std::unique_ptr<XmlElement> ProtocolConfigComponent_Abstract::createStateXml()
 {
 	auto ports = DumpProtocolPorts();
-	auto activeHandlingUsed = DumpActiveHandlingUsed();
-	auto activeObjects = DumpActiveRemoteObjects();
-
-	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
 
 	auto clientPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
-	if (clientPortXmlElement)
-		clientPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.first);
+	if (!clientPortXmlElement)
+		clientPortXmlElement = m_protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
+	clientPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.first);
 
 	auto hostPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
-	if (hostPortXmlElement)
-		hostPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.second);
-	
-	auto activeObjsXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
-	if (activeObjsXmlElement)
-	{
-		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement.get(), activeObjects);
-		m_protocolXmlElement->replaceChildElement(m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS)), activeObjsXmlElement.release());
-	}
+	if (!hostPortXmlElement)
+		hostPortXmlElement = m_protocolXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+	hostPortXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), ports.second);
 
 	return std::make_unique<XmlElement>(*m_protocolXmlElement);
 }
@@ -235,8 +226,6 @@ bool ProtocolConfigComponent_Abstract::setStateXml(XmlElement* stateXml)
 
 	m_protocolXmlElement = std::make_unique<XmlElement>(*stateXml);
 
-	SetActiveHandlingUsed(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1);
-
 	std::pair<int, int> ports{ 0, 0 };
 	auto clientPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
 	if (clientPortXmlElement)
@@ -245,11 +234,6 @@ bool ProtocolConfigComponent_Abstract::setStateXml(XmlElement* stateXml)
 	if (hostPortXmlElement)
 		ports.second = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
 	FillProtocolPorts(ports);
-
-	Array<RemoteObject> activeObjects;
-	auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
-	ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, activeObjects);
-	FillActiveRemoteObjects(activeObjects);
 
 	return true;
 }
@@ -1046,9 +1030,26 @@ const std::pair<int, int> OSCProtocolConfigComponent::GetSuggestedSize()
 std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
 {
 	auto protocolStateXml = ProtocolConfigComponent_Abstract::createStateXml();
+
+	auto activeHandlingUsed = DumpActiveHandlingUsed();
+	auto activeObjects = DumpActiveRemoteObjects();
+
+	protocolStateXml->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
+	auto activeObjsXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	if (activeObjsXmlElement)
+	{
+		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement.get(), activeObjects);
+		auto existingActiveObjsXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+		if (existingActiveObjsXmlElement)
+			m_protocolXmlElement->replaceChildElement(existingActiveObjsXmlElement, activeObjsXmlElement.release());
+		else
+			m_protocolXmlElement->addChildElement(activeObjsXmlElement.release());
+	}
+
 	auto pollingIntervalXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
-	if (pollingIntervalXmlElement)
-		pollingIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), DumpPollingInterval());
+	if (!pollingIntervalXmlElement)
+		pollingIntervalXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
+	pollingIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), DumpPollingInterval());
 
 	return std::move(protocolStateXml);
 }
@@ -1063,9 +1064,236 @@ std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
  */
 bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 {
+	SetActiveHandlingUsed(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1);
+	Array<RemoteObject> activeObjects;
+	auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	if (activeObjsXmlElement)
+	{
+		ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, activeObjects);
+		FillActiveRemoteObjects(activeObjects);
+	}
+
 	auto pollingIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
 	if(pollingIntervalXmlElement)
 		FillPollingInterval(pollingIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL)));
+
+	return ProtocolConfigComponent_Abstract::setStateXml(stateXml);
+}
+
+
+//==============================================================================
+// Class RTTrPMProtocolConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+RTTrPMProtocolConfigComponent::RTTrPMProtocolConfigComponent(ProtocolRole role)
+	: ProtocolConfigComponent_Abstract(role)
+{
+	m_MappingAreaIdLabel = std::make_unique<Label>();
+	addAndMakeVisible(m_MappingAreaIdLabel.get());
+	m_MappingAreaIdLabel->setText("MappingArea Id", dontSendNotification);
+	m_MappingAreaIdEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_MappingAreaIdEdit.get());
+}
+
+/**
+ * Class destructor.
+ */
+RTTrPMProtocolConfigComponent::~RTTrPMProtocolConfigComponent()
+{
+
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void RTTrPMProtocolConfigComponent::resized()
+{
+	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s;
+	int labelWidth = (int)(usableWidth * 0.45);
+	int editWidth = (int)(usableWidth * 0.3);
+
+	// port edits with labels
+	int yOffset = UIS_Margin_s;
+	m_HostPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_HostPortEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_ClientPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_ClientPortEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+
+	// MappingArea Id edit/label
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_MappingAreaIdLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_MappingAreaIdEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for changes to our textEditors.
+ * @param textEditor	The TextEditor object whose content has just changed.
+ */
+void RTTrPMProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for Enter key presses on textEditors.
+ * @param textEditor	The TextEditor object whose where enter key was pressed.
+ */
+void RTTrPMProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for button clicks on buttons.
+ * @param button	The button object that was pressed.
+ */
+void RTTrPMProtocolConfigComponent::buttonClicked(Button* button)
+{
+	if (button == m_applyConfigButton.get())
+	{
+		if (m_parentListener)
+			m_parentListener->OnEditingFinished();
+	}
+}
+
+/**
+ * Method to add parent object as 'listener'.
+ * This is done in a way JUCE uses to connect child-parent relations for handling 'signal' calls
+ */
+void RTTrPMProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
+{
+	m_parentListener = listener;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The list of objects to actively handle when running the engine.
+ */
+Array<RemoteObject> RTTrPMProtocolConfigComponent::DumpActiveRemoteObjects()
+{
+	Array<RemoteObject> activeObjects;
+
+	return activeObjects;
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with list of objects
+ *
+ * @param Objs	The list of objects to set as default.
+ */
+void RTTrPMProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+{
+	ignoreUnused(Objs);
+}
+
+/**
+ * Method to trigger dumping of state of button for if active object handling shall be used
+ *
+ * @return	True if active object handling shall be used.
+ */
+bool RTTrPMProtocolConfigComponent::DumpActiveHandlingUsed()
+{
+	return false;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to integer MappingArea Id return value
+ *
+ * @return	MappingArea Id value.
+ */
+int RTTrPMProtocolConfigComponent::DumpMappingAreaId()
+{
+	int MappingAreaId = -1;
+
+	StringArray intervalStrings;
+	intervalStrings.addTokens(m_MappingAreaIdEdit->getText(), ";, ", "");
+	if (intervalStrings.size() == 1)
+	{
+		MappingAreaId = intervalStrings[0].getIntValue();
+	}
+
+	return MappingAreaId;
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with MappingArea Id value
+ *
+ * @param MappingAreaId The id value
+ */
+void RTTrPMProtocolConfigComponent::FillMappingAreaId(int MappingAreaId)
+{
+	if (m_MappingAreaIdEdit)
+		m_MappingAreaIdEdit->setText(String(MappingAreaId));
+
+	return;
+}
+
+/**
+ * Method to get the components' suggested size. This will be deprecated as soon as
+ * the primitive UI is refactored and uses dynamic / proper layouting
+ *
+ * @return	The pair of int representing the suggested size for this component
+ */
+const std::pair<int, int> RTTrPMProtocolConfigComponent::GetSuggestedSize()
+{
+	int width = UIS_BasicConfigWidth;
+	int height =	UIS_Margin_m + UIS_ElmSize +
+					UIS_Margin_m + UIS_ElmSize +
+					UIS_Margin_m + UIS_ElmSize +
+					UIS_Margin_s + UIS_ElmSize +
+					UIS_Margin_s + UIS_ElmSize +
+					UIS_Margin_s;
+
+	return std::pair<int, int>(width, height);
+}
+
+/**
+ * Reimplemented method to trigger dumping contents of configcomponent member
+ * to global config object
+ *
+ * @param NId The id of the node to dump the config for
+ * @param NId The id of the protocol to dump the config for
+ * @param config	The global configuration object to dump data to
+ * @return	True on success
+ */
+std::unique_ptr<XmlElement> RTTrPMProtocolConfigComponent::createStateXml()
+{
+	auto protocolStateXml = ProtocolConfigComponent_Abstract::createStateXml();
+
+	auto mappingAreaXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
+	if (!mappingAreaXmlElement)
+		mappingAreaXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
+	mappingAreaXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), DumpMappingAreaId());
+
+	return std::move(protocolStateXml);
+}
+
+/**
+ * Reimplemented setter method to trigger filling contents of
+ * configcomponent member with configuration contents
+ *
+ * @param NId The id of the node to set the config for
+ * @param NId The id of the protocol to set the config for
+ * @param config	The global configuration object.
+ */
+bool RTTrPMProtocolConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	auto mappingAreaXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
+	if (mappingAreaXmlElement)
+		FillMappingAreaId(mappingAreaXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID)));
 
 	return ProtocolConfigComponent_Abstract::setStateXml(stateXml);
 }
@@ -1097,6 +1325,9 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	{
 	case ProtocolType::PT_OSCProtocol:
 		m_configComponent = std::make_unique<OSCProtocolConfigComponent>(role);
+		break;
+	case ProtocolType::PT_RTTrPMProtocol:
+		m_configComponent = std::make_unique<RTTrPMProtocolConfigComponent>(role);
 		break;
 	case ProtocolType::PT_OCAProtocol:
 		// intentionally no break to run into default

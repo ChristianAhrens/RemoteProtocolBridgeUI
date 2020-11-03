@@ -120,6 +120,15 @@ bool OSCProtocolProcessor::setStateXml(XmlElement *stateXml)
 		return false;
 	else
 	{
+		if (stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1)
+		{
+			auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+			if (activeObjsXmlElement)
+				SetRemoteObjectsActive(activeObjsXmlElement);
+			else
+				return false;
+		}
+
 		auto pollingIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
 		if (pollingIntervalXmlElement)
 		{
