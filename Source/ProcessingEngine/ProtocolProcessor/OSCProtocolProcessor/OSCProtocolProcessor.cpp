@@ -339,6 +339,11 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 		// Parse the Source ID
 		int sourceId = (addressString.fromLastOccurrenceOf("/", false, true)).getIntValue();
 		jassert(sourceId > 0);
+
+		// If the received channel (source) is set to muted, return without further processing
+		if (m_mutedRemoteObjectChannels.contains(sourceId))
+			return;
+
 		if (sourceId > 0)
 		{
 			RemoteObjectIdentifier newObjectId;
