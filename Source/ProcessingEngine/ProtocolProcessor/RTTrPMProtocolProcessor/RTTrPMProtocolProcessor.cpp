@@ -203,7 +203,13 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 						//DBG("PacketModuleTrackable('" + String(trackableModule->GetName()) + "'): seqNo" 
 						//	+ String(trackableModule->GetSeqNumber()) + " with " + String(trackableModule->GetNumberOfSubModules()) + " submodules");
 
-						newMsgData.addrVal.first = int16(String(trackableModule->GetName()).getIntValue());
+						int sourceId = String(trackableModule->GetName()).getIntValue();
+
+						// If the received channel (source) is set to muted, return without further processing
+						if (m_mutedRemoteObjectChannels.contains(sourceId))
+							return;
+
+						newMsgData.addrVal.first = int16(sourceId);
 						newMsgData.addrVal.second = int16(m_mappingAreaId);
 					}
 				}
@@ -233,9 +239,6 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 							newObjectId = ROI_Positioning_SourcePosition_XY;
 						else
 							newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
-
-						//newMsgData.addrVal.first = int16(trackedPointPositionModule->GetPointIndex() + 1);
-						//newMsgData.addrVal.second = int16(m_mappingAreaId);
 
 						newDualFloatValue[0] = static_cast<float>(trackedPointPositionModule->GetX());
 						newDualFloatValue[1] = static_cast<float>(trackedPointPositionModule->GetY());
