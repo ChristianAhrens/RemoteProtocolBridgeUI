@@ -207,7 +207,7 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 
 						// If the received channel (source) is set to muted, return without further processing
 						if (m_mutedRemoteObjectChannels.contains(sourceId))
-							return;
+							continue;
 
 						newMsgData.addrVal.first = int16(sourceId);
 						newMsgData.addrVal.second = int16(m_mappingAreaId);
