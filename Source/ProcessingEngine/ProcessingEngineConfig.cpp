@@ -737,6 +737,130 @@ String ProcessingEngineConfig::GetObjectDescription(RemoteObjectIdentifier Id)
 }
 
 /**
+* Helper to resolve ROI to short human readable string.
+*
+* @param Id	The remote object id to be resolved to a string.
+*/
+String ProcessingEngineConfig::GetObjectShortDescription(RemoteObjectIdentifier Id)
+{
+	switch (Id)
+	{
+	case ROI_HeartbeatPing:
+		return "PING";
+	case ROI_HeartbeatPong:
+		return "PONG";
+	case ROI_Settings_DeviceName:
+		return "Dev. Name";
+	case ROI_Error_GnrlErr:
+		return "Gnrl Err";
+	case ROI_Error_ErrorText:
+		return "Err Txt";
+	case ROI_Status_StatusText:
+		return "Stat Txt";
+	case ROI_MatrixInput_Mute:
+		return "Mtrx In Mute";
+	case ROI_MatrixInput_Gain:
+		return "Mtrx In Gain";
+	case ROI_MatrixInput_Delay:
+		return "Mtrx In Dly";
+	case ROI_MatrixInput_DelayEnable:
+		return "Mtrx In DlyEnable";
+	case ROI_MatrixInput_EqEnable:
+		return "Mtrx In EqEnable";
+	case ROI_MatrixInput_Polarity:
+		return "Mtrx In Pol";
+	case ROI_MatrixInput_ChannelName:
+		return "Mtrx In ChName";
+	case ROI_MatrixInput_LevelMeterPreMute:
+		return "Mtrx In LvlPreMute";
+	case ROI_MatrixInput_LevelMeterPostMute:
+		return "Mtrx In LvlPostMute";
+	case ROI_MatrixNode_Enable:
+		return "Mtrx Nd Enable";
+	case ROI_MatrixNode_Gain:
+		return "Mtrx Nd Gain";
+	case ROI_MatrixNode_DelayEnable:
+		return "Mtrx Nd DlyEnable";
+	case ROI_MatrixNode_Delay:
+		return "Mtrx Nd Dly";
+	case ROI_MatrixOutput_Mute:
+		return "Mtrx Out Mute";
+	case ROI_MatrixOutput_Gain:
+		return "Mtrx Out Gain";
+	case ROI_MatrixOutput_Delay:
+		return "Mtrx Out Dly";
+	case ROI_MatrixOutput_DelayEnable:
+		return "Mtrx Out DlyEnable";
+	case ROI_MatrixOutput_EqEnable:
+		return "Mtrx Out EqEnable";
+	case ROI_MatrixOutput_Polarity:
+		return "Mtrx Out Pol";
+	case ROI_MatrixOutput_ChannelName:
+		return "Mtrx Out ChName";
+	case ROI_MatrixOutput_LevelMeterPreMute:
+		return "Mtrx Out LvlPreMute";
+	case ROI_MatrixOutput_LevelMeterPostMute:
+		return "Mtrx Out LvlPostMute";
+	case ROI_Positioning_SourceSpread:
+		return "Sound Object Spread";
+	case ROI_Positioning_SourceDelayMode:
+		return "Obj Dly Mode";
+	case ROI_Positioning_SourcePosition:
+		return "Abs. Obj. Pos. XYZ";
+	case ROI_Positioning_SourcePosition_XY:
+		return "Abs. Obj. Pos. XY";
+	case ROI_Positioning_SourcePosition_X:
+		return "Abs. Obj. Pos. X";
+	case ROI_Positioning_SourcePosition_Y:
+		return "Abs. Obj. Pos. Y";
+	case ROI_CoordinateMapping_SourcePosition:
+		return "Rel. Obj. Pos. XYZ";
+	case ROI_CoordinateMapping_SourcePosition_XY:
+		return "Rel. Obj. Pos. XY";
+	case ROI_CoordinateMapping_SourcePosition_X:
+		return "Rel. Obj. Pos. X";
+	case ROI_CoordinateMapping_SourcePosition_Y:
+		return "Rel. Obj. Pos. Y";
+	case ROI_MatrixSettings_ReverbRoomId:
+		return "Mtrx Set. RevRoomId";
+	case ROI_MatrixSettings_ReverbPredelayFactor:
+		return "Mtrx Set. RevPredelay";
+	case ROI_MatrixSettings_RevebRearLevel:
+		return "Mtrx Set. RevRearLevel";
+	case ROI_MatrixInput_ReverbSendGain:
+		return "Mtrx In RevSndGain";
+	case ROI_ReverbInput_Gain:
+		return "Rev. In Gain";
+	case ROI_ReverbInputProcessing_Mute:
+		return "Rev. In Proc. Mute";
+	case ROI_ReverbInputProcessing_Gain:
+		return "Rev. In Proc. Gain";
+	case ROI_ReverbInputProcessing_LevelMeter:
+		return "Rev. In Proc. Lvl";
+	case ROI_ReverbInputProcessing_EqEnable:
+		return "Rev In Proc. EqEnable";
+	case ROI_Device_Clear:
+		return "Dev. Clr";
+	case ROI_Scene_Previous:
+		return "Scn Prev.";
+	case ROI_Scene_Next:
+		return "Scn Next";
+	case ROI_Scene_Recall:
+		return "Scn Recall";
+	case ROI_Scene_SceneIndex:
+		return "Scn Idx";
+	case ROI_Scene_SceneName:
+		return "Scn Name";
+	case ROI_Scene_SceneComment:
+		return "Scn Comment";
+	case ROI_Invalid:
+	default:
+		jassertfalse;
+		return "";
+	}
+}
+
+/**
 * Convenience function to resolve enum to sth. human readable (e.g. in config file)
 */
 String  ProcessingEngineConfig::ProtocolTypeToString(ProtocolType pt)

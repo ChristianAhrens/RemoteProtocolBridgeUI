@@ -187,6 +187,7 @@ public:
 	static ObjectHandlingMode	ObjectHandlingModeFromString(String mode);
 
 	static String GetObjectDescription(RemoteObjectIdentifier Id);
+	static String GetObjectShortDescription(RemoteObjectIdentifier Id);
 
 	// ============================================================
 	bool isValid() override;
