@@ -95,10 +95,12 @@ bool RTTrPMProtocolProcessor::Stop()
  */
 bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
 {
-	if (!ProtocolProcessor_Abstract::setStateXml(stateXml))
+	if (!stateXml)
 		return false;
 	else
 	{
+		ProtocolProcessor_Abstract::setStateXml(stateXml);
+
 		auto mappingAreaXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
 		if (mappingAreaXmlElement)
 		{
@@ -164,7 +166,7 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 		return;
 
 	ignoreUnused(senderPort);
-	if (senderIPAddress != m_ipAddress)
+	if (m_ipAddress.isNotEmpty() && senderIPAddress != m_ipAddress)
 	{
 #ifdef DEBUG
 		DBG("NId" + String(m_parentNodeId)

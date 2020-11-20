@@ -96,11 +96,13 @@ bool ProtocolProcessor_Abstract::setStateXml(XmlElement* stateXml)
 	if (!stateXml)
 		return false;
 
+	auto retVal = true;
+
 	auto isProtocolTypeA = stateXml->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA);
 	auto isProtocolTypeB = stateXml->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB);
 
 	if (!isProtocolTypeA && !isProtocolTypeB)
-		return false;
+		retVal = false;
 
 	m_protocolProcessorRole = stateXml->getTagName() == ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) ? ProtocolRole::PR_A : ProtocolRole::PR_B;
 
@@ -110,25 +112,25 @@ bool ProtocolProcessor_Abstract::setStateXml(XmlElement* stateXml)
 	if (ipAdressXmlElement)
 		m_ipAddress = ipAdressXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS));
 	else
-		return false;
+		retVal = false;
 
 	auto clientPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::CLIENTPORT));
 	if (clientPortXmlElement)
 		m_clientPort = clientPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
 	else
-		return false;
+		retVal = false;
 
 	auto hostPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
 	if (hostPortXmlElement)
 		m_hostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
 	else
-		return false;
+		retVal = false;
 
 	auto mutedObjChsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MUTEDCHANNELS));
 	if (mutedObjChsXmlElement)
 		SetRemoteObjectChannelsMuted(mutedObjChsXmlElement);
 
-	return true;
+	return retVal;
 }
 
 /**
