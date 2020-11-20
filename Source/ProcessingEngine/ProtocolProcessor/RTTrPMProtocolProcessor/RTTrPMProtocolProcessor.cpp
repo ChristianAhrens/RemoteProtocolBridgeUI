@@ -207,10 +207,6 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 
 						int sourceId = String(trackableModule->GetName()).getIntValue();
 
-						// If the received channel (source) is set to muted, return without further processing
-						if (m_mutedRemoteObjectChannels.contains(sourceId))
-							continue;
-
 						newMsgData.addrVal.first = int16(sourceId);
 						newMsgData.addrVal.second = int16(m_mappingAreaId);
 					}
@@ -250,8 +246,14 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 						newMsgData.payload = &newDualFloatValue;
 						newMsgData.payloadSize = 2 * sizeof(float);
 
+
+						// If the received channel (source) is set to muted, dont forward the message
+						auto sourceId = static_cast<int>(newMsgData.addrVal.first);
+						if (m_mutedRemoteObjectChannels.contains(sourceId))
+							continue;
+
 						// provide the received message to parent node
-						if (m_messageListener)
+						else if (m_messageListener)
 							m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 					}
 				}
