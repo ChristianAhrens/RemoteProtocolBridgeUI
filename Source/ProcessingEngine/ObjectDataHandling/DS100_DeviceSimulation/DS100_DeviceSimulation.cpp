@@ -326,9 +326,9 @@ void DS100_DeviceSimulation::InitDataValues()
 		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
 		auto remoteAdressValueMap = std::map<RemoteObjectAddressing, RemoteObjectMessageData>{};
 
-		for (juce::int16 mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
+		for (MappingId mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
 		{
-			for (juce::int16 channel = 1; channel <= m_simulatedChCount; channel++)
+			for (SourceId channel = 1; channel <= m_simulatedChCount; channel++)
 			{
 				RemoteObjectAddressing adressing(channel, mapping);
 				auto remoteValue = RemoteObjectMessageData{};
@@ -444,9 +444,9 @@ void DS100_DeviceSimulation::timerCallback()
 		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
 		auto & remoteAdressValueMap = m_currentValues.at(roi);
 
-		for (juce::int16 mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
+		for (MappingId mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
 		{
-			for (juce::int16 channel = 1; channel <= m_simulatedChCount; channel++)
+			for (SourceId channel = 1; channel <= m_simulatedChCount; channel++)
 			{
 				RemoteObjectAddressing adressing(channel, mapping);
 				auto& remoteValue = remoteAdressValueMap.at(adressing);

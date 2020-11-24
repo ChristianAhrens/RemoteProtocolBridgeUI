@@ -44,8 +44,10 @@ static int uniqueIdCounter = 0;
 /**
  * Type definitions.
  */
-typedef uint32 NodeId;
-typedef uint64 ProtocolId;
+typedef std::uint32_t	NodeId;
+typedef std::uint64_t	ProtocolId;
+typedef std::int32_t	SourceId;
+typedef std::int8_t		MappingId;
 
 /**
 * Generic defines
@@ -176,8 +178,8 @@ enum RemoteObjectValueType
  */
 struct RemoteObjectAddressing
 {
-	int16	first;	/**< First address definition value. Equivalent to channels in d&b OCA world or SourceId for OSC positioning messages. */
-	int16	second;	/**< Second address definition value. Equivalent to records in d&b OCA world or MappingId for OSC positioning messages. */
+	SourceId	first;	/**< First address definition value. Equivalent to channels in d&b OCA world or SourceId for OSC positioning messages. */
+	MappingId	second;	/**< Second address definition value. Equivalent to records in d&b OCA world or MappingId for OSC positioning messages. */
 
 	/**
 	 * Constructor to initialize with invalid values
@@ -193,7 +195,7 @@ struct RemoteObjectAddressing
 	 * @param a	The value to set for internal 'first' - SourceId (Channel)
 	 * @param b	The value to set for internal 'second' - MappingId (Record)
 	 */
-	RemoteObjectAddressing(int16 a, int16 b)
+	RemoteObjectAddressing(SourceId a, MappingId b)
 	{
 		first = a;
 		second = b;
@@ -253,10 +255,10 @@ struct RemoteObjectMessageData
 	RemoteObjectAddressing	addrVal;		/**< Address definition value. Equivalent to channels/records in d&b OCA world or SourceId/MappingId for OSC positioning messages. */
 
 	RemoteObjectValueType	valType;		/**< Datatype used for data values of the remote object. */
-	uint16					valCount;		/**< Value count used by the remote object. */
+	std::uint16_t			valCount;		/**< Value count used by the remote object. */
 
 	void*					payload;		/**< Pointer to the actual payload data. */
-	uint64					payloadSize;	/**< Size of the payload data. */
+	std::uint64_t			payloadSize;	/**< Size of the payload data. */
 };
 
 /**

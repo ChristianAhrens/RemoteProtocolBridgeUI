@@ -205,10 +205,10 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 						//DBG("PacketModuleTrackable('" + String(trackableModule->GetName()) + "'): seqNo" 
 						//	+ String(trackableModule->GetSeqNumber()) + " with " + String(trackableModule->GetNumberOfSubModules()) + " submodules");
 
-						int sourceId = String(trackableModule->GetName()).getIntValue();
+						SourceId sourceId = String(trackableModule->GetName()).getIntValue();
 
-						newMsgData.addrVal.first = int16(sourceId);
-						newMsgData.addrVal.second = int16(m_mappingAreaId);
+						newMsgData.addrVal.first = sourceId;
+						newMsgData.addrVal.second = static_cast<MappingId>(m_mappingAreaId);
 					}
 				}
 				break;

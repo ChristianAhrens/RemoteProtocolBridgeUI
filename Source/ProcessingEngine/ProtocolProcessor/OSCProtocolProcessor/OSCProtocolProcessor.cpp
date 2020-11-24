@@ -501,7 +501,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
@@ -511,7 +511,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_X;
@@ -521,7 +521,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition_Y;
@@ -531,7 +531,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 			{
 				// Parse the Mapping ID
 				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = int16((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
 				jassert(newMsgData.addrVal.second > 0);
 
 				newObjectId = ROI_CoordinateMapping_SourcePosition;
