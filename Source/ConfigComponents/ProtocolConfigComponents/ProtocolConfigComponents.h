@@ -244,6 +244,51 @@ private:
 };
 
 /**
+ * Class MIDIProtocolConfigComponent is a container used to hold the GUI controls
+ * specifically used to configure generic MIDI protocol configuration.
+ */
+class MIDIProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
+	public TextEditor::Listener
+{
+public:
+	MIDIProtocolConfigComponent(ProtocolRole role);
+	~MIDIProtocolConfigComponent();
+
+	void setMidiInput(int index);
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
+
+	//==============================================================================
+	const std::pair<int, int> GetSuggestedSize() override;
+
+	//==============================================================================
+	void AddListener(ProtocolConfigWindow* listener) override;
+
+protected:
+	//==============================================================================
+	bool				DumpActiveHandlingUsed() override;
+	Array<RemoteObject> DumpActiveRemoteObjects() override;
+	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
+
+private:
+	virtual void resized() override;
+
+	virtual void textEditorFocusLost(TextEditor&) override;
+	virtual void textEditorReturnKeyPressed(TextEditor&) override;
+
+	void buttonClicked(Button* button) override;
+
+	void FillSelectedMidiInputIndex(int MidiInputIndex);
+	int DumpSelectedMidiInputIndex();
+
+	std::unique_ptr<AudioDeviceManager>	m_deviceManager;		/** We use the AudioDeviceManager class to find which MIDI input devices are enabled. */
+	std::unique_ptr<ComboBox>			m_midiInputList;        /** We display the names of the MIDI input devices in this combo-box for the user to select.. */
+	std::unique_ptr<Label>				m_midiInputListLabel;
+};
+
+/**
  * Class ProtocolConfigWindow provides a window that embedds a ProtocolConfigComponent_Abstract
  */
 class ProtocolConfigWindow : public DialogWindow, public ProcessingEngineConfig::XmlConfigurableElement

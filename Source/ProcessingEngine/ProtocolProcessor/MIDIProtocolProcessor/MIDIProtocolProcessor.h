@@ -42,8 +42,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * Class MIDIProtocolProcessor is a derived class for MIDI protocol interaction.
- * This currently is only a dummy for potential future functionality.
- * Feel free to implement something yourself here.
  */
 class MIDIProtocolProcessor : public ProtocolProcessor_Abstract
 {

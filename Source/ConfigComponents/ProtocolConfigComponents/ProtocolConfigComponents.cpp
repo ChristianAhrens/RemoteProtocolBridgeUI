@@ -860,14 +860,14 @@ Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
 				{
 					for (int k = 0; k < records.size(); ++k)
 					{
-						obj.Addr.first = int16(channels[j]);
-						obj.Addr.second = int16(records[k]);
+						obj.Addr.first = static_cast<SourceId>(channels[j]);
+						obj.Addr.second = static_cast<MappingId>(records[k]);
 						activeObjects.add(obj);
 					}
 				}
 				else
 				{
-					obj.Addr.first = int16(channels[j]);
+					obj.Addr.first = static_cast<SourceId>(channels[j]);
 					obj.Addr.second = -1;
 					activeObjects.add(obj);
 				}
@@ -1299,6 +1299,262 @@ bool RTTrPMProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 }
 
 
+//==============================================================================
+// Class MIDIProtocolConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+MIDIProtocolConfigComponent::MIDIProtocolConfigComponent(ProtocolRole role)
+	: ProtocolConfigComponent_Abstract(role)
+{
+	m_deviceManager = std::make_unique<AudioDeviceManager>();
+	
+	// collect available devices to populate our dropdown
+	auto midiInputs = juce::MidiInput::getAvailableDevices();
+	juce::StringArray midiInputNames;
+	for (auto input : midiInputs)
+		midiInputNames.add(input.name);
+
+	m_midiInputList = std::make_unique<ComboBox>();
+	addAndMakeVisible(m_midiInputList.get());
+	m_midiInputList->setTextWhenNoChoicesAvailable("No MIDI Inputs Enabled");
+
+	m_midiInputListLabel = std::make_unique<Label>();
+	addAndMakeVisible(m_midiInputListLabel.get());
+	m_midiInputListLabel->setText("MIDI Input:", juce::dontSendNotification);
+
+	m_midiInputList->addItemList(midiInputNames, 1);
+	m_midiInputList->onChange = [this] { setMidiInput(m_midiInputList->getSelectedItemIndex()); };
+
+	// find the first enabled device and use that by default
+	for (auto input : midiInputs)
+	{
+		if (m_deviceManager->isMidiInputDeviceEnabled(input.identifier))
+		{
+			setMidiInput(midiInputs.indexOf(input));
+			break;
+		}
+	}
+
+	// if no enabled devices were found just use the first one in the list
+	if (m_midiInputList->getSelectedId() == 0)
+		setMidiInput(0);
+}
+
+/**
+ * Class destructor.
+ */
+MIDIProtocolConfigComponent::~MIDIProtocolConfigComponent()
+{
+
+}
+
+/**
+ * Starts listening to a MIDI input device, enabling it if necessary.
+ * @param index	The new device index to set as selected.
+ */
+void MIDIProtocolConfigComponent::setMidiInput(int index)
+{
+	auto list = juce::MidiInput::getAvailableDevices();
+
+	if (list.size() <= index)
+		return;
+
+	auto newInput = list[index];
+
+	if (!m_deviceManager->isMidiInputDeviceEnabled(newInput.identifier))
+		m_deviceManager->setMidiInputDeviceEnabled(newInput.identifier, true);
+
+	m_midiInputList->setSelectedId(index + 1, juce::dontSendNotification);
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void MIDIProtocolConfigComponent::resized()
+{
+	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s;
+	int labelWidth = (int)(usableWidth * 0.45);
+	int editWidth = (int)(usableWidth * 0.3);
+
+	// MidiInput Index select/label
+	int yOffset = UIS_Margin_s;
+	m_midiInputListLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_midiInputList->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for changes to our textEditors.
+ * @param textEditor	The TextEditor object whose content has just changed.
+ */
+void MIDIProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for Enter key presses on textEditors.
+ * @param textEditor	The TextEditor object whose where enter key was pressed.
+ */
+void MIDIProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for button clicks on buttons.
+ * @param button	The button object that was pressed.
+ */
+void MIDIProtocolConfigComponent::buttonClicked(Button* button)
+{
+	if (button == m_applyConfigButton.get())
+	{
+		if (m_parentListener)
+			m_parentListener->OnEditingFinished();
+	}
+}
+
+/**
+ * Method to add parent object as 'listener'.
+ * This is done in a way JUCE uses to connect child-parent relations for handling 'signal' calls
+ */
+void MIDIProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
+{
+	m_parentListener = listener;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The list of objects to actively handle when running the engine.
+ */
+Array<RemoteObject> MIDIProtocolConfigComponent::DumpActiveRemoteObjects()
+{
+	Array<RemoteObject> activeObjects;
+
+	return activeObjects;
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with list of objects
+ *
+ * @param Objs	The list of objects to set as default.
+ */
+void MIDIProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+{
+	ignoreUnused(Objs);
+}
+
+/**
+ * Method to trigger dumping of state of button for if active object handling shall be used
+ *
+ * @return	True if active object handling shall be used.
+ */
+bool MIDIProtocolConfigComponent::DumpActiveHandlingUsed()
+{
+	return false;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to integer MidiInput Index return value
+ *
+ * @return	MappingArea Id value.
+ */
+int MIDIProtocolConfigComponent::DumpSelectedMidiInputIndex()
+{
+	int MidiInputIndex = -1;
+
+	auto list = juce::MidiInput::getAvailableDevices();
+
+	if (m_midiInputList)
+		MidiInputIndex = m_midiInputList->getSelectedId() - 1;
+
+	if (list.size() > MidiInputIndex && MidiInputIndex >= 0)
+		return MidiInputIndex;
+	else
+		return 0;
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with MidiInput Index value
+ *
+ * @param MidiInputIndex The index value
+ */
+void MIDIProtocolConfigComponent::FillSelectedMidiInputIndex(int MidiInputIndex)
+{
+	setMidiInput(MidiInputIndex);
+}
+
+/**
+ * Method to get the components' suggested size. This will be deprecated as soon as
+ * the primitive UI is refactored and uses dynamic / proper layouting
+ *
+ * @return	The pair of int representing the suggested size for this component
+ */
+const std::pair<int, int> MIDIProtocolConfigComponent::GetSuggestedSize()
+{
+	int width = UIS_BasicConfigWidth;
+	int height = UIS_Margin_m + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize;
+
+	return std::pair<int, int>(width, height);
+}
+
+/**
+ * Reimplemented method to trigger dumping contents of configcomponent member
+ * to global config object
+ *
+ * @param NId The id of the node to dump the config for
+ * @param NId The id of the protocol to dump the config for
+ * @param config	The global configuration object to dump data to
+ * @return	True on success
+ */
+std::unique_ptr<XmlElement> MIDIProtocolConfigComponent::createStateXml()
+{
+	auto protocolStateXml = std::make_unique<XmlElement>(*m_protocolXmlElement);
+
+	auto midiInputIndexXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	if (!midiInputIndexXmlElement)
+		midiInputIndexXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	midiInputIndexXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MIDIINPUTINDEX), DumpSelectedMidiInputIndex());
+
+	return std::move(protocolStateXml);
+}
+
+/**
+ * Reimplemented setter method to trigger filling contents of
+ * configcomponent member with configuration contents
+ *
+ * @param NId The id of the node to set the config for
+ * @param NId The id of the protocol to set the config for
+ * @param config	The global configuration object.
+ */
+bool MIDIProtocolConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	if (!stateXml || stateXml->getTagName() != ((m_ProtocolRole == ProtocolRole::PR_A) ? ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA) : ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB)))
+		return false;
+
+	m_protocolXmlElement = std::make_unique<XmlElement>(*stateXml);
+
+	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	if (midiInputIndexXmlElement)
+		FillSelectedMidiInputIndex(midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MIDIINPUTINDEX)));
+
+	return true;
+}
+
+
 // **************************************************************************************
 //    class ProtocolConfigWindow
 // **************************************************************************************
@@ -1329,9 +1585,10 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	case ProtocolType::PT_RTTrPMProtocol:
 		m_configComponent = std::make_unique<RTTrPMProtocolConfigComponent>(role);
 		break;
+	case ProtocolType::PT_MidiProtocol:
+		m_configComponent = std::make_unique<MIDIProtocolConfigComponent>(role);
+		break;
 	case ProtocolType::PT_OCAProtocol:
-		// intentionally no break to run into default
-	case ProtocolType::PT_DummyMidiProtocol:
 		// intentionally no break to run into default
 	case ProtocolType::PT_Invalid:
 		// intentionally no break to run into default

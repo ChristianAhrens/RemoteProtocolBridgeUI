@@ -46,7 +46,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MIDIProtocolProcessor::MIDIProtocolProcessor(const NodeId& parentNodeId)
 	: ProtocolProcessor_Abstract(parentNodeId)
 {
-	m_type = ProtocolType::PT_DummyMidiProtocol;
+	m_type = ProtocolType::PT_MidiProtocol;
 }
 
 /**
@@ -90,7 +90,6 @@ bool MIDIProtocolProcessor::Stop()
 /**
  * Setter for remote object to specifically activate.
  * For MIDI processing this is used to initialize MIDI Object Subscriptions
- * NOT YET IMPLEMENTED
  *
  * @param Objs	The list of RemoteObjects that shall be activated
  */

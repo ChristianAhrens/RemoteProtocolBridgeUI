@@ -40,6 +40,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
 #include "ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/RTTrPMProtocolProcessor/RTTrPMProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/MIDIProtocolProcessor/MIDIProtocolProcessor.h"
 
 
 constexpr int NODE = INT_MAX;
@@ -357,7 +359,9 @@ void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType
 				String::formatted(" | ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
 			break;
 		case PT_RTTrPMProtocol:
-			objectString += String::formatted("ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
+		case PT_MidiProtocol:
+			objectString += ProcessingEngineConfig::GetObjectShortDescription(Id) +
+				String::formatted(" | ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
 			break;
 		default:
 			break;

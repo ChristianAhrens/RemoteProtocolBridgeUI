@@ -873,8 +873,8 @@ String  ProcessingEngineConfig::ProtocolTypeToString(ProtocolType pt)
 		return "OSC";
 	case PT_RTTrPMProtocol:
 		return "RTTrPM";
-	case PT_DummyMidiProtocol:
-		return "Dummy MIDI";
+	case PT_MidiProtocol:
+		return "MIDI";
 	case PT_Invalid:
 		return "Invalid";
 	default:
@@ -893,8 +893,8 @@ ProtocolType  ProcessingEngineConfig::ProtocolTypeFromString(String type)
 		return PT_OSCProtocol;
 	if (type == "RTTrPM")
 		return PT_RTTrPMProtocol;
-	if (type == "Dummy MIDI")
-		return PT_DummyMidiProtocol;
+	if (type == "MIDI")
+		return PT_MidiProtocol;
 
 	return PT_Invalid;
 }

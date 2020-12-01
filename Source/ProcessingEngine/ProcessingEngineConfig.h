@@ -70,6 +70,7 @@ public:
 		SIMMAPCNT,
 		REFRESHINTERVAL,
 		MAPPINGAREA,
+		MIDIINPUT,
 	};
 	static String getTagName(TagID Id)
 	{
@@ -113,6 +114,8 @@ public:
 			return "RefreshInterval";
 		case MAPPINGAREA:
 			return "MappingArea";
+		case MIDIINPUT:
+			return "MidiInput";
 		default:
 			return "INVALID";
 		}
@@ -130,7 +133,8 @@ public:
 		PORT,
 		INTERVAL,
 		ALLOWED,
-		AUTOSTART
+		AUTOSTART,
+		MIDIINPUTINDEX,
 	};
 	static String getAttributeName(AttributeID Id)
 	{
@@ -158,6 +162,8 @@ public:
 			return "Allowed";
 		case AUTOSTART:
 			return "Autostart";
+		case MIDIINPUTINDEX:
+			return "MidiInputIndex";
 		default:
 			return "INVALID";
 		}

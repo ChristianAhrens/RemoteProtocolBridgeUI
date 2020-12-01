@@ -311,7 +311,7 @@ ProtocolProcessor_Abstract *ProcessingEngineNode::CreateProtocolProcessor(Protoc
 			return new OCAProtocolProcessor(m_nodeId);
 		case PT_RTTrPMProtocol:
 			return new RTTrPMProtocolProcessor(m_nodeId, listenerPortNumber);
-		case PT_DummyMidiProtocol:
+		case PT_MidiProtocol:
 			return new MIDIProtocolProcessor(m_nodeId);
 		default:
 			return 0;
