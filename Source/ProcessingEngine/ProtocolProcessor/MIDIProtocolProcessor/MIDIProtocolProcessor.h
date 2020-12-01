@@ -43,22 +43,54 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Class MIDIProtocolProcessor is a derived class for MIDI protocol interaction.
  */
-class MIDIProtocolProcessor : public ProtocolProcessor_Abstract
+class MIDIProtocolProcessor :	public ProtocolProcessor_Abstract,
+								private MessageListener,
+								private MidiInputCallback
 {
 public:
 	MIDIProtocolProcessor(const NodeId& parentNodeId);
 	~MIDIProtocolProcessor();
 
+	//==============================================================================
+	void handleIncomingMidiMessage(juce::MidiInput* source, const juce::MidiMessage& message) override;
+
+	//==============================================================================
+	void handleMessage(const Message& msg) override;
+
+	//==============================================================================
 	bool setStateXml(XmlElement* stateXml) override;
 
+	//==============================================================================
 	bool Start() override;
 	bool Stop() override;
 
+	//==============================================================================
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
 	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
 	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 	String GetMIDIRemoteObjectString(RemoteObjectIdentifier id);
+
+private:
+	// This is used to dispach an incoming midi message to the message thread
+	class CallbackMidiMessage : public Message
+	{
+	public:
+		/**
+		* Constructor with default initialization of message and source.
+		* @param m	The midi message to handle.
+		* @param s	The source the message was received from.
+		*/
+		CallbackMidiMessage(const juce::MidiMessage& m, const juce::String& s) : message(m), source(s) {}
+
+		juce::MidiMessage message;
+		juce::String source;
+	};
+
+	String getMidiMessageDescription(const juce::MidiMessage& m);
+
+	std::unique_ptr<AudioDeviceManager>	m_deviceManager;		/** We use the AudioDeviceManager class to register midi callbacks and set midi devices to enabled. */
+	int									m_lastInputIndex{ 0 };
 
 };

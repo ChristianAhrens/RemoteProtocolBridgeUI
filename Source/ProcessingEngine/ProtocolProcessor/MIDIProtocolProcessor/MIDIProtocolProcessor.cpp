@@ -47,6 +47,8 @@ MIDIProtocolProcessor::MIDIProtocolProcessor(const NodeId& parentNodeId)
 	: ProtocolProcessor_Abstract(parentNodeId)
 {
 	m_type = ProtocolType::PT_MidiProtocol;
+
+	m_deviceManager = std::make_unique<AudioDeviceManager>();
 }
 
 /**
@@ -55,6 +57,59 @@ MIDIProtocolProcessor::MIDIProtocolProcessor(const NodeId& parentNodeId)
 MIDIProtocolProcessor::~MIDIProtocolProcessor()
 {
 	
+}
+
+/**
+ * Reimplemented from MidiInputCallback to handle midi messages.
+ * @param source	The data source midi input.
+ * @param message	The midi input data.
+ */
+void MIDIProtocolProcessor::handleIncomingMidiMessage(juce::MidiInput* source, const juce::MidiMessage& message)
+{
+	// dispatch message to queue
+	postMessage(std::make_unique<CallbackMidiMessage>(message, (source == nullptr ? "UNKNOWN" : source->getName())).release());
+}
+
+/**
+ * Reimplemented from MessageListener to handle messages posted to queue.
+ * @param msg	The incoming message to handle
+ */
+void MIDIProtocolProcessor::handleMessage(const Message& msg)
+{
+	if (auto* callbackMessage = dynamic_cast<const CallbackMidiMessage*> (&msg))
+	{
+		auto const& midiMessage = callbackMessage->message;
+
+		DBG("MIDI received: " + getMidiMessageDescription(midiMessage));
+	}
+}
+
+/**
+ * Debugging helper method taken from JUCE's "HandlingMidiEventsTutorial"
+ */
+String MIDIProtocolProcessor::getMidiMessageDescription(const juce::MidiMessage& m)
+{
+	if (m.isNoteOn())           return "Note on " + juce::MidiMessage::getMidiNoteName(m.getNoteNumber(), true, true, 3);
+	if (m.isNoteOff())          return "Note off " + juce::MidiMessage::getMidiNoteName(m.getNoteNumber(), true, true, 3);
+	if (m.isProgramChange())    return "Program change " + juce::String(m.getProgramChangeNumber());
+	if (m.isPitchWheel())       return "Pitch wheel " + juce::String(m.getPitchWheelValue());
+	if (m.isAftertouch())       return "After touch " + juce::MidiMessage::getMidiNoteName(m.getNoteNumber(), true, true, 3) + ": " + juce::String(m.getAfterTouchValue());
+	if (m.isChannelPressure())  return "Channel pressure " + juce::String(m.getChannelPressureValue());
+	if (m.isAllNotesOff())      return "All notes off";
+	if (m.isAllSoundOff())      return "All sound off";
+	if (m.isMetaEvent())        return "Meta event";
+
+	if (m.isController())
+	{
+		juce::String name(juce::MidiMessage::getControllerName(m.getControllerNumber()));
+
+		if (name.isEmpty())
+			name = "[" + juce::String(m.getControllerNumber()) + "]";
+
+		return "Controller " + name + ": " + juce::String(m.getControllerValue());
+	}
+
+	return juce::String::toHexString(m.getRawData(), m.getRawDataSize());
 }
 
 /**
@@ -67,7 +122,36 @@ MIDIProtocolProcessor::~MIDIProtocolProcessor()
  */
 bool MIDIProtocolProcessor::setStateXml(XmlElement* stateXml)
 {
-	return ProtocolProcessor_Abstract::setStateXml(stateXml);
+	if (!ProtocolProcessor_Abstract::setStateXml(stateXml))
+		return false;
+
+	auto MidiInputIndex = -1;
+	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	if (midiInputIndexXmlElement)
+		MidiInputIndex = midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MIDIINPUTINDEX));
+	else
+		return false;
+
+	auto list = juce::MidiInput::getAvailableDevices();
+	if (list.size() <= m_lastInputIndex)
+		return false;
+	if (list.size() <= MidiInputIndex)
+		return false;
+	if (MidiInputIndex < 0)
+		return false;
+
+	m_deviceManager->removeMidiInputDeviceCallback(list[m_lastInputIndex].identifier, this);
+
+	auto newInput = list[MidiInputIndex];
+
+	if (!m_deviceManager->isMidiInputDeviceEnabled(newInput.identifier))
+		m_deviceManager->setMidiInputDeviceEnabled(newInput.identifier, true);
+
+	m_deviceManager->addMidiInputDeviceCallback(newInput.identifier, this);
+
+	m_lastInputIndex = MidiInputIndex;
+
+	return true;
 }
 
 /**
