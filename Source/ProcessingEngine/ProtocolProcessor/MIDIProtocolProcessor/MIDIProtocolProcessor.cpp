@@ -81,6 +81,44 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 		auto const& midiMessage = callbackMessage->message;
 
 		DBG("MIDI received: " + getMidiMessageDescription(midiMessage));
+
+		if (midiMessage.isNoteOn())
+			m_currentOnNoteNumber = midiMessage.getNoteNumber();
+
+		if (midiMessage.isPitchWheel())
+			m_currentX = midiMessage.getPitchWheelValue() / 16383.0f;
+		if (midiMessage.isController() && midiMessage.getControllerNumber() == 1)
+			m_currentY = midiMessage.getControllerValue() / 127.0f;
+
+		RemoteObjectMessageData newMsgData;
+		newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
+		newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
+		newMsgData.valType = ROVT_NONE;
+		newMsgData.valCount = 0;
+		newMsgData.payload = 0;
+		newMsgData.payloadSize = 0;
+
+		RemoteObjectIdentifier newObjectId = ROI_Invalid;
+
+		float newDualFloatValue[2];
+
+		{
+			newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
+
+			newDualFloatValue[0] = m_currentX;
+			newDualFloatValue[1] = m_currentY;
+
+			newMsgData.addrVal.first = 1;
+			newMsgData.addrVal.second = 1;
+			newMsgData.valType = ROVT_FLOAT;
+			newMsgData.valCount = 2;
+			newMsgData.payload = &newDualFloatValue;
+			newMsgData.payloadSize = 2 * sizeof(float);
+
+		}
+
+		if (m_currentOnNoteNumber > -1 && m_messageListener)
+			m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 	}
 }
 

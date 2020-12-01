@@ -93,4 +93,8 @@ private:
 	std::unique_ptr<AudioDeviceManager>	m_deviceManager;		/** We use the AudioDeviceManager class to register midi callbacks and set midi devices to enabled. */
 	int									m_lastInputIndex{ 0 };
 
+	int									m_currentOnNoteNumber{ -1 };
+	float								m_currentX{ 0.0f };
+	float								m_currentY{ 0.0f };
+
 };
