@@ -466,8 +466,8 @@ Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
 				{
 					for (int k = 0; k < records.size(); ++k)
 					{
-						obj.Addr.first = int16(channels[j]);
-						obj.Addr.second = int16(records[k]);
+						obj.Addr.first = static_cast<SourceId>(channels[j]);
+						obj.Addr.second = static_cast<MappingId>(records[k]);
 						activeObjects.add(obj);
 					}
 				}
