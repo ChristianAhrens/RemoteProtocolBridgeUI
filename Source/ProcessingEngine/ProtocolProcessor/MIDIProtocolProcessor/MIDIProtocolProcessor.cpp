@@ -164,9 +164,9 @@ bool MIDIProtocolProcessor::setStateXml(XmlElement* stateXml)
 		return false;
 
 	auto MidiInputIndex = -1;
-	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
 	if (midiInputIndexXmlElement)
-		MidiInputIndex = midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MIDIINPUTINDEX));
+		MidiInputIndex = midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX));
 	else
 		return false;
 

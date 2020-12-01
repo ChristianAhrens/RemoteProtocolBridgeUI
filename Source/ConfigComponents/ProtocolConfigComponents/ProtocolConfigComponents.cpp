@@ -1524,10 +1524,10 @@ std::unique_ptr<XmlElement> MIDIProtocolConfigComponent::createStateXml()
 {
 	auto protocolStateXml = std::make_unique<XmlElement>(*m_protocolXmlElement);
 
-	auto midiInputIndexXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	auto midiInputIndexXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
 	if (!midiInputIndexXmlElement)
-		midiInputIndexXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
-	midiInputIndexXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MIDIINPUTINDEX), DumpSelectedMidiInputIndex());
+		midiInputIndexXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
+	midiInputIndexXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX), DumpSelectedMidiInputIndex());
 
 	return std::move(protocolStateXml);
 }
@@ -1547,9 +1547,9 @@ bool MIDIProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 
 	m_protocolXmlElement = std::make_unique<XmlElement>(*stateXml);
 
-	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MIDIINPUT));
+	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
 	if (midiInputIndexXmlElement)
-		FillSelectedMidiInputIndex(midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MIDIINPUTINDEX)));
+		FillSelectedMidiInputIndex(midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX)));
 
 	return true;
 }
