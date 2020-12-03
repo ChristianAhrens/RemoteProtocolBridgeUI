@@ -92,7 +92,7 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 		DBG("MIDI received: " + getMidiMessageDescription(midiMessage));
 
 		if (midiMessage.isNoteOn())
-			m_currentOnNoteNumber = midiMessage.getNoteNumber();
+			m_currentOnNoteNumber = midiMessage.getNoteNumber()-47;
 
 		if (midiMessage.isPitchWheel())
 			m_currentX = midiMessage.getPitchWheelValue() / 16383.0f;
@@ -117,13 +117,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 			newDualFloatValue[0] = m_currentX;
 			newDualFloatValue[1] = m_currentY;
 
-			newMsgData.addrVal.first = 1;
+			newMsgData.addrVal.first = m_currentOnNoteNumber;
 			newMsgData.addrVal.second = 1;
 			newMsgData.valType = ROVT_FLOAT;
 			newMsgData.valCount = 2;
 			newMsgData.payload = &newDualFloatValue;
 			newMsgData.payloadSize = 2 * sizeof(float);
-
 		}
 
 		if (m_currentOnNoteNumber > -1 && m_messageListener)
@@ -205,6 +204,8 @@ bool MIDIProtocolProcessor::setStateXml(XmlElement* stateXml)
 			m_lastInputIndex = MidiInputIndex;
 			return true;
 		}
+		else
+			return false;
 	}
 }
 
