@@ -44,7 +44,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Derived OSC remote protocol processing class
  */
 OSCProtocolProcessor::OSCProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber)
-	: ProtocolProcessor_Abstract(parentNodeId), m_oscReceiver(listenerPortNumber)
+	: NetworkProtocolProcessorBase(parentNodeId), m_oscReceiver(listenerPortNumber)
 {
 	m_type = ProtocolType::PT_OSCProtocol;
 	m_oscMsgRate = ET_DefaultPollingRate;
@@ -105,18 +105,14 @@ bool OSCProtocolProcessor::Stop()
 }
 
 /**
- * Reimplemented setter for protocol config data.
- * This calls the base implementation and in addition
- * takes care of setting polling interval.
+ * Sets the xml configuration for the protocol processor object.
  *
- * @param protocolData	The configuration data struct with config data
- * @param activeObjs	The objects to use as 'active' for this protocol
- * @param NId			The node id of the parent node this protocol processing object is child of (needed to access data from config)
- * @param PId			The protocol id of this protocol processing object (needed to access data from config)
+ * @param stateXml	The XmlElement containing configuration for this protocol processor instance
+ * @return True on success, False on failure
  */
 bool OSCProtocolProcessor::setStateXml(XmlElement *stateXml)
 {
-	if (!ProtocolProcessor_Abstract::setStateXml(stateXml))
+	if (!NetworkProtocolProcessorBase::setStateXml(stateXml))
 		return false;
 	else
 	{

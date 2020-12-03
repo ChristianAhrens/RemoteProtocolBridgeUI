@@ -111,10 +111,10 @@ bool ProcessingEngineNode::Start()
 	bool successfullyStartedA = m_typeAProtocols.size() > 0;
 	bool successfullyStartedB = true;
 
-	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>::iterator paiter = m_typeAProtocols.begin(); successfullyStartedA && paiter != m_typeAProtocols.end(); ++paiter)
+	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessorBase>>::iterator paiter = m_typeAProtocols.begin(); successfullyStartedA && paiter != m_typeAProtocols.end(); ++paiter)
 		successfullyStartedA = successfullyStartedA && paiter->second->Start();
 
-	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>::iterator pbiter = m_typeBProtocols.begin(); successfullyStartedB && pbiter != m_typeBProtocols.end(); ++pbiter)
+	for (std::map<ProtocolId, std::unique_ptr<ProtocolProcessorBase>>::iterator pbiter = m_typeBProtocols.begin(); successfullyStartedB && pbiter != m_typeBProtocols.end(); ++pbiter)
 		successfullyStartedB = successfullyStartedB && pbiter->second->Start();
 
 	// if one of the protocol processors did not start successfully,
@@ -248,7 +248,7 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		}
 		else
 		{
-			auto protocol = std::unique_ptr<ProtocolProcessor_Abstract>(CreateProtocolProcessor(protocolType, hostPort));
+			auto protocol = std::unique_ptr<ProtocolProcessorBase>(CreateProtocolProcessor(protocolType, hostPort));
 
 			// set up the protocol processing objects of correct type as defined in config
 			if (protocol)
@@ -301,7 +301,7 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
  * @param listenerPortNumber	The port for the processor to listen on for client interaction
  * @return	The created processor object
  */
-ProtocolProcessor_Abstract *ProcessingEngineNode::CreateProtocolProcessor(ProtocolType type, int listenerPortNumber)
+ProtocolProcessorBase *ProcessingEngineNode::CreateProtocolProcessor(ProtocolType type, int listenerPortNumber)
 {
 	switch(type)
 	{
@@ -356,7 +356,7 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
  * @param id		The message object id that corresponds to the received message
  * @param msgData	The actual message data that was received
  */
-void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessor_Abstract* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData)
+void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData)
 {
 	// broadcast received data to all listeners
 	for (auto listener : m_listeners)

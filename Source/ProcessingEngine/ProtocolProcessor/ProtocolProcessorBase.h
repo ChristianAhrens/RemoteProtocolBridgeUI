@@ -41,12 +41,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /**
- * Class ProtocolProcessor_Abstract is an abstract interfacing base class for protocol interaction.
+ * Class ProtocolProcessorBase is an abstract interfacing base class for protocol interaction.
  * It provides a gerenic interface to start, stop, initialize and interact with the protocol it
  * implements in a derived object. Its parent node object provides a handler method to processed
  * received protocol message data.
  */
-class ProtocolProcessor_Abstract : public ProcessingEngineConfig::XmlConfigurableElement
+class ProtocolProcessorBase : public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
 	/**
@@ -62,12 +62,12 @@ public:
 		 * Method to be overloaded by ancestors to act as an interface
 		 * for handling of received message data
 		 */
-		virtual void OnProtocolMessageReceived(ProtocolProcessor_Abstract* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) = 0;
+		virtual void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) = 0;
 	};
 
 public:
-	ProtocolProcessor_Abstract(const NodeId& parentNodeId);
-	virtual ~ProtocolProcessor_Abstract();
+	ProtocolProcessorBase(const NodeId& parentNodeId);
+	virtual ~ProtocolProcessorBase();
 
 	void AddListener(Listener *messageReceiver);
 	ProtocolType GetType();
@@ -92,10 +92,6 @@ protected:
 	NodeId					m_parentNodeId;			/**< The id of the objects' parent node. */
 	ProtocolId				m_protocolProcessorId;	/**< The id of the processor object itself. */
 	ProtocolRole			m_protocolProcessorRole;
-
-	String					m_ipAddress;			/**< IP Address where messages will be sent to / received from. */
-	int						m_clientPort;			/**< TCP/UDP port where messages will be received from. */
-	int						m_hostPort;				/**< TCP/UDP port where messages will be sent to. */
 
 	bool					m_IsRunning;			/**< Bool indication if the processor is successfully running. */
 

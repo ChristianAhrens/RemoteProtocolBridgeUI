@@ -44,7 +44,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Derived OCA remote protocol processing class
  */
 OCAProtocolProcessor::OCAProtocolProcessor(const NodeId& parentNodeId)
-	: ProtocolProcessor_Abstract(parentNodeId)
+	: NetworkProtocolProcessorBase(parentNodeId)
 {
 	m_type = ProtocolType::PT_OCAProtocol;
 }
@@ -75,7 +75,10 @@ bool OCAProtocolProcessor::Stop()
 }
 
 /**
- * 
+ * Sets the xml configuration for the protocol processor object.
+ *
+ * @param stateXml	The XmlElement containing configuration for this protocol processor instance
+ * @return True on success, False on failure
  */
 bool OCAProtocolProcessor::setStateXml(XmlElement* stateXml)
 {

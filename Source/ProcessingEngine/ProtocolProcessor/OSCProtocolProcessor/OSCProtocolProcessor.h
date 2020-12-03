@@ -35,7 +35,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "../../../RemoteProtocolBridgeCommon.h"
-#include "../ProtocolProcessor_Abstract.h"
+#include "../NetworkProtocolProcessorBase.h"
 
 #include "SenderAwareOSCReceiver.h"
 
@@ -47,7 +47,7 @@ using namespace SenderAwareOSC;
  * Class OSCProtocolProcessor is a derived class for OSC protocol interaction.
  */
 class OSCProtocolProcessor : public SenderAwareOSCReceiver::SAOListener<OSCReceiver::MessageLoopCallback>,
-	public ProtocolProcessor_Abstract,
+	public NetworkProtocolProcessorBase,
 	private Timer
 {
 public:

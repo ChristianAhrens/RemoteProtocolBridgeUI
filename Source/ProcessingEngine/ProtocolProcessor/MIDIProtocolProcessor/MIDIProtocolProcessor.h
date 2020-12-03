@@ -35,7 +35,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "../../../RemoteProtocolBridgeCommon.h"
-#include "../ProtocolProcessor_Abstract.h"
+#include "../ProtocolProcessorBase.h"
 
 #include <JuceHeader.h>
 
@@ -43,7 +43,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Class MIDIProtocolProcessor is a derived class for MIDI protocol interaction.
  */
-class MIDIProtocolProcessor :	public ProtocolProcessor_Abstract,
+class MIDIProtocolProcessor :	public ProtocolProcessorBase,
 								private MessageListener,
 								private MidiInputCallback
 {
@@ -91,7 +91,7 @@ private:
 	String getMidiMessageDescription(const juce::MidiMessage& m);
 
 	std::unique_ptr<AudioDeviceManager>	m_deviceManager;		/** We use the AudioDeviceManager class to register midi callbacks and set midi devices to enabled. */
-	int									m_lastInputIndex{ 0 };
+	int									m_lastInputIndex{ -1 };
 
 	int									m_currentOnNoteNumber{ -1 };
 	float								m_currentX{ 0.0f };

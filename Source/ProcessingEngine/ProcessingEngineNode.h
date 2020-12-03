@@ -37,7 +37,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../RemoteProtocolBridgeCommon.h"
 
 #include "ProcessingEngineConfig.h"
-#include "ProtocolProcessor/ProtocolProcessor_Abstract.h"
+#include "ProtocolProcessor/ProtocolProcessorBase.h"
 
 // Fwd. declarations
 class ObjectDataHandling_Abstract;
@@ -46,7 +46,7 @@ class ProcessingEngine;
 /**
  * Class ProcessingEngineNode is a class to hold a processing element handled by engine class.
  */
-class ProcessingEngineNode :	public ProtocolProcessor_Abstract::Listener,
+class ProcessingEngineNode :	public ProtocolProcessorBase::Listener,
 								public ProcessingEngineConfig::XmlConfigurableElement
 {
 public:
@@ -85,21 +85,21 @@ public:
 	virtual bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
-	void OnProtocolMessageReceived(ProtocolProcessor_Abstract* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
+	void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
 private:
-	ProtocolProcessor_Abstract* CreateProtocolProcessor(ProtocolType type, int listenerPortNumber);
+	ProtocolProcessorBase* CreateProtocolProcessor(ProtocolType type, int listenerPortNumber);
 	ObjectDataHandling_Abstract* CreateObjectDataHandling(ObjectHandlingMode mode);
 
-	std::unique_ptr<ObjectDataHandling_Abstract>						m_dataHandling;		/**< The object data handling object (to be initialized with instance of derived class). */
+	std::unique_ptr<ObjectDataHandling_Abstract>					m_dataHandling;		/**< The object data handling object (to be initialized with instance of derived class). */
 
-	NodeId																m_nodeId;			/**< The id of the bridging node object. */
+	NodeId															m_nodeId;			/**< The id of the bridging node object. */
 
-	std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>	m_typeAProtocols;	/**< The remote protocols that act with role A of this node. */
-	std::map<ProtocolId, std::unique_ptr<ProtocolProcessor_Abstract>>	m_typeBProtocols;	/**< The remote protocols that act with role B of this node. */
+	std::map<ProtocolId, std::unique_ptr<ProtocolProcessorBase>>	m_typeAProtocols;	/**< The remote protocols that act with role A of this node. */
+	std::map<ProtocolId, std::unique_ptr<ProtocolProcessorBase>>	m_typeBProtocols;	/**< The remote protocols that act with role B of this node. */
 
-	std::vector<ProcessingEngineNode::NodeListener*>					m_listeners;		/**< The listner objects, for e.g. logging message traffic. */
+	std::vector<ProcessingEngineNode::NodeListener*>				m_listeners;		/**< The listner objects, for e.g. logging message traffic. */
 
-	bool																m_isRunning;
+	bool															m_isRunning;
 
 };

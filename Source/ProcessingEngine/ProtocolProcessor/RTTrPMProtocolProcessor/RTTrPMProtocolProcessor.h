@@ -35,7 +35,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "../../../RemoteProtocolBridgeCommon.h"
-#include "../ProtocolProcessor_Abstract.h"
+#include "../NetworkProtocolProcessorBase.h"
 
 #include "RTTrPMReceiver/RTTrPMReceiver.h"
 
@@ -45,7 +45,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Class RTTrPMProtocolProcessor is a derived class for OSC protocol interaction.
  */
 class RTTrPMProtocolProcessor : public RTTrPMReceiver::DataListener,
-	public ProtocolProcessor_Abstract
+	public NetworkProtocolProcessorBase
 {
 public:
 	enum MappingAreaId

@@ -34,33 +34,28 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../../../RemoteProtocolBridgeCommon.h"
-#include "../NetworkProtocolProcessorBase.h"
-
-#include <JuceHeader.h>
+#include "ProtocolProcessorBase.h"
 
 
 /**
- * Class OCAProtocolProcessor is a derived class for OCA protocol interaction. 
- * This currently is only a dummy for potential future functionality.
- * Feel free to implement something yourself here.
+ * Class NetworkProtocolProcessorBase is an abstract interfacing base class for protocol interaction.
+ * It provides a gerenic interface to start, stop, initialize and interact with the protocol it
+ * implements in a derived object. Its parent node object provides a handler method to processed
+ * received protocol message data.
  */
-class OCAProtocolProcessor : public NetworkProtocolProcessorBase
+class NetworkProtocolProcessorBase : public ProtocolProcessorBase
 {
 public:
-	OCAProtocolProcessor(const NodeId& parentNodeId);
-	~OCAProtocolProcessor();
+	NetworkProtocolProcessorBase(const NodeId& parentNodeId);
+	virtual ~NetworkProtocolProcessorBase();
 
-	bool setStateXml(XmlElement* stateXml) override;
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override { return nullptr; };
+	virtual bool setStateXml(XmlElement* stateXml) override;
 
-	bool Start() override;
-	bool Stop() override;
-
-	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
-	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
-
-	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
-
-	static String GetRemoteObjectString(RemoteObjectIdentifier id);
+protected:
+	String					m_ipAddress;			/**< IP Address where messages will be sent to / received from. */
+	int						m_clientPort;			/**< TCP/UDP port where messages will be received from. */
+	int						m_hostPort;				/**< TCP/UDP port where messages will be sent to. */
 
 };

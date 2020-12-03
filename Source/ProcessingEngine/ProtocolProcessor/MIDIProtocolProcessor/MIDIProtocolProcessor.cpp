@@ -44,7 +44,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Derived MIDI remote protocol processing class
  */
 MIDIProtocolProcessor::MIDIProtocolProcessor(const NodeId& parentNodeId)
-	: ProtocolProcessor_Abstract(parentNodeId)
+	: ProtocolProcessorBase(parentNodeId)
 {
 	m_type = ProtocolType::PT_MidiProtocol;
 
@@ -57,6 +57,15 @@ MIDIProtocolProcessor::MIDIProtocolProcessor(const NodeId& parentNodeId)
 MIDIProtocolProcessor::~MIDIProtocolProcessor()
 {
 	
+	auto list = juce::MidiInput::getAvailableDevices();
+	if (m_lastInputIndex >= 0 && list.size() > m_lastInputIndex)
+	{
+		auto oldInput = list[m_lastInputIndex];
+
+		DBG("Deactivating MIDI input " + oldInput.name + +" (" + oldInput.identifier + ")");
+
+		m_deviceManager->removeMidiInputDeviceCallback(oldInput.identifier, this);
+	}
 }
 
 /**
@@ -151,45 +160,52 @@ String MIDIProtocolProcessor::getMidiMessageDescription(const juce::MidiMessage&
 }
 
 /**
- * Sets the configuration for the protocol processor object.
+ * Sets the xml configuration for the protocol processor object.
  *
- * @param protocolData	The protocol config data to set.
- * @param activeObjs	Array of remote object identification structs to set to be activly handled.
- * @param NId		The node id of the parent node this protocol processing object is child of
- * @param PId		The protocol id of this protocol processing object
+ * @param stateXml	The XmlElement containing configuration for this protocol processor instance
+ * @return True on success, False on failure
  */
 bool MIDIProtocolProcessor::setStateXml(XmlElement* stateXml)
 {
-	if (!ProtocolProcessor_Abstract::setStateXml(stateXml))
+	if (!ProtocolProcessorBase::setStateXml(stateXml))
 		return false;
-
-	auto MidiInputIndex = -1;
-	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
-	if (midiInputIndexXmlElement)
-		MidiInputIndex = midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX));
 	else
-		return false;
+	{
+		auto MidiInputIndex = -1;
+		auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
+		if (midiInputIndexXmlElement)
+			MidiInputIndex = midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX));
 
-	auto list = juce::MidiInput::getAvailableDevices();
-	if (list.size() <= m_lastInputIndex)
-		return false;
-	if (list.size() <= MidiInputIndex)
-		return false;
-	if (MidiInputIndex < 0)
-		return false;
+		auto list = juce::MidiInput::getAvailableDevices();
+		if (list.size() <= m_lastInputIndex)
+			return false;
+		if (list.size() <= MidiInputIndex)
+			return false;
 
-	m_deviceManager->removeMidiInputDeviceCallback(list[m_lastInputIndex].identifier, this);
+		auto oldInput = list[m_lastInputIndex];
+		auto newInput = list[MidiInputIndex];
 
-	auto newInput = list[MidiInputIndex];
+		if (MidiInputIndex < 0 && m_lastInputIndex >= 0)
+		{
+			DBG(String(__FUNCTION__) + " Deactivating MIDI input " + oldInput.name + +" (" + oldInput.identifier + ")");
 
-	if (!m_deviceManager->isMidiInputDeviceEnabled(newInput.identifier))
-		m_deviceManager->setMidiInputDeviceEnabled(newInput.identifier, true);
+			m_deviceManager->removeMidiInputDeviceCallback(oldInput.identifier, this);
+			return false;
+		}
+		else if (m_lastInputIndex != MidiInputIndex)
+		{
+			m_deviceManager->removeMidiInputDeviceCallback(oldInput.identifier, this);
 
-	m_deviceManager->addMidiInputDeviceCallback(newInput.identifier, this);
+			DBG(String(__FUNCTION__) + " Activating MIDI input " + newInput.name + +" (" + newInput.identifier + ")");
 
-	m_lastInputIndex = MidiInputIndex;
+			if (!m_deviceManager->isMidiInputDeviceEnabled(newInput.identifier))
+				m_deviceManager->setMidiInputDeviceEnabled(newInput.identifier, true);
 
-	return true;
+			m_deviceManager->addMidiInputDeviceCallback(newInput.identifier, this);
+			m_lastInputIndex = MidiInputIndex;
+			return true;
+		}
+	}
 }
 
 /**

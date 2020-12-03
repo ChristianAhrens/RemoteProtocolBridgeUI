@@ -44,7 +44,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Derived RTTrPM remote protocol processing class
  */
 RTTrPMProtocolProcessor::RTTrPMProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber)
-	: ProtocolProcessor_Abstract(parentNodeId), m_rttrpmReceiver(listenerPortNumber)
+	: NetworkProtocolProcessorBase(parentNodeId), m_rttrpmReceiver(listenerPortNumber)
 {
 	m_type = ProtocolType::PT_RTTrPMProtocol;
 
@@ -84,23 +84,17 @@ bool RTTrPMProtocolProcessor::Stop()
 }
 
 /**
- * Reimplemented setter for protocol config data.
- * This calls the base implementation and in addition
- * takes care of setting polling interval.
+ * Sets the xml configuration for the protocol processor object.
  *
- * @param protocolData	The configuration data struct with config data
- * @param activeObjs	The objects to use as 'active' for this protocol
- * @param NId			The node id of the parent node this protocol processing object is child of (needed to access data from config)
- * @param PId			The protocol id of this protocol processing object (needed to access data from config)
+ * @param stateXml	The XmlElement containing configuration for this protocol processor instance
+ * @return True on success, False on failure
  */
 bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
 {
-	if (!stateXml)
+	if (!NetworkProtocolProcessorBase::setStateXml(stateXml))
 		return false;
 	else
 	{
-		ProtocolProcessor_Abstract::setStateXml(stateXml);
-
 		auto mappingAreaXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
 		if (mappingAreaXmlElement)
 		{
