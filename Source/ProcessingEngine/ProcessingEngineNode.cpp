@@ -198,11 +198,13 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 			retVal = false;
 	}
 
+	std::vector<int> protocolIdsInNewConfig;
 	XmlElement* protocolXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
 	while (protocolXmlElement != nullptr)
 	{
 		// create the protocol processing objects of correct type as defined in config
 		auto protocolId = protocolXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID));
+		protocolIdsInNewConfig.push_back(protocolId);
 		auto protocolType = ProcessingEngineConfig::ProtocolTypeFromString(protocolXmlElement->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE)));
 		auto hostPort = 0;
 		auto hostPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
@@ -288,6 +290,22 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		protocolXmlElement = nextProtocolXmlElement;
 	}
 
+	// cleanup no longer used protocols
+	std::vector<int> protocolAIdsToRemove;
+	for (auto const& pA : m_typeAProtocols)
+		if (std::find(protocolIdsInNewConfig.begin(), protocolIdsInNewConfig.end(), pA.first) == protocolIdsInNewConfig.end())
+			protocolAIdsToRemove.push_back(pA.first);
+	for (auto id : protocolAIdsToRemove)
+		m_typeAProtocols.erase(id);
+
+	std::vector<int> protocolBIdsToRemove;
+	for (auto const& pB : m_typeBProtocols)
+		if (std::find(protocolIdsInNewConfig.begin(), protocolIdsInNewConfig.end(), pB.first) == protocolIdsInNewConfig.end())
+			protocolBIdsToRemove.push_back(pB.first);
+	for (auto id : protocolBIdsToRemove)
+		m_typeBProtocols.erase(id);
+
+	// restore running state after config has been applied
 	if(shouldBeRunning)
 		Start();
 
