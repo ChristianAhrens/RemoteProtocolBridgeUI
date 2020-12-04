@@ -72,8 +72,12 @@ public:
 private:
 	void timerCallback() override;
 
-	void createFloatMessageData(const OSCMessage &messageInput, RemoteObjectMessageData &newMessageData);
 	void createIntMessageData(const OSCMessage &messageInput, RemoteObjectMessageData &newMessageData);
+	void createFloatMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
+	void createStringMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
+
+	bool IsChannelAddressingObject(RemoteObjectIdentifier objectId);
+	bool IsRecordAddressingObject(RemoteObjectIdentifier objectId);
 
 private:
 	OSCSender				m_oscSender;					/**< An OSCSender object can connect to a network port. It then can send OSC
@@ -87,4 +91,5 @@ private:
 
 	float m_floatValueBuffer[3] = { 0.0f, 0.0f, 0.0f };
 	int m_intValueBuffer[2] = { 0, 0 };
+	String m_stringValueBuffer;
 };

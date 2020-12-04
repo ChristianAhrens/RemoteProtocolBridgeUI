@@ -206,7 +206,7 @@ bool ProcessingEngineConfig::ReadActiveObjects(XmlElement* activeObjectsElement,
 				records.add(recNum);
 		}
 	
-		for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+		for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 		{
 			RemoteObjectIdentifier ROId = (RemoteObjectIdentifier)i;
 			if (objectChild->getTagName() == GetObjectDescription(ROId).removeCharacters(" "))
@@ -328,7 +328,7 @@ bool ProcessingEngineConfig::WriteActiveObjects(XmlElement* ActiveObjectsElement
 		}
 	}
 
-	for (int k = ROI_Invalid + 1; k < ROI_UserMAX; ++k)
+	for (int k = ROI_Invalid + 1; k < ROI_BridgingMAX; ++k)
 	{
 		if (XmlElement* ObjectElement = ActiveObjectsElement->createNewChildElement(GetObjectDescription((RemoteObjectIdentifier)k).removeCharacters(" ")))
 		{
@@ -431,7 +431,7 @@ bool ProcessingEngineConfig::ReplaceActiveObjects(XmlElement* ActiveObjectsEleme
 		}
 	}
 
-	for (int k = ROI_Invalid + 1; k < ROI_UserMAX; ++k)
+	for (int k = ROI_Invalid + 1; k < ROI_BridgingMAX; ++k)
 	{
 		if (XmlElement* ObjectElement = ActiveObjectsElement->getChildByName(GetObjectDescription((RemoteObjectIdentifier)k).removeCharacters(" ")))
 		{
@@ -633,6 +633,8 @@ String ProcessingEngineConfig::GetObjectDescription(RemoteObjectIdentifier Id)
 		return "Error Text";
 	case ROI_Status_StatusText:
 		return "Status Text";
+	case ROI_MatrixInput_Select:
+		return "Matrix Input Select";
 	case ROI_MatrixInput_Mute:
 		return "Matrix Input Mute";
 	case ROI_MatrixInput_Gain:
@@ -729,6 +731,10 @@ String ProcessingEngineConfig::GetObjectDescription(RemoteObjectIdentifier Id)
 		return "Scene SceneName";
 	case ROI_Scene_SceneComment:
 		return "Scene SceneComment";
+	case ROI_RemoteProtocolBridge_SoundObjectSelect:
+		return "RPB Sound Object Select";
+	case ROI_RemoteProtocolBridge_UIElementIndexSelect:
+		return "RPB UI Element Select";
 	case ROI_Invalid:
 	default:
 		jassertfalse;
@@ -757,6 +763,8 @@ String ProcessingEngineConfig::GetObjectShortDescription(RemoteObjectIdentifier 
 		return "Err Txt";
 	case ROI_Status_StatusText:
 		return "Stat Txt";
+	case ROI_MatrixInput_Select:
+		return "Mtrx In Sel";
 	case ROI_MatrixInput_Mute:
 		return "Mtrx In Mute";
 	case ROI_MatrixInput_Gain:
@@ -853,6 +861,10 @@ String ProcessingEngineConfig::GetObjectShortDescription(RemoteObjectIdentifier 
 		return "Scn Name";
 	case ROI_Scene_SceneComment:
 		return "Scn Comment";
+	case ROI_RemoteProtocolBridge_SoundObjectSelect:
+		return "RPB Obj. Sel.";
+	case ROI_RemoteProtocolBridge_UIElementIndexSelect:
+		return "RPB UI Elm. Sel.";
 	case ROI_Invalid:
 	default:
 		jassertfalse;

@@ -332,273 +332,225 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 	// Handle the incoming message contents.
 	else
 	{
-		// Parse the Source ID
-		int sourceId = (addressString.fromLastOccurrenceOf("/", false, true)).getIntValue();
-		jassert(sourceId > 0);
+		RemoteObjectIdentifier newObjectId = ROI_Invalid;
+		SourceId channelId = INVALID_ADDRESS_VALUE;
+		MappingId recordId = INVALID_ADDRESS_VALUE;
+
+		// Determine which parameter was changed depending on the incoming message's address pattern.
+		if (addressString.startsWith(GetRemoteObjectString(ROI_Settings_DeviceName)))
+			newObjectId = ROI_Settings_DeviceName;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Error_GnrlErr)))
+			newObjectId = ROI_Error_GnrlErr;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Error_ErrorText)))
+			newObjectId = ROI_Error_ErrorText;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Status_StatusText)))
+			newObjectId = ROI_Status_StatusText;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Select)))
+			newObjectId = ROI_MatrixInput_Select;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Mute)))
+			newObjectId = ROI_MatrixInput_Mute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Gain)))
+			newObjectId = ROI_MatrixInput_Gain;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Delay)))
+			newObjectId = ROI_MatrixInput_Delay;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_DelayEnable)))
+			newObjectId = ROI_MatrixInput_DelayEnable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_EqEnable)))
+			newObjectId = ROI_MatrixInput_EqEnable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Polarity)))
+			newObjectId = ROI_MatrixInput_Polarity;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_ChannelName)))
+			newObjectId = ROI_MatrixInput_ChannelName;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_LevelMeterPreMute)))
+			newObjectId = ROI_MatrixInput_LevelMeterPreMute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_LevelMeterPostMute)))
+			newObjectId = ROI_MatrixInput_LevelMeterPostMute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Enable)))
+			newObjectId = ROI_MatrixNode_Enable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Gain)))
+			newObjectId = ROI_MatrixNode_Gain;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_DelayEnable)))
+			newObjectId = ROI_MatrixNode_DelayEnable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Polarity)))
+			newObjectId = ROI_MatrixInput_Polarity;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Delay)))
+			newObjectId = ROI_MatrixNode_Delay;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Mute)))
+			newObjectId = ROI_MatrixOutput_Mute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Gain)))
+			newObjectId = ROI_MatrixOutput_Gain;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Delay)))
+			newObjectId = ROI_MatrixOutput_Delay;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_DelayEnable)))
+			newObjectId = ROI_MatrixOutput_DelayEnable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_EqEnable)))
+			newObjectId = ROI_MatrixOutput_EqEnable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Polarity)))
+			newObjectId = ROI_MatrixOutput_Polarity;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_ChannelName)))
+			newObjectId = ROI_MatrixOutput_ChannelName;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_LevelMeterPreMute)))
+			newObjectId = ROI_MatrixOutput_LevelMeterPreMute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_LevelMeterPostMute)))
+			newObjectId = ROI_MatrixOutput_LevelMeterPostMute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceSpread)))
+			newObjectId = ROI_Positioning_SourceSpread;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceDelayMode)))
+			newObjectId = ROI_Positioning_SourceDelayMode;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_XY)))
+			newObjectId = ROI_Positioning_SourcePosition_XY;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_X)))
+			newObjectId = ROI_Positioning_SourcePosition_X;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_Y)))
+			newObjectId = ROI_Positioning_SourcePosition_Y;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition)))
+			newObjectId = ROI_Positioning_SourcePosition;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_XY)))
+			newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_X)))
+			newObjectId = ROI_CoordinateMapping_SourcePosition_X;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_Y)))
+			newObjectId = ROI_CoordinateMapping_SourcePosition_Y;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition)))
+			newObjectId = ROI_CoordinateMapping_SourcePosition;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbRoomId)))
+			newObjectId = ROI_MatrixSettings_ReverbRoomId;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbPredelayFactor)))
+			newObjectId = ROI_MatrixSettings_ReverbPredelayFactor;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_RevebRearLevel)))
+			newObjectId = ROI_MatrixSettings_RevebRearLevel;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_ReverbSendGain)))
+			newObjectId = ROI_MatrixInput_ReverbSendGain;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInput_Gain)))
+			newObjectId = ROI_ReverbInput_Gain;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_Mute)))
+			newObjectId = ROI_ReverbInputProcessing_Mute;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_Gain)))
+			newObjectId = ROI_ReverbInputProcessing_Gain;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_LevelMeter)))
+			newObjectId = ROI_ReverbInputProcessing_LevelMeter;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_EqEnable)))
+			newObjectId = ROI_ReverbInputProcessing_EqEnable;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Device_Clear)))
+			newObjectId = ROI_Device_Clear;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_Previous)))
+			newObjectId = ROI_Scene_Previous;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_Next)))
+			newObjectId = ROI_Scene_Next;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_Recall)))
+			newObjectId = ROI_Scene_Recall;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_SceneIndex)))
+			newObjectId = ROI_Scene_SceneIndex;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_SceneName)))
+			newObjectId = ROI_Scene_SceneName;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_SceneComment)))
+			newObjectId = ROI_Scene_SceneComment;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_RemoteProtocolBridge_SoundObjectSelect)))
+			newObjectId = ROI_RemoteProtocolBridge_SoundObjectSelect;
+		else if (addressString.startsWith(GetRemoteObjectString(ROI_RemoteProtocolBridge_UIElementIndexSelect)))
+			newObjectId = ROI_RemoteProtocolBridge_UIElementIndexSelect;
+		else
+			newObjectId = ROI_Invalid;
+
+		if (IsChannelAddressingObject(newObjectId))
+		{
+			// Parse the Channel ID
+			channelId = static_cast<SourceId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+			jassert(channelId > 0);
+			if (channelId <= 0)
+				return;
+		}
+
+		if (IsRecordAddressingObject(newObjectId))
+		{
+			// Parse the Record ID
+			addressString = addressString.upToLastOccurrenceOf("/", false, true);
+			recordId = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
+			jassert(recordId > 0);
+			if (recordId <= 0)
+				return;
+		}
 
 		// If the received channel (source) is set to muted, return without further processing
-		if (m_mutedRemoteObjectChannels.contains(sourceId))
+		if (m_mutedRemoteObjectChannels.contains(channelId))
 			return;
 
-		if (sourceId > 0)
+		newMsgData.addrVal.first = channelId;
+		newMsgData.addrVal.second = recordId;
+		newMsgData.valType = ROVT_FLOAT;
+
+		switch (newObjectId)
 		{
-			RemoteObjectIdentifier newObjectId;
-
-			newMsgData.addrVal.first = int16(sourceId);
-			newMsgData.valType = ROVT_FLOAT;
-
-			// Determine which parameter was changed depending on the incoming message's address pattern.
-			//ROI_Settings_DeviceName;
-			if (addressString.startsWith(GetRemoteObjectString(ROI_Error_GnrlErr)))
-			{
-				newObjectId = ROI_Error_GnrlErr;
-				createIntMessageData(message, newMsgData);
-			}
-			//ROI_Error_ErrorText;
-			//ROI_Status_StatusText;
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Mute)))
-			{
-				newObjectId = ROI_MatrixInput_Mute;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Gain)))
-			{
-				newObjectId = ROI_MatrixInput_Gain;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Delay)))
-			{
-				newObjectId = ROI_MatrixInput_Delay;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_DelayEnable)))
-			{
-				newObjectId = ROI_MatrixInput_DelayEnable;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_EqEnable)))
-			{
-				newObjectId = ROI_MatrixInput_EqEnable;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Polarity)))
-			{
-				newObjectId = ROI_MatrixInput_Polarity;
-				createIntMessageData(message, newMsgData);
-			}
-			//ROI_MatrixInput_ChannelName;
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_LevelMeterPreMute)))
-			{
-				newObjectId = ROI_MatrixInput_LevelMeterPreMute;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_LevelMeterPostMute)))
-			{
-				newObjectId = ROI_MatrixInput_LevelMeterPostMute;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Enable)))
-			{
-				newObjectId = ROI_MatrixNode_Enable;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Gain)))
-			{
-				newObjectId = ROI_MatrixNode_Gain;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_DelayEnable)))
-			{
-				newObjectId = ROI_MatrixNode_DelayEnable;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_Polarity)))
-			{
-				newObjectId = ROI_MatrixInput_Polarity;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixNode_Delay)))
-			{
-				newObjectId = ROI_MatrixNode_Delay;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Mute)))
-			{
-				newObjectId = ROI_MatrixOutput_Mute;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Gain)))
-			{
-				newObjectId = ROI_MatrixOutput_Gain;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Delay)))
-			{
-				newObjectId = ROI_MatrixOutput_Delay;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_DelayEnable)))
-			{
-				newObjectId = ROI_MatrixOutput_DelayEnable;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_EqEnable)))
-			{
-				newObjectId = ROI_MatrixOutput_EqEnable;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_Polarity)))
-			{
-				newObjectId = ROI_MatrixOutput_Polarity;
-				createIntMessageData(message, newMsgData);
-			}
-			//ROI_MatrixOutput_ChannelName;
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_LevelMeterPreMute)))
-			{
-				newObjectId = ROI_MatrixOutput_LevelMeterPreMute;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixOutput_LevelMeterPostMute)))
-			{
-				newObjectId = ROI_MatrixOutput_LevelMeterPostMute;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceSpread)))
-			{
-				newObjectId = ROI_Positioning_SourceSpread;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourceDelayMode)))
-			{
-				newObjectId = ROI_Positioning_SourceDelayMode;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_XY)))
-			{
-				newObjectId = ROI_Positioning_SourcePosition_XY;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_X)))
-			{
-				newObjectId = ROI_Positioning_SourcePosition_X;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition_Y)))
-			{
-				newObjectId = ROI_Positioning_SourcePosition_Y;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Positioning_SourcePosition)))
-			{
-				newObjectId = ROI_Positioning_SourcePosition;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_XY)))
-			{
-				// Parse the Mapping ID
-				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-				jassert(newMsgData.addrVal.second > 0);
-
-				newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_X)))
-			{
-				// Parse the Mapping ID
-				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-				jassert(newMsgData.addrVal.second > 0);
-
-				newObjectId = ROI_CoordinateMapping_SourcePosition_X;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition_Y)))
-			{
-				// Parse the Mapping ID
-				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-				jassert(newMsgData.addrVal.second > 0);
-
-				newObjectId = ROI_CoordinateMapping_SourcePosition_Y;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_CoordinateMapping_SourcePosition)))
-			{
-				// Parse the Mapping ID
-				addressString = addressString.upToLastOccurrenceOf("/", false, true);
-				newMsgData.addrVal.second = static_cast<MappingId>((addressString.fromLastOccurrenceOf("/", false, true)).getIntValue());
-				jassert(newMsgData.addrVal.second > 0);
-
-				newObjectId = ROI_CoordinateMapping_SourcePosition;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbRoomId)))
-			{
-				newObjectId = ROI_MatrixSettings_ReverbRoomId;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_ReverbPredelayFactor)))
-			{
-				newObjectId = ROI_MatrixSettings_ReverbPredelayFactor;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixSettings_RevebRearLevel)))
-			{
-				newObjectId = ROI_MatrixSettings_RevebRearLevel;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_MatrixInput_ReverbSendGain)))
-			{
-				newObjectId = ROI_MatrixInput_ReverbSendGain;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInput_Gain)))
-			{
-				newObjectId = ROI_ReverbInput_Gain;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_Mute)))
-			{
-				newObjectId = ROI_ReverbInputProcessing_Mute;
-				createIntMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_Gain)))
-			{
-				newObjectId = ROI_ReverbInputProcessing_Gain;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_LevelMeter)))
-			{
-				newObjectId = ROI_ReverbInputProcessing_LevelMeter;
-				createFloatMessageData(message, newMsgData);
-			}
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_ReverbInputProcessing_EqEnable)))
-			{
-				newObjectId = ROI_ReverbInputProcessing_EqEnable;
-				createIntMessageData(message, newMsgData);
-			}
-			//ROI_Device_Clear;
-			//ROI_Scene_Previous;
-			//ROI_Scene_Next;
-			//ROI_Scene_Recall;
-			else if (addressString.startsWith(GetRemoteObjectString(ROI_Scene_Recall)))
-			{
-				newObjectId = ROI_Scene_Recall;
-				createIntMessageData(message, newMsgData);
-			}
-			//ROI_Scene_SceneIndex;
-			//ROI_Scene_SceneName;
-			//ROI_Scene_SceneComment;
-			else
-			{
-				newObjectId = ROI_Invalid;
-			}
-
-			// provide the received message to parent node
-			if (m_messageListener)
-				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+		case ROI_Error_GnrlErr:
+		case ROI_MatrixInput_Select:
+		case ROI_MatrixInput_Mute:
+		case ROI_MatrixInput_DelayEnable:
+		case ROI_MatrixInput_EqEnable:
+		case ROI_MatrixInput_Polarity:
+		case ROI_MatrixNode_Enable:
+		case ROI_MatrixNode_DelayEnable:
+		case ROI_MatrixOutput_Mute:
+		case ROI_MatrixOutput_DelayEnable:
+		case ROI_MatrixOutput_EqEnable:
+		case ROI_MatrixOutput_Polarity:
+		case ROI_Positioning_SourceDelayMode:
+		case ROI_MatrixSettings_ReverbRoomId:
+		case ROI_ReverbInputProcessing_Mute:
+		case ROI_ReverbInputProcessing_EqEnable:
+		case ROI_Scene_Recall:
+		case ROI_RemoteProtocolBridge_SoundObjectSelect:
+		case ROI_RemoteProtocolBridge_UIElementIndexSelect:
+			createIntMessageData(message, newMsgData);
+			break;
+		case ROI_MatrixInput_Gain:
+		case ROI_MatrixInput_Delay:
+		case ROI_MatrixInput_LevelMeterPreMute:
+		case ROI_MatrixInput_LevelMeterPostMute:
+		case ROI_MatrixNode_Gain:
+		case ROI_MatrixNode_Delay:
+		case ROI_MatrixOutput_Gain:
+		case ROI_MatrixOutput_Delay:
+		case ROI_MatrixOutput_LevelMeterPreMute:
+		case ROI_MatrixOutput_LevelMeterPostMute:
+		case ROI_Positioning_SourceSpread:
+		case ROI_Positioning_SourcePosition_XY:
+		case ROI_Positioning_SourcePosition_X:
+		case ROI_Positioning_SourcePosition_Y:
+		case ROI_Positioning_SourcePosition:
+		case ROI_MatrixSettings_ReverbPredelayFactor:
+		case ROI_MatrixSettings_RevebRearLevel:
+		case ROI_MatrixInput_ReverbSendGain:
+		case ROI_ReverbInput_Gain:
+		case ROI_ReverbInputProcessing_Gain:
+		case ROI_ReverbInputProcessing_LevelMeter:
+		case ROI_CoordinateMapping_SourcePosition_XY:
+		case ROI_CoordinateMapping_SourcePosition_X:
+		case ROI_CoordinateMapping_SourcePosition_Y:
+		case ROI_CoordinateMapping_SourcePosition:
+			createFloatMessageData(message, newMsgData);
+			break;
+		case ROI_Scene_SceneIndex:
+		case ROI_Settings_DeviceName:
+		case ROI_Error_ErrorText:
+		case ROI_Status_StatusText:
+		case ROI_MatrixInput_ChannelName:
+		case ROI_MatrixOutput_ChannelName:
+		case ROI_Scene_SceneName:
+		case ROI_Scene_SceneComment:
+			createStringMessageData(message, newMsgData);
+			break;
+		case ROI_Device_Clear:
+		case ROI_Scene_Previous:
+		case ROI_Scene_Next:
+			break;
+		default:
+			jassertfalse;
+			break;
 		}
+
+		// provide the received message to parent node
+		if (m_messageListener)
+			m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 	}
 }
 
@@ -624,6 +576,8 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 		return "/dbaudio1/error/errortext";
 	case ROI_Status_StatusText:
 		return "/dbaudio1/status/statustext";
+	case ROI_MatrixInput_Select:
+		return "/dbaudio1/matrixinput/select";
 	case ROI_MatrixInput_Mute:
 		return "/dbaudio1/matrixinput/mute";
 	case ROI_MatrixInput_Gain:
@@ -720,6 +674,10 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 		return "/dbaudio1/scene/scenename";
 	case ROI_Scene_SceneComment:
 		return "/dbaudio1/scene/scenecomment";
+	case ROI_RemoteProtocolBridge_SoundObjectSelect:
+		return "/RemoteProtocolBridge/SoundObjectSelect";
+	case ROI_RemoteProtocolBridge_UIElementIndexSelect:
+		return "/RemoteProtocolBridge/UIElementIndexSelect";
 	default:
 		return "";
 	}
@@ -821,5 +779,116 @@ void OSCProtocolProcessor::createIntMessageData(const OSCMessage& messageInput, 
 		newMessageData.valCount = 2;
 		newMessageData.payload = m_intValueBuffer;
 		newMessageData.payloadSize = 2 * sizeof(int);
+	}
+}
+
+/**
+ * Helper method to fill a new remote object message data struct with data from an osc message.
+ * This method reads a string from osc message and fills it into the message data struct.
+ * @param messageInput	The osc input message to read from.
+ * @param newMessageData	The message data struct to fill data into.
+ */
+void OSCProtocolProcessor::createStringMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData)
+{
+	if (messageInput.size() == 1)
+	{
+		// value be an int, but since some OSC appliances can only process floats,
+		// we need to be prepared to optionally accept float as well
+		if (messageInput[0].isString())
+			m_stringValueBuffer = messageInput[0].getString();
+
+		newMessageData.valType = ROVT_INT;
+		newMessageData.valCount = 1;
+		newMessageData.payload = m_stringValueBuffer.getCharPointer().getAddress();
+		newMessageData.payloadSize = m_stringValueBuffer.length();
+	}
+}
+
+/**
+ * Helper method to check if a given remote object relates to channel/soundsourcid info.
+ * @param objectId	The remote object id to check.
+ * @return True if the object relates to channels, false if not.
+ */
+bool OSCProtocolProcessor::IsChannelAddressingObject(RemoteObjectIdentifier objectId)
+{
+	switch (objectId)
+	{
+	case ROI_MatrixInput_Select:
+	case ROI_MatrixInput_Mute:
+	case ROI_MatrixInput_DelayEnable:
+	case ROI_MatrixInput_EqEnable:
+	case ROI_MatrixInput_Polarity:
+	case ROI_MatrixNode_Enable:
+	case ROI_MatrixNode_DelayEnable:
+	case ROI_MatrixOutput_Mute:
+	case ROI_MatrixOutput_DelayEnable:
+	case ROI_MatrixOutput_EqEnable:
+	case ROI_MatrixOutput_Polarity:
+	case ROI_Positioning_SourceDelayMode:
+	case ROI_ReverbInputProcessing_Mute:
+	case ROI_ReverbInputProcessing_EqEnable:
+	case ROI_MatrixInput_Gain:
+	case ROI_MatrixInput_Delay:
+	case ROI_MatrixInput_LevelMeterPreMute:
+	case ROI_MatrixInput_LevelMeterPostMute:
+	case ROI_MatrixNode_Gain:
+	case ROI_MatrixNode_Delay:
+	case ROI_MatrixOutput_Gain:
+	case ROI_MatrixOutput_Delay:
+	case ROI_MatrixOutput_LevelMeterPreMute:
+	case ROI_MatrixOutput_LevelMeterPostMute:
+	case ROI_Positioning_SourceSpread:
+	case ROI_Positioning_SourcePosition_XY:
+	case ROI_Positioning_SourcePosition_X:
+	case ROI_Positioning_SourcePosition_Y:
+	case ROI_Positioning_SourcePosition:
+	case ROI_MatrixInput_ReverbSendGain:
+	case ROI_ReverbInput_Gain:
+	case ROI_ReverbInputProcessing_Gain:
+	case ROI_ReverbInputProcessing_LevelMeter:
+	case ROI_CoordinateMapping_SourcePosition_XY:
+	case ROI_CoordinateMapping_SourcePosition_X:
+	case ROI_CoordinateMapping_SourcePosition_Y:
+	case ROI_CoordinateMapping_SourcePosition:
+	case ROI_MatrixInput_ChannelName:
+	case ROI_MatrixOutput_ChannelName:
+	case ROI_RemoteProtocolBridge_SoundObjectSelect:
+		return true;
+	case ROI_Settings_DeviceName:
+	case ROI_Error_GnrlErr:
+	case ROI_Error_ErrorText:
+	case ROI_Status_StatusText:
+	case ROI_MatrixSettings_ReverbRoomId:
+	case ROI_MatrixSettings_ReverbPredelayFactor:
+	case ROI_MatrixSettings_RevebRearLevel:
+	case ROI_Device_Clear:
+	case ROI_Scene_Previous:
+	case ROI_Scene_Next:
+	case ROI_Scene_Recall:
+	case ROI_Scene_SceneIndex:
+	case ROI_Scene_SceneName:
+	case ROI_Scene_SceneComment:
+	case ROI_RemoteProtocolBridge_UIElementIndexSelect:
+	default:
+		return false;
+	}
+}
+
+/**
+ * Helper method to check if a given remote object relates to record/mappingid info.
+ * @param objectId	The remote object id to check.
+ * @return True if the object relates to records, false if not.
+ */
+bool OSCProtocolProcessor::IsRecordAddressingObject(RemoteObjectIdentifier objectId)
+{
+	switch (objectId)
+	{
+	case ROI_CoordinateMapping_SourcePosition_XY:
+	case ROI_CoordinateMapping_SourcePosition_X:
+	case ROI_CoordinateMapping_SourcePosition_Y:
+	case ROI_CoordinateMapping_SourcePosition:
+		return true;
+	default:
+		return false;
 	}
 }

@@ -362,7 +362,7 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
 		return new DS100_DeviceSimulation(this);
 	case OHM_Invalid:
 	default:
-		return 0;
+		return nullptr;
 	}
 }
 
@@ -380,7 +380,8 @@ void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* rece
 	for (auto listener : m_listeners)
 		listener->HandleNodeData(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData);
 	
-	if (m_dataHandling)
+	auto isBridgingObject = (id < ROI_BridgingMAX);
+	if (m_dataHandling && isBridgingObject)
 		m_dataHandling->OnReceivedMessageFromProtocol(receiver->GetId(), id, msgData);
 }
 

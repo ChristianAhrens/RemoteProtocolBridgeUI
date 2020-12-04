@@ -111,6 +111,7 @@ enum RemoteObjectIdentifier
 	ROI_Error_GnrlErr,
 	ROI_Error_ErrorText,
 	ROI_Status_StatusText,
+	ROI_MatrixInput_Select,
 	ROI_MatrixInput_Mute,
 	ROI_MatrixInput_Gain,
 	ROI_MatrixInput_Delay,
@@ -159,7 +160,9 @@ enum RemoteObjectIdentifier
 	ROI_Scene_SceneIndex,
 	ROI_Scene_SceneName,
 	ROI_Scene_SceneComment,
-	ROI_UserMAX									/**< Value to mark enum max; For iteration purpose. */
+	ROI_BridgingMAX,								/**< Value to mark max enum iteration scope. ROIs greater than this will not be bridged.*/
+	ROI_RemoteProtocolBridge_SoundObjectSelect,
+	ROI_RemoteProtocolBridge_UIElementIndexSelect,
 };
 
 /**

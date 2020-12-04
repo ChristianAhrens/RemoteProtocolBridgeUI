@@ -321,7 +321,7 @@ void DS100_DeviceSimulation::InitDataValues()
 	m_currentValues[ROI_HeartbeatPing].insert(std::make_pair(emptyReplyMessageData.addrVal, emptyReplyMessageData));
 	m_currentValues[ROI_HeartbeatPong].insert(std::make_pair(emptyReplyMessageData.addrVal, emptyReplyMessageData));
 
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; i++)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
 	{
 		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
 		auto remoteAdressValueMap = std::map<RemoteObjectAddressing, RemoteObjectMessageData>{};
@@ -439,7 +439,7 @@ void DS100_DeviceSimulation::timerCallback()
 {
 	m_simulationBaseValue += 0.1f;
 
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; i++)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
 	{
 		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
 		auto & remoteAdressValueMap = m_currentValues.at(roi);
