@@ -91,14 +91,7 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 		DBG("MIDI received: " + getMidiMessageDescription(midiMessage));
 
-		if (midiMessage.isNoteOn())
-			m_currentOnNoteNumber = midiMessage.getNoteNumber()-47;
-
-		if (midiMessage.isPitchWheel())
-			m_currentX = midiMessage.getPitchWheelValue() / 16383.0f;
-		if (midiMessage.isController() && midiMessage.getControllerNumber() == 1)
-			m_currentY = midiMessage.getControllerValue() / 127.0f;
-
+		RemoteObjectIdentifier newObjectId = ROI_Invalid;
 		RemoteObjectMessageData newMsgData;
 		newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
 		newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
@@ -107,26 +100,116 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 		newMsgData.payload = 0;
 		newMsgData.payloadSize = 0;
 
-		RemoteObjectIdentifier newObjectId = ROI_Invalid;
-
-		float newDualFloatValue[2];
-
+		// NoteOn/Off is hardcoded as matrixinput select message trigger
+		if (midiMessage.isNoteOn() || midiMessage.isNoteOff())
 		{
+			m_currentNoteNumber = midiMessage.getNoteNumber() - 47;
+
+			if (midiMessage.isNoteOn())
+				m_intValueBuffer[0] = 1;
+			if (midiMessage.isNoteOff())
+				m_intValueBuffer[0] = 0;
+
+			newObjectId = ROI_MatrixInput_Select;
+
+			newMsgData.addrVal.first = m_currentNoteNumber;
+			newMsgData.addrVal.second = 0;
+			newMsgData.valType = ROVT_INT;
+			newMsgData.valCount = 1;
+			newMsgData.payload = &m_intValueBuffer;
+			newMsgData.payloadSize = sizeof(int);
+
+			if (m_currentNoteNumber > -1 && m_messageListener)
+				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+
+			if (midiMessage.isNoteOff())
+				m_currentNoteNumber = -1;
+		}
+
+		// Pitchwheel or controllervalue (controller 1) is hardcoded as xy message trigger
+		if (midiMessage.isPitchWheel() || (midiMessage.isController() && midiMessage.getControllerNumber() == 1))
+		{
+			if (midiMessage.isPitchWheel())
+				m_currentX = midiMessage.getPitchWheelValue() / 16383.0f;
+			if (midiMessage.isController())
+				m_currentY = midiMessage.getControllerValue() / 127.0f;
+
 			newObjectId = ROI_CoordinateMapping_SourcePosition_XY;
 
-			newDualFloatValue[0] = m_currentX;
-			newDualFloatValue[1] = m_currentY;
+			m_floatValueBuffer[0] = m_currentX;
+			m_floatValueBuffer[1] = m_currentY;
 
-			newMsgData.addrVal.first = m_currentOnNoteNumber;
+			newMsgData.addrVal.first = m_currentNoteNumber;
 			newMsgData.addrVal.second = 1;
 			newMsgData.valType = ROVT_FLOAT;
 			newMsgData.valCount = 2;
-			newMsgData.payload = &newDualFloatValue;
+			newMsgData.payload = &m_floatValueBuffer;
 			newMsgData.payloadSize = 2 * sizeof(float);
+
+			if (m_currentNoteNumber > -1 && m_messageListener)
+				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 		}
 
-		if (m_currentOnNoteNumber > -1 && m_messageListener)
-			m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+		// Controllervalue (controller 5) is hardcoded as reverbsendgain message trigger
+		if (midiMessage.isController() && midiMessage.getControllerNumber() == 5)
+		{
+			auto normValue = midiMessage.getControllerValue() / 127.0f;
+		
+			newObjectId = ROI_MatrixInput_ReverbSendGain;
+		
+			m_floatValueBuffer[0] = (normValue * 144.0f) - 120.0f; // -120 ... +24
+		
+			newMsgData.addrVal.first = m_currentNoteNumber;
+			newMsgData.addrVal.second = 1;
+			newMsgData.valType = ROVT_FLOAT;
+			newMsgData.valCount = 1;
+			newMsgData.payload = &m_floatValueBuffer;
+			newMsgData.payloadSize = sizeof(float);
+		
+			if (m_currentNoteNumber > -1 && m_messageListener)
+				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+		}
+
+		// Controllervalue (controller 6) is hardcoded as spread factor message trigger
+		if (midiMessage.isController() && midiMessage.getControllerNumber() == 6)
+		{
+			auto normValue = midiMessage.getControllerValue() / 127.0f;
+
+			newObjectId = ROI_Positioning_SourceSpread;
+
+			m_floatValueBuffer[0] = normValue;
+
+			newMsgData.addrVal.first = m_currentNoteNumber;
+			newMsgData.addrVal.second = 1;
+			newMsgData.valType = ROVT_FLOAT;
+			newMsgData.valCount = 1;
+			newMsgData.payload = &m_floatValueBuffer;
+			newMsgData.payloadSize = sizeof(float);
+
+			if (m_currentNoteNumber > -1 && m_messageListener)
+				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+		}
+
+
+		// Controllervalue (controller 7) is hardcoded as delaymode message trigger
+		if (midiMessage.isController() && midiMessage.getControllerNumber() == 7)
+		{
+			auto normValue = midiMessage.getControllerValue() / 127.0f;
+
+			newObjectId = ROI_Positioning_SourceDelayMode;
+
+			m_intValueBuffer[0] = 2 * normValue; // 0 - 2
+
+			newMsgData.addrVal.first = m_currentNoteNumber;
+			newMsgData.addrVal.second = 1;
+			newMsgData.valType = ROVT_INT;
+			newMsgData.valCount = 1;
+			newMsgData.payload = &m_intValueBuffer;
+			newMsgData.payloadSize = sizeof(float);
+
+			if (m_currentNoteNumber > -1 && m_messageListener)
+				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
+		}
 	}
 }
 
