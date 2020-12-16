@@ -66,6 +66,13 @@ public:
 	virtual bool setStateXml(XmlElement* stateXml) override;
 
 protected:
+	const ProcessingEngineNode* GetParentNode();
+	void						SetMode(ObjectHandlingMode mode);
+	NodeId						GetParentNodeId();
+	const Array<ProtocolId>&	GetProtocolAIds();
+	const Array<ProtocolId>&	GetProtocolBIds();
+
+private:
 	ProcessingEngineNode*	m_parentNode;			/**< The parent node object. Needed for e.g. triggering receive notifications. */
 	ObjectHandlingMode		m_mode;					/**< Mode identifier enabling resolving derived instance type. */
 	NodeId					m_parentNodeId;			/**< The id of the objects' parent node. */

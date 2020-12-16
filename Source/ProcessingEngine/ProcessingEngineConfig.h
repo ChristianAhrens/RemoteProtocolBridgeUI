@@ -71,6 +71,7 @@ public:
 		REFRESHINTERVAL,
 		MAPPINGAREA,
 		INPUTDEVICE,
+		DATAPRECISION,
 	};
 	static String getTagName(TagID Id)
 	{
@@ -116,6 +117,8 @@ public:
 			return "MappingArea";
 		case INPUTDEVICE:
 			return "InputDevice";
+		case DATAPRECISION:
+			return "DataPrecision";
 		default:
 			return "INVALID";
 		}
@@ -124,7 +127,6 @@ public:
 	enum AttributeID
 	{
 		MODE,
-		DATAPRECISION,
 		COUNT,
 		ID,
 		TYPE,
@@ -142,8 +144,6 @@ public:
 		{
 		case MODE:
 			return "Mode";
-		case DATAPRECISION:
-			return "DataPrecision";
 		case COUNT:
 			return "Count";
 		case ID:

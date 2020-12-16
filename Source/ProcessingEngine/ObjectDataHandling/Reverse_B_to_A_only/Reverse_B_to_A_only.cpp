@@ -49,7 +49,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Reverse_B_to_A_only::Reverse_B_to_A_only(ProcessingEngineNode* parentNode)
 	: ObjectDataHandling_Abstract(parentNode)
 {
-	m_mode = ObjectHandlingMode::OHM_Reverse_B_to_A_only;
+	SetMode(ObjectHandlingMode::OHM_Reverse_B_to_A_only);
 }
 
 /**
@@ -71,20 +71,21 @@ bool Reverse_B_to_A_only::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteOb
 {
 	bool sendSuccess = false;
 
-	if (m_parentNode)
+	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	if (parentNode)
 	{
-		if (m_protocolAIds.contains(PId))
+		if (GetProtocolAIds().contains(PId))
 		{
 			sendSuccess = true;
 			// the message was received by a typeA protocol, which we do not want to forward in this OHM
 		}
-		else if (m_protocolBIds.contains(PId))
+		else if (GetProtocolBIds().contains(PId))
 		{
 			sendSuccess = true;
 			// the message was received by a typeB protocol
-			int typeAProtocolCount = m_protocolAIds.size();
+			int typeAProtocolCount = GetProtocolAIds().size();
 			for (int i = 0; i < typeAProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], Id, msgData);
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], Id, msgData);
 		}
 	}
 

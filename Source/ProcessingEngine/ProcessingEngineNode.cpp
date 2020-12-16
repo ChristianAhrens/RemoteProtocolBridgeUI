@@ -44,6 +44,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ObjectDataHandling/DS100_DeviceSimulation/DS100_DeviceSimulation.h"
 #include "ObjectDataHandling/Forward_A_to_B_only/Forward_A_to_B_only.h"
 #include "ObjectDataHandling/Reverse_B_to_A_only/Reverse_B_to_A_only.h"
+#include "ObjectDataHandling/Mux_nA_to_mB_withValFilter/Mux_nA_to_mB_withValFilter.h"
 
 #include "ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
 #include "ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
@@ -283,7 +284,6 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 				retVal = false;
 		}
 
-
 		auto nextProtocolXmlElement = protocolXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLA));
 		if(nextProtocolXmlElement == nullptr)
 			nextProtocolXmlElement = protocolXmlElement->getNextElementWithTagName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLB));
@@ -291,14 +291,14 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 	}
 
 	// cleanup no longer used protocols
-	std::vector<int> protocolAIdsToRemove;
+	std::vector<ProtocolId> protocolAIdsToRemove;
 	for (auto const& pA : m_typeAProtocols)
 		if (std::find(protocolIdsInNewConfig.begin(), protocolIdsInNewConfig.end(), pA.first) == protocolIdsInNewConfig.end())
 			protocolAIdsToRemove.push_back(pA.first);
 	for (auto id : protocolAIdsToRemove)
 		m_typeAProtocols.erase(id);
 
-	std::vector<int> protocolBIdsToRemove;
+	std::vector<ProtocolId> protocolBIdsToRemove;
 	for (auto const& pB : m_typeBProtocols)
 		if (std::find(protocolIdsInNewConfig.begin(), protocolIdsInNewConfig.end(), pB.first) == protocolIdsInNewConfig.end())
 			protocolBIdsToRemove.push_back(pB.first);
@@ -360,6 +360,8 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
 		return new BypassHandling(this);
 	case OHM_DS100_DeviceSimulation:
 		return new DS100_DeviceSimulation(this);
+	case OHM_Mux_nA_to_mB_withValFilter:
+		return new Mux_nA_to_mB_withValFilter(this);
 	case OHM_Invalid:
 	default:
 		return nullptr;
@@ -392,12 +394,12 @@ void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* rece
  * @param Id		The message object id that corresponds to the message to be sent
  * @param msgData	The actual message data that was received
  */
-bool ProcessingEngineNode::SendMessageTo(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+bool ProcessingEngineNode::SendMessageTo(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) const
 {
 	if (m_typeAProtocols.count(PId))
-		return m_typeAProtocols[PId]->SendRemoteObjectMessage(Id, msgData);
+		return m_typeAProtocols.at(PId)->SendRemoteObjectMessage(Id, msgData);
 	else if (m_typeBProtocols.count(PId))
-		return m_typeBProtocols[PId]->SendRemoteObjectMessage(Id, msgData);
+		return m_typeBProtocols.at(PId)->SendRemoteObjectMessage(Id, msgData);
 	else
 		return false;
 }

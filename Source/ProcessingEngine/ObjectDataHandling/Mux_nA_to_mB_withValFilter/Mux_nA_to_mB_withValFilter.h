@@ -34,7 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include "../ObjectDataHandling_Abstract.h"
+#include "../Forward_only_valueChanges/Forward_only_valueChanges.h"
 #include "../../../RemoteProtocolBridgeCommon.h"
 #include "../../ProcessingEngineConfig.h"
 
@@ -44,26 +44,27 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class ProcessingEngineNode;
 
 /**
- * Class Forward_only_valueChanges is a class for filtering received value data to only forward changed values.
+ * Class Mux_nA_to_mB_withValFilter is a class for multiplexing n channels of protocols typeA
+ * to m channels of protocols typeB combined with filtering to only forward changed object values.
  */
-class Forward_only_valueChanges : public ObjectDataHandling_Abstract
+class Mux_nA_to_mB_withValFilter : public Forward_only_valueChanges
 {
 public:
-	Forward_only_valueChanges(ProcessingEngineNode* parentNode);
-	~Forward_only_valueChanges();
+	Mux_nA_to_mB_withValFilter(ProcessingEngineNode* parentNode);
+	~Mux_nA_to_mB_withValFilter();
 
 	bool setStateXml(XmlElement* stateXml) override;
 
 	bool OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
 
 protected:
-	bool IsChangedDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
-	void SetCurrentDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
+	int GetProtoChCntA();
+	int GetProtoChCntB();
 
-	float GetPrecision();
-	void SetPrecision(float precision);
-	
 private:
-	std::map<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>	m_currentValues;	/**< Hash of current value data to use to compare to incoming data regarding value changes. */
-	float m_precision;																								/**< Value precision to use for processing. */
+	ProtocolId MapObjectAddressing(ProtocolId PId, RemoteObjectMessageData &msgData);
+
+	int m_protoChCntA; /**< Channel count configuration value that is to be expected per protocol type A. */
+	int m_protoChCntB; /**< Channel count configuration value that is to be expected per protocol type B. */
+
 };

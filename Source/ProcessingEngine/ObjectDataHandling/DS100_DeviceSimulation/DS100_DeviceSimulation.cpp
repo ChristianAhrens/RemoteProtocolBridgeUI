@@ -49,7 +49,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 DS100_DeviceSimulation::DS100_DeviceSimulation(ProcessingEngineNode* parentNode)
 	: ObjectDataHandling_Abstract(parentNode)
 {
-	m_mode = ObjectHandlingMode::OHM_DS100_DeviceSimulation;
+	SetMode(ObjectHandlingMode::OHM_DS100_DeviceSimulation);
 
 	m_simulatedChCount = 0;
 	m_simulatedMappingsCount = 0;
@@ -136,7 +136,8 @@ bool DS100_DeviceSimulation::setStateXml(XmlElement* stateXml)
  */
 bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
-	if (m_parentNode)
+	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	if (parentNode)
 	{
 		if (IsDataRequestPollMessage(Id, msgData))
 		{
@@ -146,24 +147,24 @@ bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, Remot
 		{
 			SetDataValue(PId, Id, msgData);
 
-			if (m_protocolAIds.contains(PId))
+			if (GetProtocolAIds().contains(PId))
 			{
 				// Send to all typeB protocols
 				bool sendSuccess = true;
-				int typeBProtocolCount = m_protocolBIds.size();
+				int typeBProtocolCount = GetProtocolBIds().size();
 				for (int i = 0; i < typeBProtocolCount; ++i)
-					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolBIds[i], Id, msgData);
+					sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
 
 				return sendSuccess;
 
 			}
-			if (m_protocolBIds.contains(PId))
+			if (GetProtocolBIds().contains(PId))
 			{
 				// Send to all typeA protocols
 				bool sendSuccess = true;
-				int typeAProtocolCount = m_protocolAIds.size();
+				int typeAProtocolCount = GetProtocolAIds().size();
 				for (int i = 0; i < typeAProtocolCount; ++i)
-					sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], Id, msgData);
+					sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], Id, msgData);
 
 				return sendSuccess;
 			}
@@ -216,7 +217,7 @@ bool DS100_DeviceSimulation::IsDataRequestPollMessage(const RemoteObjectIdentifi
 }
 
 /**
- *
+ * Helper method to create a string representation for a given message id/data pair
  */
 void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV)
 {
@@ -258,6 +259,10 @@ void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdenti
  */
 bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectAddressing adressing)
 {
+	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	if (!parentNode)
+		return false;
+
 	if (m_currentValues.count(Id) == 0)
 		return false;
 	if (m_currentValues.at(Id).count(adressing) == 0)
@@ -299,7 +304,7 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	PrintMessageInfo(dataReply);
 #endif
 
-	return m_parentNode->SendMessageTo(PId, dataReply.first, dataReply.second);
+	return parentNode->SendMessageTo(PId, dataReply.first, dataReply.second);
 }
 
 /**

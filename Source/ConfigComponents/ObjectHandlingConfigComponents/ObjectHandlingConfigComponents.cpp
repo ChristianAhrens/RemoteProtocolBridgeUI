@@ -119,15 +119,36 @@ std::unique_ptr<XmlElement> ObjectHandlingConfigComponent_Abstract::createStateX
 	auto ohXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING));
 
 	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Bypass));
-	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
+
+	auto precisionXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement)
+	{
+		auto cntXmlElement = precisionXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(0.001f));
+		else
+			precisionXmlElement->addTextElement(String(0.001f));
+	}
 
 	auto aChCntXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
 	if (aChCntXmlElement)
-		aChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
+	{
+		auto cntXmlElement = aChCntXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(0));
+		else
+			aChCntXmlElement->addTextElement(String(0));
+	}
 
 	auto bChCntXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
 	if (bChCntXmlElement)
-		bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
+	{
+		auto cntXmlElement = bChCntXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(0));
+		else
+			bChCntXmlElement->addTextElement(String(0));
+	}
 
 	return ohXmlElement;
 }
@@ -314,23 +335,34 @@ std::unique_ptr<XmlElement> OHMultiplexAtoBConfigComponent::createStateXml()
 	auto ohXmlElement = ObjectHandlingConfigComponent_Abstract::createStateXml();
 
 	auto aChCnt = 0;
-	auto bChCnt = 0;
 	if (m_CountAEdit)
 	{
 		aChCnt = m_CountAEdit->getText().getIntValue();
 	}
+	auto aChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (aChCntXmlElement)
+	{
+		auto cntXmlElement = aChCntXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(aChCnt));
+		else
+			aChCntXmlElement->addTextElement(String(aChCnt));
+	}
+
+	auto bChCnt = 0;
 	if (m_CountBEdit)
 	{
 		bChCnt = m_CountBEdit->getText().getIntValue();
 	}
-
-	auto aChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
-	if (aChCntXmlElement)
-		aChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), aChCnt);
-
 	auto bChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
 	if (bChCntXmlElement)
-		bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), bChCnt);
+	{
+		auto cntXmlElement = bChCntXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(bChCnt));
+		else
+			bChCntXmlElement->addTextElement(String(bChCnt));
+	}
 
 	return ohXmlElement;
 }
@@ -351,13 +383,13 @@ bool OHMultiplexAtoBConfigComponent::setStateXml(XmlElement* stateXml)
 
 	auto aChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
 	if (aChCntXmlElement && m_CountAEdit)
-		m_CountAEdit->setText(String(aChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT))), dontSendNotification);
+		m_CountAEdit->setText(String(aChCntXmlElement->getAllSubText().getIntValue()), dontSendNotification);
 	else
 		return false;
 
 	auto bChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
 	if (bChCntXmlElement && m_CountBEdit)
-		m_CountBEdit->setText(String(bChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT))), dontSendNotification);
+		m_CountBEdit->setText(String(bChCntXmlElement->getAllSubText().getIntValue()), dontSendNotification);
 	else
 		return false;
 
@@ -481,8 +513,15 @@ std::unique_ptr<XmlElement> OHForwardOnlyValueChangesConfigComponent::createStat
 			break;
 		}
 	}
-
-	ohXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), precision);
+	auto precisionXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement)
+	{
+		auto cntXmlElement = precisionXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(precision));
+		else
+			precisionXmlElement->addTextElement(String(precision));
+	}
 
 	return ohXmlElement;
 }
@@ -501,17 +540,17 @@ bool OHForwardOnlyValueChangesConfigComponent::setStateXml(XmlElement* stateXml)
 	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Forward_only_valueChanges))
 		return false;
 
-	auto precision = stateXml->getDoubleAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
-
-	if (m_PrecisionSelect)
+	auto precisionXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement && m_PrecisionSelect)
 	{
-		if (precision == 1)
+		auto precision = std::round(1000.f * precisionXmlElement->getAllSubText().getFloatValue());
+		if (precision == 1000)
 			m_PrecisionSelect->setSelectedId(PV_EVEN);
-		else if (precision == 0.1)
+		else if (precision == 100)
 			m_PrecisionSelect->setSelectedId(PV_CENTI);
-		else if (precision == 0.01)
+		else if (precision == 10)
 			m_PrecisionSelect->setSelectedId(PV_MILLI);
-		else if (precision == 0.001)
+		else if (precision == 1)
 			m_PrecisionSelect->setSelectedId(PV_MICRO);
 		else
 			m_PrecisionSelect->setSelectedId(PV_MICRO);
@@ -745,6 +784,280 @@ bool OHDS100SimConfigComponent::setStateXml(XmlElement* stateXml)
 }
 
 
+//==============================================================================
+// Class OHMuxAtoBOnlyValueChangesConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+OHMuxAtoBOnlyValueChangesConfigComponent::OHMuxAtoBOnlyValueChangesConfigComponent(ObjectHandlingMode mode)
+	: ObjectHandlingConfigComponent_Abstract(mode)
+{
+	m_Headline = std::make_unique <Label>();
+	m_Headline->setText("Multiplexing parameters:", dontSendNotification);
+	addAndMakeVisible(m_Headline.get());
+
+
+	m_CountAEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_CountAEdit.get());
+	m_CountAEdit->addListener(this);
+
+	m_CountALabel = std::make_unique<Label>();
+	m_CountALabel->setText("Ch. count per ProtocolA (n)", dontSendNotification);
+	addAndMakeVisible(m_CountALabel.get());
+	m_CountALabel->attachToComponent(m_CountAEdit.get(), true);
+
+	m_CountBEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_CountBEdit.get());
+	m_CountBEdit->addListener(this);
+
+	m_CountBLabel = std::make_unique<Label>();
+	m_CountBLabel->setText("Ch. count per ProtocolB (m)", dontSendNotification);
+	addAndMakeVisible(m_CountBLabel.get());
+	m_CountBLabel->attachToComponent(m_CountBEdit.get(), true);
+
+
+	m_PrecisionSelect = std::make_unique<ComboBox>();
+	addAndMakeVisible(m_PrecisionSelect.get());
+	m_PrecisionSelect->addListener(this);
+
+	m_PrecisionSelect->addItem(PrecisionValToString(PV_EVEN), PV_EVEN);
+	m_PrecisionSelect->addItem(PrecisionValToString(PV_CENTI), PV_CENTI);
+	m_PrecisionSelect->addItem(PrecisionValToString(PV_MILLI), PV_MILLI);
+	m_PrecisionSelect->addItem(PrecisionValToString(PV_MICRO), PV_MICRO);
+
+	m_PrecisionLabel = std::make_unique<Label>();
+	m_PrecisionLabel->setText("Value change precision sensibility", dontSendNotification);
+	addAndMakeVisible(m_PrecisionLabel.get());
+	m_PrecisionLabel->attachToComponent(m_PrecisionSelect.get(), true);
+
+
+	m_applyConfigButton = std::make_unique<TextButton>("Ok");
+	addAndMakeVisible(m_applyConfigButton.get());
+	m_applyConfigButton->addListener(this);
+}
+
+/**
+ * Class destructor.
+ */
+OHMuxAtoBOnlyValueChangesConfigComponent::~OHMuxAtoBOnlyValueChangesConfigComponent()
+{
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void OHMuxAtoBOnlyValueChangesConfigComponent::resized()
+{
+	double usableWidth = (double)(getWidth() - 2 * UIS_Margin_s);
+
+	// active objects headline
+	int yOffset = UIS_Margin_s;
+	m_Headline->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
+
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_CountAEdit->setBounds(Rectangle<int>(UIS_WideAttachedLabelWidth + UIS_Margin_s, yOffset, (int)usableWidth - UIS_WideAttachedLabelWidth - UIS_Margin_s, UIS_ElmSize));
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_CountBEdit->setBounds(Rectangle<int>(UIS_WideAttachedLabelWidth + UIS_Margin_s, yOffset, (int)usableWidth - UIS_WideAttachedLabelWidth - UIS_Margin_s, UIS_ElmSize));
+
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_PrecisionSelect->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth - UIS_Margin_s, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for changes to our comboBox.
+ * @param comboBox	The ComboBox object that has changed.
+ */
+void OHMuxAtoBOnlyValueChangesConfigComponent::comboBoxChanged(ComboBox* comboBox)
+{
+	ignoreUnused(comboBox);
+}
+
+/**
+ * Callback function for changes to our textEditors.
+ * @param textEditor	The TextEditor object whose content has just changed.
+ */
+void OHMuxAtoBOnlyValueChangesConfigComponent::textEditorFocusLost(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for Enter key presses on textEditors.
+ * @param textEditor	The TextEditor object whose where enter key was pressed.
+ */
+void OHMuxAtoBOnlyValueChangesConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Method to get the components' suggested size. This will be deprecated as soon as
+ * the primitive UI is refactored and uses dynamic / proper layouting
+ *
+ * @return	The pair of int representing the suggested size for this component
+ */
+const std::pair<int, int> OHMuxAtoBOnlyValueChangesConfigComponent::GetSuggestedSize()
+{
+	int width = UIS_OSCConfigWidth;
+	int height = UIS_Margin_s +
+		2 * UIS_Margin_m + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
+		UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
+		UIS_Margin_s + UIS_ElmSize;
+
+	return std::pair<int, int>(width, height);
+}
+
+/**
+ * Method to trigger creation of an xml element representation of current settings
+ *
+ * @return	The created xml element config representation.
+ */
+std::unique_ptr<XmlElement> OHMuxAtoBOnlyValueChangesConfigComponent::createStateXml()
+{
+	auto ohXmlElement = ObjectHandlingConfigComponent_Abstract::createStateXml();
+
+	auto aChCnt = 0;
+	if (m_CountAEdit)
+	{
+		aChCnt = m_CountAEdit->getText().getIntValue();
+	}
+	auto aChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (aChCntXmlElement)
+	{
+		auto cntXmlElement = aChCntXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(aChCnt));
+		else
+			aChCntXmlElement->addTextElement(String(aChCnt));
+	}
+
+	auto bChCnt = 0;
+	if (m_CountBEdit)
+	{
+		bChCnt = m_CountBEdit->getText().getIntValue();
+	}
+	auto bChCntXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
+	if (bChCntXmlElement)
+	{
+		auto cntXmlElement = bChCntXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(bChCnt));
+		else
+			aChCntXmlElement->addTextElement(String(bChCnt));
+	}
+
+	auto precision = 0.001;
+	if (m_PrecisionSelect)
+	{
+		PrecVal pv = static_cast<PrecVal>(m_PrecisionSelect->getSelectedId());
+		switch (pv)
+		{
+		case PV_EVEN:
+			precision = 1;
+			break;
+		case PV_CENTI:
+			precision = 0.1;
+			break;
+		case PV_MILLI:
+			precision = 0.01;
+			break;
+		case PV_MICRO:
+		default:
+			precision = 0.001;
+			break;
+		}
+	}
+	auto precisionXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement)
+	{
+		auto cntXmlElement = precisionXmlElement->getFirstChildElement();
+		if (cntXmlElement && cntXmlElement->isTextElement())
+			cntXmlElement->setText(String(precision));
+		else
+			precisionXmlElement->addTextElement(String(precision));
+	}
+
+	return ohXmlElement;
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with xml element data
+ *
+ * @param stateXml	The xml element data to set into UI elms.
+ */
+bool OHMuxAtoBOnlyValueChangesConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
+		return false;
+
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Mux_nA_to_mB_withValFilter))
+		return false;
+
+	auto aChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
+	if (aChCntXmlElement && m_CountAEdit)
+		m_CountAEdit->setText(String(aChCntXmlElement->getAllSubText().getIntValue()), dontSendNotification);
+	else
+		return false;
+
+	auto bChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
+	if (bChCntXmlElement && m_CountBEdit)
+		m_CountBEdit->setText(String(bChCntXmlElement->getAllSubText().getIntValue()), dontSendNotification);
+	else
+		return false;
+
+	auto precisionXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement && m_PrecisionSelect)
+	{
+		auto precision = std::round(1000.f * precisionXmlElement->getAllSubText().getFloatValue());
+		if (precision == 1000)
+			m_PrecisionSelect->setSelectedId(PV_EVEN);
+		else if (precision == 100)
+			m_PrecisionSelect->setSelectedId(PV_CENTI);
+		else if (precision == 10)
+			m_PrecisionSelect->setSelectedId(PV_MILLI);
+		else if (precision == 1)
+			m_PrecisionSelect->setSelectedId(PV_MICRO);
+		else
+			m_PrecisionSelect->setSelectedId(PV_MICRO);
+	}
+	else
+		return false;
+
+	return true;
+}
+
+/**
+ * Helper method to convert a given enum value to its string representation
+ *
+ * @param pv	The precision value enum to get the string for.
+ */
+String OHMuxAtoBOnlyValueChangesConfigComponent::PrecisionValToString(PrecVal pv)
+{
+	switch (pv)
+	{
+	case PV_EVEN:
+		return "1";
+	case PV_CENTI:
+		return "0.1";
+	case PV_MILLI:
+		return "0.01";
+	case PV_MICRO:
+	default:
+		return "0.001";
+	}
+}
+
+
 // **************************************************************************************
 //    class ObjectHandlingConfigWindow
 // **************************************************************************************
@@ -776,6 +1089,9 @@ ObjectHandlingConfigWindow::ObjectHandlingConfigWindow(const String &name, Colou
 		break;
 	case ObjectHandlingMode::OHM_DS100_DeviceSimulation:
 		m_configComponent = std::make_unique<OHDS100SimConfigComponent>(mode);
+		break;
+	case ObjectHandlingMode::OHM_Mux_nA_to_mB_withValFilter:
+		m_configComponent = std::make_unique<OHMuxAtoBOnlyValueChangesConfigComponent>(mode);
 		break;
 	case ObjectHandlingMode::OHM_Bypass:
 		// intentionally no break to run into default

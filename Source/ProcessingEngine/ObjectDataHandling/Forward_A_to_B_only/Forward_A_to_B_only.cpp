@@ -49,7 +49,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Forward_A_to_B_only::Forward_A_to_B_only(ProcessingEngineNode* parentNode)
 	: ObjectDataHandling_Abstract(parentNode)
 {
-	m_mode = ObjectHandlingMode::OHM_Forward_A_to_B_only;
+	SetMode(ObjectHandlingMode::OHM_Forward_A_to_B_only);
 }
 
 /**
@@ -71,17 +71,18 @@ bool Forward_A_to_B_only::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteOb
 {
 	bool sendSuccess = false;
 
-	if (m_parentNode)
+	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	if (parentNode)
 	{
-		if (m_protocolAIds.contains(PId))
+		if (GetProtocolAIds().contains(PId))
 		{
 			sendSuccess = true;
 			// the message was received by a typeA protocol -> forward it to all typeB protocols
-			int typeBProtocolCount = m_protocolBIds.size();
+			int typeBProtocolCount = GetProtocolBIds().size();
 			for (int i = 0; i < typeBProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolBIds[i], Id, msgData);
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
 		}
-		else if (m_protocolBIds.contains(PId))
+		else if (GetProtocolBIds().contains(PId))
 		{
 			sendSuccess = true;
 			// the message was received by a typeB protocol, which we do not want to forward in this OHM

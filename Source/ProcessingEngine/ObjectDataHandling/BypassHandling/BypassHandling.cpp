@@ -49,7 +49,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 BypassHandling::BypassHandling(ProcessingEngineNode* parentNode)
 	: ObjectDataHandling_Abstract(parentNode)
 {
-	m_mode = ObjectHandlingMode::OHM_Bypass;
+	SetMode(ObjectHandlingMode::OHM_Bypass);
 }
 
 /**
@@ -71,23 +71,24 @@ bool BypassHandling::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectI
 {
 	bool sendSuccess = false;
 
-	if (m_parentNode)
+	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	if (parentNode)
 	{
-		if (m_protocolAIds.contains(PId))
+		if (GetProtocolAIds().contains(PId))
 		{
 			sendSuccess = true;
 			// the message was received by a typeA protocol -> forward it to all typeB protocols
-			int typeBProtocolCount = m_protocolBIds.size();
+			int typeBProtocolCount = GetProtocolBIds().size();
 			for (int i = 0; i < typeBProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolBIds[i], Id, msgData);
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
 		}
-		else if (m_protocolBIds.contains(PId))
+		else if (GetProtocolBIds().contains(PId))
 		{
 			sendSuccess = true;
 			// the message was received by a typeB protocol
-			int typeAProtocolCount = m_protocolAIds.size();
+			int typeAProtocolCount = GetProtocolAIds().size();
 			for (int i = 0; i < typeAProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], Id, msgData);
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], Id, msgData);
 		}
 	}
 

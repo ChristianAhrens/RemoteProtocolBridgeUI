@@ -519,15 +519,18 @@ std::unique_ptr<XmlElement>	ProcessingEngineConfig::GetDefaultNode()
 	if (objectHandlingXmlElement)
 	{
 		objectHandlingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE), ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Bypass));
-		objectHandlingXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
 
 		auto aChCntXmlElement = objectHandlingXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLACHCNT));
 		if (aChCntXmlElement)
-			aChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
+			aChCntXmlElement->addTextElement(String(0));
 
 		auto bChCntXmlElement = objectHandlingXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::PROTOCOLBCHCNT));
 		if (bChCntXmlElement)
-			bChCntXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 0);
+			bChCntXmlElement->addTextElement(String(0));
+
+		auto precisionXmlElement = objectHandlingXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+		if (precisionXmlElement)
+			precisionXmlElement->addTextElement(String(0.001f));
 	}
 
 	nodeXmlElement->addChildElement(GetDefaultProtocol(ProtocolRole::PR_A).release());
@@ -932,6 +935,8 @@ String ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode ohm
         return "Reverse data only (B->A)";
 	case OHM_DS100_DeviceSimulation:
 		return "Simulate DS100 object poll answers";
+	case OHM_Mux_nA_to_mB_withValFilter:
+		return "Multiplex mult. n-ch. A to m-ch. B (fwd. val. changes only)";
 	default:
 		return "";
 	}
@@ -956,6 +961,8 @@ ObjectHandlingMode ProcessingEngineConfig::ObjectHandlingModeFromString(String m
         return OHM_Reverse_B_to_A_only;
 	if (mode == ObjectHandlingModeToString(OHM_DS100_DeviceSimulation))
 		return OHM_DS100_DeviceSimulation;
+	if (mode == ObjectHandlingModeToString(OHM_Mux_nA_to_mB_withValFilter))
+		return OHM_Mux_nA_to_mB_withValFilter;
 
 	return OHM_Invalid;
 }

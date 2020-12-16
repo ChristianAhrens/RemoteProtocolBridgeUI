@@ -267,7 +267,7 @@ BasicProtocolConfigComponent::BasicProtocolConfigComponent(ProtocolRole role)
 	m_RecordHeadlineLabel->setText("record", dontSendNotification);
 	addAndMakeVisible(m_RecordHeadlineLabel.get());
 
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		m_RemObjNameLabels[i] = std::make_unique<Label>();
 		m_RemObjNameLabels.at(i)->setText(ProcessingEngineConfig::GetObjectDescription((RemoteObjectIdentifier)i), dontSendNotification);
@@ -328,7 +328,7 @@ void BasicProtocolConfigComponent::resized()
 
 	// table items
 	yOffset += UIS_Margin_s;
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		yOffset += UIS_Margin_s + UIS_ElmSize;
 		if (m_RemObjNameLabels.count(i) && m_RemObjNameLabels.at(i))
@@ -396,7 +396,7 @@ Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
 {
 	Array<RemoteObject> activeObjects;
 
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		RemoteObject obj;
 
@@ -594,7 +594,7 @@ const std::pair<int, int> BasicProtocolConfigComponent::GetSuggestedSize()
 		UIS_Margin_s + UIS_ElmSize +
 		UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
 		UIS_Margin_s +
-		((ROI_UserMAX - ROI_Invalid)*(UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
+		((ROI_BridgingMAX - ROI_Invalid)*(UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
 		UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
 		UIS_Margin_s;
 
@@ -637,7 +637,7 @@ OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
 	m_Mapping4HeadlineLabel->setText("4", dontSendNotification);
 	addAndMakeVisible(m_Mapping4HeadlineLabel.get());
 
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		m_RemObjNameLabels[i] = std::make_unique<Label>();
 		m_RemObjNameLabels.at(i)->setText(ProcessingEngineConfig::GetObjectDescription((RemoteObjectIdentifier)i), dontSendNotification);
@@ -725,7 +725,7 @@ void OSCProtocolConfigComponent::resized()
 	m_Mapping4HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
 
 	// table items
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		yOffset += UIS_Margin_s + UIS_ElmSize;
 		if (m_RemObjNameLabels.count(i) && m_RemObjNameLabels.at(i))
@@ -804,7 +804,7 @@ Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
 {
 	Array<RemoteObject> activeObjects;
 
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		RemoteObject obj;
 
@@ -950,7 +950,7 @@ void OSCProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObjec
  */
 bool OSCProtocolConfigComponent::DumpActiveHandlingUsed()
 {
-	for (int i = ROI_Invalid + 1; i < ROI_UserMAX; ++i)
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i) && m_RemObjEnableChecks.at(i)->getToggleState())
 			return true;
@@ -1010,7 +1010,7 @@ const std::pair<int, int> OSCProtocolConfigComponent::GetSuggestedSize()
 					UIS_Margin_s + UIS_ElmSize + 
 					2 * UIS_Margin_m + UIS_ElmSize + 
 					UIS_ElmSize + 
-					((ROI_UserMAX - ROI_Invalid)*(UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
+					((ROI_BridgingMAX - ROI_Invalid)*(UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
 					UIS_Margin_s + UIS_Margin_s + UIS_ElmSize +
 					UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
 					UIS_Margin_s;

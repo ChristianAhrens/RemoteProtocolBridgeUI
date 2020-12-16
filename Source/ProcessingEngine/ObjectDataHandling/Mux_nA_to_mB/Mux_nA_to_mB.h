@@ -59,6 +59,12 @@ public:
 
 	bool OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
 
+protected:
+	int GetProtoChCntA();
+	int GetProtoChCntB();
+
+	ProtocolId MapObjectAddressing(ProtocolId PId, RemoteObjectMessageData& msgData);
+
 private:
 	int m_protoChCntA;	/**< Channel count configuration value that is to be expected per protocol type A. */
 	int m_protoChCntB;	/**< Channel count configuration value that is to be expected per protocol type B. */

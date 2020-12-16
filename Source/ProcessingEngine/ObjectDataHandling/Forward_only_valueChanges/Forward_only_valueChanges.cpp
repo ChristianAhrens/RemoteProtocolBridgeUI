@@ -49,7 +49,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Forward_only_valueChanges::Forward_only_valueChanges(ProcessingEngineNode* parentNode)
 	: ObjectDataHandling_Abstract(parentNode)
 {
-	m_mode = ObjectHandlingMode::OHM_Forward_only_valueChanges;
+	SetMode(ObjectHandlingMode::OHM_Forward_only_valueChanges);
 	m_precision = 0.001f;
 }
 
@@ -100,7 +100,11 @@ bool Forward_only_valueChanges::setStateXml(XmlElement* stateXml)
 	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Forward_only_valueChanges))
 		return false;
 
-	m_precision = stateXml->getDoubleAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DATAPRECISION), 0.001);
+	auto precisionXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement)
+		m_precision = precisionXmlElement->getAllSubText().getFloatValue();
+	else
+		return false;
 
 	return true;
 }
@@ -115,29 +119,30 @@ bool Forward_only_valueChanges::setStateXml(XmlElement* stateXml)
  */
 bool Forward_only_valueChanges::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
-	if (m_parentNode)
+	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	if (parentNode)
 	{
 		if (!IsChangedDataValue(Id, msgData))
 			return false;
 
-		if (m_protocolAIds.contains(PId))
+		if (GetProtocolAIds().contains(PId))
 		{
 			// Send to all typeB protocols
 			bool sendSuccess = true;
-			int typeBProtocolCount = m_protocolBIds.size();
+			int typeBProtocolCount = GetProtocolBIds().size();
 			for (int i = 0; i < typeBProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolBIds[i], Id, msgData);
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
 
 			return sendSuccess;
 
 		}
-		if (m_protocolBIds.contains(PId))
+		if (GetProtocolBIds().contains(PId))
 		{
 			// Send to all typeA protocols
 			bool sendSuccess = true;
-			int typeAProtocolCount = m_protocolAIds.size();
+			int typeAProtocolCount = GetProtocolAIds().size();
 			for (int i = 0; i < typeAProtocolCount; ++i)
-				sendSuccess = sendSuccess && m_parentNode->SendMessageTo(m_protocolAIds[i], Id, msgData);
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], Id, msgData);
 
 			return sendSuccess;
 		}
@@ -159,10 +164,10 @@ bool Forward_only_valueChanges::IsChangedDataValue(const RemoteObjectIdentifier 
 	if (m_precision == 0)
 		return true;
 
-	bool isChangedDataValue = false;
+	auto isChangedDataValue = false;
 
 	// if our hash does not yet contain our ROI, initialize it
-	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData.addrVal)== 0))
+	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData.addrVal) == 0))
 	{
 		isChangedDataValue = true;
 	}
@@ -177,33 +182,39 @@ bool Forward_only_valueChanges::IsChangedDataValue(const RemoteObjectIdentifier 
 		{
 			uint16 valCount = currentVal.valCount;
 			RemoteObjectValueType valType = currentVal.valType;
-			void *refData = currentVal.payload;
-			void *newData = msgData.payload;
+			auto refData = currentVal.payload;
+			auto newData = msgData.payload;
 	
-			int referencePrecisionValue = 0;
-			int newPrecisionValue = 0;
-	
-			bool changeFound = false;
+			auto referencePrecisionValue = 0;
+			auto newPrecisionValue = 0;
+			
+			auto changeFound = false;
 			for (int i = 0; i < valCount; ++i)
 			{
 				switch (valType)
 				{
 				case ROVT_INT:
 					{
-					int *refVal = static_cast<int*>(refData);
-					int *newVal = static_cast<int*>(newData);
-					referencePrecisionValue = static_cast<int>(*refVal);
-					newPrecisionValue = static_cast<int>(*newVal);
+					// convert payload to correct pointer type
+					auto refVal = static_cast<int*>(refData);
+					auto newVal = static_cast<int*>(newData);
+					// grab actual value
+					referencePrecisionValue = *refVal;
+					newPrecisionValue = *newVal;
+					// increase pointer to next value (to access it in next valCount loop iteration)
 					refData = refVal+1;
 					newData = newVal+1;
 					}
 					break;
 				case ROVT_FLOAT:
 					{
-					float *refVal = static_cast<float*>(refData);
-					float *newVal = static_cast<float*>(newData);
-					referencePrecisionValue = static_cast<int>((*refVal) / m_precision);
-					newPrecisionValue = static_cast<int>((*newVal) / m_precision);
+					// convert payload to correct pointer type
+					auto refVal = static_cast<float*>(refData);
+					auto newVal = static_cast<float*>(newData);
+					// grab actual value and apply precision to get a comparable value
+					referencePrecisionValue = static_cast<int>(std::roundf(*refVal / m_precision));
+					newPrecisionValue		= static_cast<int>(std::roundf(*newVal / m_precision));
+					// increase pointer to next value (to access it in next valCount loop iteration)
 					refData = refVal+1;
 					newData = newVal+1;
 					}
@@ -227,7 +238,7 @@ bool Forward_only_valueChanges::IsChangedDataValue(const RemoteObjectIdentifier 
 		}
 	}
 
-	if(isChangedDataValue)
+	if (isChangedDataValue)
 		SetCurrentDataValue(Id, msgData);
 
 	return isChangedDataValue;
@@ -242,28 +253,35 @@ bool Forward_only_valueChanges::IsChangedDataValue(const RemoteObjectIdentifier 
  */
 void Forward_only_valueChanges::SetCurrentDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
-	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData.addrVal) == 0) || (m_currentValues.at(Id).at(msgData.addrVal).payloadSize != msgData.payloadSize))
+	auto dataValAddr = msgData.addrVal;
+
+	// Check if the new data value addressing is currently not present in internal hash
+	// or if it differs in its value size and needs to be reinitialized
+	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(dataValAddr) == 0) || 
+		(m_currentValues.at(Id).at(dataValAddr).payloadSize != msgData.payloadSize))
 	{
-		if ((m_currentValues.count(Id) != 0) && (m_currentValues.at(Id).count(msgData.addrVal) != 0) && (m_currentValues.at(Id).at(msgData.addrVal).payloadSize != msgData.payloadSize))
+		// If the data value exists, but has wrong size, reinitialize it
+		if((m_currentValues.count(Id) != 0) && (m_currentValues.at(Id).count(dataValAddr) != 0) && 
+			(m_currentValues.at(Id).at(dataValAddr).payloadSize != msgData.payloadSize))
 		{
             switch(m_currentValues.at(Id).at(msgData.addrVal).valType)
             {
                 case ROVT_INT:
-                    delete static_cast<int*>(m_currentValues.at(Id).at(msgData.addrVal).payload);
+                    delete static_cast<int*>(m_currentValues.at(Id).at(dataValAddr).payload);
                     break;
                 case ROVT_FLOAT:
-                    delete static_cast<float*>(m_currentValues.at(Id).at(msgData.addrVal).payload);
+                    delete static_cast<float*>(m_currentValues.at(Id).at(dataValAddr).payload);
                     break;
                 case ROVT_STRING:
-                    delete static_cast<char*>(m_currentValues.at(Id).at(msgData.addrVal).payload);
+                    delete static_cast<char*>(m_currentValues.at(Id).at(dataValAddr).payload);
                     break;
                 default:
                     break;
             }
     
-            m_currentValues.at(Id).at(msgData.addrVal).payload = nullptr;
-            m_currentValues.at(Id).at(msgData.addrVal).payloadSize = 0;
-            m_currentValues.at(Id).at(msgData.addrVal).valCount = 0;
+            m_currentValues.at(Id).at(dataValAddr).payload = nullptr;
+            m_currentValues.at(Id).at(dataValAddr).payloadSize = 0;
+            m_currentValues.at(Id).at(dataValAddr).valCount = 0;
 		}
 	
 		RemoteObjectMessageData dataCopy = msgData;
@@ -276,9 +294,27 @@ void Forward_only_valueChanges::SetCurrentDataValue(const RemoteObjectIdentifier
 	else
 	{
 		// do not copy entire data struct, since we need to keep our payload ptr
-		m_currentValues[Id][msgData.addrVal].addrVal = msgData.addrVal;
-		m_currentValues[Id][msgData.addrVal].valCount = msgData.valCount;
-		m_currentValues[Id][msgData.addrVal].valType = msgData.valType;
-		memcpy(m_currentValues[Id][msgData.addrVal].payload, msgData.payload, msgData.payloadSize);
+		m_currentValues.at(Id).at(dataValAddr).addrVal = msgData.addrVal;
+		m_currentValues.at(Id).at(dataValAddr).valCount = msgData.valCount;
+		m_currentValues.at(Id).at(dataValAddr).valType = msgData.valType;
+		memcpy(m_currentValues.at(Id).at(dataValAddr).payload, msgData.payload, msgData.payloadSize);
 	}
+}
+
+/**
+ * Getter for the private precision value
+ * @return	The internal precision value.
+ */
+float Forward_only_valueChanges::GetPrecision()
+{
+	return m_precision;
+}
+
+/**
+ * Setter for the private precision value
+ * @param precision	The precision value to set.
+ */
+void Forward_only_valueChanges::SetPrecision(float precision)
+{
+	m_precision = precision;
 }

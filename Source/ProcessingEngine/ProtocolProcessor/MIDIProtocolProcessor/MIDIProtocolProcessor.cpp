@@ -198,7 +198,7 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 			newObjectId = ROI_Positioning_SourceDelayMode;
 
-			m_intValueBuffer[0] = 2 * normValue; // 0 - 2
+			m_intValueBuffer[0] = 2 * static_cast<int>(normValue); // 0 - 2
 
 			newMsgData.addrVal.first = m_currentNoteNumber;
 			newMsgData.addrVal.second = 1;

@@ -91,16 +91,6 @@ bool ObjectDataHandling_Abstract::setStateXml(XmlElement* stateXml)
 }
 
 /**
- * Getter for the mode of this objectdata handling object
- *
- * @return The mode of this objectdata handling object
- */
-ObjectHandlingMode ObjectDataHandling_Abstract::GetMode()
-{
-	return m_mode;
-}
-
-/**
  * Method to add a new id of a protocol of typeA to internal list of typeA protocolIds
  *
  * @param PAId	Protocol Id of typeA protocol to add.
@@ -126,4 +116,57 @@ void ObjectDataHandling_Abstract::AddProtocolBId(ProtocolId PBId)
 void ObjectDataHandling_Abstract::ClearProtocolIds()
 {
 	m_protocolAIds.clear();
+}
+/**
+ * Getter for the parentNode member.
+ * @return The parentNode pointer, can be nullptr.
+ */
+const ProcessingEngineNode* ObjectDataHandling_Abstract::GetParentNode()
+{
+	return m_parentNode;
+}
+
+/**
+ * Getter for the mode member.
+ * @return The object handling mode of this object.
+ */
+ObjectHandlingMode ObjectDataHandling_Abstract::GetMode()
+{
+	return m_mode;
+}
+
+/**
+ * Setter for the mode member.
+ * @param mode The object handling mode to set for this object.
+ */
+void  ObjectDataHandling_Abstract::SetMode(ObjectHandlingMode mode)
+{
+	m_mode = mode;
+}
+
+/**
+ * Getter for the parent node id member.
+ * @return The parentNode Id.
+ */
+NodeId ObjectDataHandling_Abstract::GetParentNodeId()
+{
+	return m_parentNodeId;
+}
+
+/**
+ * Getter for the type a protocols array member.
+ * @return The type a protocols.
+ */
+const Array<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolAIds()
+{
+	return m_protocolAIds;
+}
+
+/**
+ * Getter for the type b protocols array member.
+ * @return The type b protocols.
+ */
+const Array<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolBIds()
+{
+	return m_protocolBIds;
 }
