@@ -194,6 +194,8 @@ public:
 
 	static String GetObjectDescription(RemoteObjectIdentifier Id);
 	static String GetObjectShortDescription(RemoteObjectIdentifier Id);
+	static bool IsChannelAddressingObject(RemoteObjectIdentifier objectId);
+	static bool IsRecordAddressingObject(RemoteObjectIdentifier objectId);
 
 	// ============================================================
 	bool isValid() override;

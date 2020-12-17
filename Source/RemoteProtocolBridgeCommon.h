@@ -154,14 +154,14 @@ enum RemoteObjectIdentifier
 	ROI_ReverbInputProcessing_Gain,
 	ROI_ReverbInputProcessing_LevelMeter,
 	ROI_ReverbInputProcessing_EqEnable,
+	ROI_Scene_SceneIndex,
+	ROI_Scene_SceneName,
+	ROI_Scene_SceneComment,
+	ROI_BridgingMAX,								/**< Value to mark max enum iteration scope. ROIs greater than this can/will not be bridged.*/
 	ROI_Device_Clear,
 	ROI_Scene_Previous,
 	ROI_Scene_Next,
 	ROI_Scene_Recall,
-	ROI_Scene_SceneIndex,
-	ROI_Scene_SceneName,
-	ROI_Scene_SceneComment,
-	ROI_BridgingMAX,								/**< Value to mark max enum iteration scope. ROIs greater than this will not be bridged.*/
 	ROI_RemoteProtocolBridge_SoundObjectSelect,
 	ROI_RemoteProtocolBridge_UIElementIndexSelect,
 };

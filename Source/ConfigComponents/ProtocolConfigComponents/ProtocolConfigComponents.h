@@ -100,8 +100,7 @@ protected:
  * Class BasicProtocolConfigComponent is a container used to hold the GUI controls
  * for modifying the protocol configuration in a very basic way.
  */
-class BasicProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
-	public TextEditor::Listener
+class BasicProtocolConfigComponent : public ProtocolConfigComponent_Abstract
 {
 public:
 	BasicProtocolConfigComponent(ProtocolRole role);
@@ -121,10 +120,7 @@ protected:
 	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
 
 private:
-	virtual void resized() override;
-
-	void textEditorFocusLost(TextEditor &) override;
-	void textEditorReturnKeyPressed(TextEditor &) override;
+	void resized() override;
 
 	void buttonClicked(Button* button) override;
 
@@ -143,11 +139,39 @@ private:
 };
 
 /**
+ * Class ActiveObjectScrollContentsComponent is a container 
+ * used to hold the GUI elements to configure what remote objects
+ * to activly handle for a protocol.
+ */
+class ActiveObjectScrollContentsComponent : public Component
+{
+public:
+	ActiveObjectScrollContentsComponent();
+	~ActiveObjectScrollContentsComponent();
+
+	//==============================================================================
+	bool				IsActiveHandlingEnabled();
+	Array<RemoteObject> GetActiveRemoteObjects();
+	void				SetActiveRemoteObjects(const Array<RemoteObject>& Objs);
+
+private:
+	void resized() override;
+
+	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjEnableChecks;		/**< Enable checkboxes for all remote object to be configured/listed on ui. */
+	std::map<int, std::unique_ptr<Label>>			m_RemObjNameLabels;			/**< Name labels for all remote object to be configured/listed on ui. */
+	std::map<int, std::unique_ptr<TextEditor>>		m_RemObjActiveChannelEdits;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
+	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea1Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
+	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea2Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
+	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea3Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
+	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea4Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
+
+};
+
+/**
  * Class OSCProtocolConfigComponent is a container used to hold the GUI controls
  * specifically used to configure d&b OSC protocol configuration.
  */
-class OSCProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
-	public TextEditor::Listener
+class OSCProtocolConfigComponent : public ProtocolConfigComponent_Abstract
 {
 public:
 	OSCProtocolConfigComponent(ProtocolRole role);
@@ -170,23 +194,12 @@ protected:
 	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
 
 private:
-	virtual void resized() override;
-
-	virtual void textEditorFocusLost(TextEditor &) override;
-	virtual void textEditorReturnKeyPressed(TextEditor &) override;
+	void resized() override;
 
 	void buttonClicked(Button* button) override;
 
 	void FillPollingInterval(int PollingInterval);
 	int DumpPollingInterval();
-
-	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjEnableChecks;		/**< Enable checkboxes for all remote object to be configured/listed on ui. */
-	std::map<int, std::unique_ptr<Label>>			m_RemObjNameLabels;			/**< Name labels for all remote object to be configured/listed on ui. */
-	std::map<int, std::unique_ptr<TextEditor>>		m_RemObjActiveChannelEdits;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
-	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea1Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
-	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea2Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
-	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea3Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
-	std::map<int, std::unique_ptr<ToggleButton>>	m_RemObjMappingArea4Checks;	/**< Channel Range editing fields for all remote object to be configured/listed on ui. */
 
 	std::unique_ptr<Label>		m_EnableHeadlineLabel;		/**< Headlining Label for enable checks. */
 	std::unique_ptr<Label>		m_ChannelHeadlineLabel;		/**< Headlining Label for channel range edits. */
@@ -195,6 +208,9 @@ private:
 	std::unique_ptr<Label>		m_Mapping2HeadlineLabel;	/**< Headlining Label for mapping2 checks. */
 	std::unique_ptr<Label>		m_Mapping3HeadlineLabel;	/**< Headlining Label for mapping3 checks. */
 	std::unique_ptr<Label>		m_Mapping4HeadlineLabel;	/**< Headlining Label for mapping4 checks. */
+
+	std::unique_ptr<ActiveObjectScrollContentsComponent>	m_activeObjectsListComponent;
+	std::unique_ptr<Viewport>								m_activeObjectsListScrollView;
 
 	std::unique_ptr<Label>		m_PollingIntervalLabel;		/**< Label as description of polling interval edit. */
 	std::unique_ptr<TextEditor> m_PollingIntervalEdit;		/**< Edit for editing of polling interval. */

@@ -876,6 +876,100 @@ String ProcessingEngineConfig::GetObjectShortDescription(RemoteObjectIdentifier 
 }
 
 /**
+ * Helper method to check if a given remote object relates to channel/soundsourcid info.
+ * @param objectId	The remote object id to check.
+ * @return True if the object relates to channels, false if not.
+ */
+bool ProcessingEngineConfig::IsChannelAddressingObject(RemoteObjectIdentifier objectId)
+{
+	switch (objectId)
+	{
+	case ROI_MatrixInput_Select:
+	case ROI_MatrixInput_Mute:
+	case ROI_MatrixInput_DelayEnable:
+	case ROI_MatrixInput_EqEnable:
+	case ROI_MatrixInput_Polarity:
+	case ROI_MatrixNode_Enable:
+	case ROI_MatrixNode_DelayEnable:
+	case ROI_MatrixOutput_Mute:
+	case ROI_MatrixOutput_DelayEnable:
+	case ROI_MatrixOutput_EqEnable:
+	case ROI_MatrixOutput_Polarity:
+	case ROI_Positioning_SourceDelayMode:
+	case ROI_ReverbInputProcessing_Mute:
+	case ROI_ReverbInputProcessing_EqEnable:
+	case ROI_MatrixInput_Gain:
+	case ROI_MatrixInput_Delay:
+	case ROI_MatrixInput_LevelMeterPreMute:
+	case ROI_MatrixInput_LevelMeterPostMute:
+	case ROI_MatrixNode_Gain:
+	case ROI_MatrixNode_Delay:
+	case ROI_MatrixOutput_Gain:
+	case ROI_MatrixOutput_Delay:
+	case ROI_MatrixOutput_LevelMeterPreMute:
+	case ROI_MatrixOutput_LevelMeterPostMute:
+	case ROI_Positioning_SourceSpread:
+	case ROI_Positioning_SourcePosition_XY:
+	case ROI_Positioning_SourcePosition_X:
+	case ROI_Positioning_SourcePosition_Y:
+	case ROI_Positioning_SourcePosition:
+	case ROI_MatrixInput_ReverbSendGain:
+	case ROI_ReverbInput_Gain:
+	case ROI_ReverbInputProcessing_Gain:
+	case ROI_ReverbInputProcessing_LevelMeter:
+	case ROI_CoordinateMapping_SourcePosition_XY:
+	case ROI_CoordinateMapping_SourcePosition_X:
+	case ROI_CoordinateMapping_SourcePosition_Y:
+	case ROI_CoordinateMapping_SourcePosition:
+	case ROI_MatrixInput_ChannelName:
+	case ROI_MatrixOutput_ChannelName:
+	case ROI_RemoteProtocolBridge_SoundObjectSelect:
+		return true;
+	case ROI_Settings_DeviceName:
+	case ROI_Error_GnrlErr:
+	case ROI_Error_ErrorText:
+	case ROI_Status_StatusText:
+	case ROI_MatrixSettings_ReverbRoomId:
+	case ROI_MatrixSettings_ReverbPredelayFactor:
+	case ROI_MatrixSettings_RevebRearLevel:
+	case ROI_Device_Clear:
+	case ROI_Scene_Previous:
+	case ROI_Scene_Next:
+	case ROI_Scene_Recall:
+	case ROI_Scene_SceneIndex:
+	case ROI_Scene_SceneName:
+	case ROI_Scene_SceneComment:
+	case ROI_RemoteProtocolBridge_UIElementIndexSelect:
+	default:
+		return false;
+	}
+}
+
+/**
+ * Helper method to check if a given remote object relates to record/mappingid info.
+ * @param objectId	The remote object id to check.
+ * @return True if the object relates to records, false if not.
+ */
+bool ProcessingEngineConfig::IsRecordAddressingObject(RemoteObjectIdentifier objectId)
+{
+	switch (objectId)
+	{
+	case ROI_MatrixNode_Enable:
+	case ROI_MatrixNode_Gain:
+	case ROI_MatrixNode_Delay:
+	case ROI_MatrixNode_DelayEnable:
+	case ROI_CoordinateMapping_SourcePosition_XY:
+	case ROI_CoordinateMapping_SourcePosition_X:
+	case ROI_CoordinateMapping_SourcePosition_Y:
+	case ROI_CoordinateMapping_SourcePosition:
+	case ROI_ReverbInput_Gain:
+		return true;
+	default:
+		return false;
+	}
+}
+
+/**
 * Convenience function to resolve enum to sth. human readable (e.g. in config file)
 */
 String  ProcessingEngineConfig::ProtocolTypeToString(ProtocolType pt)

@@ -76,9 +76,6 @@ private:
 	void createFloatMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 	void createStringMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 
-	bool IsChannelAddressingObject(RemoteObjectIdentifier objectId);
-	bool IsRecordAddressingObject(RemoteObjectIdentifier objectId);
-
 private:
 	OSCSender				m_oscSender;					/**< An OSCSender object can connect to a network port. It then can send OSC
 															   * messages and bundles to a specified host over an UDP socket. */

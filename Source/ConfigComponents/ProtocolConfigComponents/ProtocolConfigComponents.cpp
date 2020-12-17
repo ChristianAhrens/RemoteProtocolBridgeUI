@@ -347,24 +347,6 @@ void BasicProtocolConfigComponent::resized()
 }
 
 /**
- * Callback function for changes to our textEditors.
- * @param textEditor	The TextEditor object whose content has just changed.
- */
-void BasicProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
-{
-	ignoreUnused(textEditor);
-}
-
-/**
- * Callback function for Enter key presses on textEditors.
- * @param textEditor	The TextEditor object whose where enter key was pressed.
- */
-void BasicProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
-{
-	ignoreUnused(textEditor);
-}
-
-/**
  * Callback function for button clicks on buttons.
  * @param button	The button object that was pressed.
  */
@@ -603,39 +585,14 @@ const std::pair<int, int> BasicProtocolConfigComponent::GetSuggestedSize()
 
 
 //==============================================================================
-// Class OSCProtocolConfigComponent
+// Class ActiveObjectScrollContentsComponent
 //==============================================================================
 /**
  * Class constructor.
  */
-OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
-	: ProtocolConfigComponent_Abstract(role)
+ActiveObjectScrollContentsComponent::ActiveObjectScrollContentsComponent()
 {
-	m_Headline->setText("Objects enabled for polling:", dontSendNotification);
-
-	m_EnableHeadlineLabel = std::make_unique<Label>();
-	m_EnableHeadlineLabel->setText("enable", dontSendNotification);
-	addAndMakeVisible(m_EnableHeadlineLabel.get());
-
-	m_ChannelHeadlineLabel = std::make_unique<Label>();
-	m_ChannelHeadlineLabel->setText("Object Nr.", dontSendNotification);
-	addAndMakeVisible(m_ChannelHeadlineLabel.get());
-
-	m_MappingsHeadlineLabel = std::make_unique<Label>();
-	m_MappingsHeadlineLabel->setText("Mapping", dontSendNotification);
-	addAndMakeVisible(m_MappingsHeadlineLabel.get());
-	m_Mapping1HeadlineLabel = std::make_unique<Label>();
-	m_Mapping1HeadlineLabel->setText("1", dontSendNotification);
-	addAndMakeVisible(m_Mapping1HeadlineLabel.get());
-	m_Mapping2HeadlineLabel = std::make_unique<Label>();
-	m_Mapping2HeadlineLabel->setText("2", dontSendNotification);
-	addAndMakeVisible(m_Mapping2HeadlineLabel.get());
-	m_Mapping3HeadlineLabel = std::make_unique<Label>();
-	m_Mapping3HeadlineLabel->setText("3", dontSendNotification);
-	addAndMakeVisible(m_Mapping3HeadlineLabel.get());
-	m_Mapping4HeadlineLabel = std::make_unique<Label>();
-	m_Mapping4HeadlineLabel->setText("4", dontSendNotification);
-	addAndMakeVisible(m_Mapping4HeadlineLabel.get());
+	int predictedHeight = UIS_Margin_s;
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
@@ -646,11 +603,14 @@ OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
 		m_RemObjEnableChecks[i] = std::make_unique<ToggleButton>();
 		addAndMakeVisible(m_RemObjEnableChecks.at(i).get());
 
-		m_RemObjActiveChannelEdits[i] = std::make_unique<TextEditor>();
-		addAndMakeVisible(m_RemObjActiveChannelEdits.at(i).get());
-
-		// the mapping checks are only wanted for positioning objects
-		if (i >= ROI_CoordinateMapping_SourcePosition_X && i <= ROI_CoordinateMapping_SourcePosition_XY)
+		// the object# textedits are only relevant for some objects
+		if (ProcessingEngineConfig::IsChannelAddressingObject(static_cast<RemoteObjectIdentifier>(i)))
+		{
+			m_RemObjActiveChannelEdits[i] = std::make_unique<TextEditor>();
+			addAndMakeVisible(m_RemObjActiveChannelEdits.at(i).get());
+		}
+		// the mapping checks are only relevant for select objects
+		if (ProcessingEngineConfig::IsRecordAddressingObject(static_cast<RemoteObjectIdentifier>(i)))
 		{
 			m_RemObjMappingArea1Checks[i] = std::make_unique<ToggleButton>();
 			addAndMakeVisible(m_RemObjMappingArea1Checks.at(i).get());
@@ -664,143 +624,40 @@ OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
 			m_RemObjMappingArea4Checks[i] = std::make_unique<ToggleButton>();
 			addAndMakeVisible(m_RemObjMappingArea4Checks.at(i).get());
 		}
+
+		predictedHeight += UIS_Margin_s + UIS_ElmSize;
 	}
 
-	m_PollingIntervalLabel = std::make_unique<Label>();
-	addAndMakeVisible(m_PollingIntervalLabel.get());
-	m_PollingIntervalLabel->setText("Polling interval", dontSendNotification);
-	m_PollingIntervalEdit = std::make_unique<TextEditor>();
-	addAndMakeVisible(m_PollingIntervalEdit.get());
+	setSize(getWidth(), predictedHeight);
 }
 
 /**
  * Class destructor.
  */
-OSCProtocolConfigComponent::~OSCProtocolConfigComponent()
+ActiveObjectScrollContentsComponent::~ActiveObjectScrollContentsComponent()
 {
-	m_RemObjNameLabels.clear();
-	m_RemObjEnableChecks.clear();
-	m_RemObjActiveChannelEdits.clear();
-	m_RemObjMappingArea1Checks.clear();
-	m_RemObjMappingArea2Checks.clear();
-	m_RemObjMappingArea3Checks.clear();
-	m_RemObjMappingArea4Checks.clear();
 }
 
 /**
- * Reimplemented to resize and re-postion controls on the overview window.
+ * Helper method to query if any of the ui elements indicate that active handling is enabled.
+ * @return True if any element indicates active handling, false if not.
  */
-void OSCProtocolConfigComponent::resized()
+bool ActiveObjectScrollContentsComponent::IsActiveHandlingEnabled()
 {
-	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s;
-	int remObjNameWidth = (int)(usableWidth*0.45);
-	int remObjEnableWidth = (int)(usableWidth*0.1);
-	int remObjChRngeWidth = (int)(usableWidth*0.2);
-	int remObjRecRngeWidth = (int)(usableWidth*0.2);
-
-	// port edits with labels
-	int yOffset = UIS_Margin_s;
-	m_HostPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_HostPortEdit->setBounds(Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
-
-	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_ClientPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_ClientPortEdit->setBounds(Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
-	
-	// active objects headline
-	yOffset += 2*UIS_Margin_m + UIS_ElmSize;
-	m_Headline->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
-
-	// table headline labels
-	//yOffset += UIS_ElmSize + UIS_Margin_s;
-	m_MappingsHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
-
-	yOffset += UIS_ElmSize;
-	m_EnableHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
-	m_ChannelHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
-
-	m_Mapping1HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize, UIS_ElmSize));
-	m_Mapping2HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
-	m_Mapping3HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
-	m_Mapping4HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
-
-	// table items
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
-		yOffset += UIS_Margin_s + UIS_ElmSize;
-		if (m_RemObjNameLabels.count(i) && m_RemObjNameLabels.at(i))
-			m_RemObjNameLabels.at(i)->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i))
-			m_RemObjEnableChecks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth - UIS_Margin_s, UIS_ElmSize));
-		if (m_RemObjActiveChannelEdits.count(i) && m_RemObjActiveChannelEdits.at(i))
-			m_RemObjActiveChannelEdits.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth - UIS_Margin_s, UIS_ElmSize));
-		if (m_RemObjMappingArea1Checks.count(i) && m_RemObjMappingArea1Checks.at(i))
-			m_RemObjMappingArea1Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
-		if (m_RemObjMappingArea2Checks.count(i) && m_RemObjMappingArea2Checks.at(i))
-			m_RemObjMappingArea2Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
-		if (m_RemObjMappingArea3Checks.count(i) && m_RemObjMappingArea3Checks.at(i))
-			m_RemObjMappingArea3Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
-		if (m_RemObjMappingArea4Checks.count(i) && m_RemObjMappingArea4Checks.at(i))
-			m_RemObjMappingArea4Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i) && m_RemObjEnableChecks.at(i)->getToggleState())
+			return true;
 	}
 
-	// polling interval edit/label
-	yOffset += UIS_Margin_s + UIS_Margin_s + UIS_ElmSize;
-	m_PollingIntervalLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_PollingIntervalEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
-
-	// ok button
-	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
-	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	return false;
 }
 
 /**
- * Callback function for changes to our textEditors.
- * @param textEditor	The TextEditor object whose content has just changed.
+ * Getter for the remote object listing of currently enabled remote objects.
+ * @return The requested remote object listing.
  */
-void OSCProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
-{
-	ignoreUnused(textEditor);
-}
-
-/**
- * Callback function for Enter key presses on textEditors.
- * @param textEditor	The TextEditor object whose where enter key was pressed.
- */
-void OSCProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
-{
-	ignoreUnused(textEditor);
-}
-
-/**
- * Callback function for button clicks on buttons.
- * @param button	The button object that was pressed.
- */
-void OSCProtocolConfigComponent::buttonClicked(Button* button)
-{
-	if(button == m_applyConfigButton.get())
-	{
-		if (m_parentListener)
-			m_parentListener->OnEditingFinished();
-	}
-}
-
-/**
- * Method to add parent object as 'listener'.
- * This is done in a way JUCE uses to connect child-parent relations for handling 'signal' calls
- */
-void OSCProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
-{
-	m_parentListener = listener;
-}
-
-/**
- * Method to trigger dumping contents of configcomponent member
- * to list of objects to return to the app to initialize from
- *
- * @return	The list of objects to actively handle when running the engine.
- */
-Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
+Array<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects()
 {
 	Array<RemoteObject> activeObjects;
 
@@ -879,12 +736,10 @@ Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
 }
 
 /**
- * Method to trigger filling contents of
- * configcomponent member with list of objects
- *
- * @param Objs	The list of objects to set as default.
+ * Setter for the remote object listing of currently enabled remote objects.
+ * @param Objs	The remote objects to set as to be shown enabled on ui.
  */
-void OSCProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+void ActiveObjectScrollContentsComponent::SetActiveRemoteObjects(const Array<RemoteObject>& Objs)
 {
 	Array<int> activeObjects;
 	HashMap<int, Array<int>> channelsPerObj;
@@ -944,19 +799,199 @@ void OSCProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObjec
 }
 
 /**
+ * Reimplemented to handle sizing of elements.
+ */
+void ActiveObjectScrollContentsComponent::resized()
+{
+	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s;
+	int remObjNameWidth = (int)(usableWidth * 0.45);
+	int remObjEnableWidth = (int)(usableWidth * 0.1);
+	int remObjChRngeWidth = (int)(usableWidth * 0.2);
+	int yOffset = UIS_Margin_s;
+	
+	// table items
+	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
+	{
+		if (m_RemObjNameLabels.count(i) && m_RemObjNameLabels.at(i))
+			m_RemObjNameLabels.at(i)->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i))
+			m_RemObjEnableChecks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth - UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjActiveChannelEdits.count(i) && m_RemObjActiveChannelEdits.at(i))
+			m_RemObjActiveChannelEdits.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth - UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjMappingArea1Checks.count(i) && m_RemObjMappingArea1Checks.at(i))
+			m_RemObjMappingArea1Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjMappingArea2Checks.count(i) && m_RemObjMappingArea2Checks.at(i))
+			m_RemObjMappingArea2Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjMappingArea3Checks.count(i) && m_RemObjMappingArea3Checks.at(i))
+			m_RemObjMappingArea3Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+		if (m_RemObjMappingArea4Checks.count(i) && m_RemObjMappingArea4Checks.at(i))
+			m_RemObjMappingArea4Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+		yOffset += UIS_Margin_s + UIS_ElmSize;
+	}
+}
+
+
+//==============================================================================
+// Class OSCProtocolConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+OSCProtocolConfigComponent::OSCProtocolConfigComponent(ProtocolRole role)
+	: ProtocolConfigComponent_Abstract(role)
+{
+	m_Headline->setText("Objects enabled for polling:", dontSendNotification);
+
+	m_EnableHeadlineLabel = std::make_unique<Label>();
+	m_EnableHeadlineLabel->setText("enable", dontSendNotification);
+	addAndMakeVisible(m_EnableHeadlineLabel.get());
+
+	m_ChannelHeadlineLabel = std::make_unique<Label>();
+	m_ChannelHeadlineLabel->setText("Object Nr.", dontSendNotification);
+	addAndMakeVisible(m_ChannelHeadlineLabel.get());
+
+	m_MappingsHeadlineLabel = std::make_unique<Label>();
+	m_MappingsHeadlineLabel->setText("Mapping", dontSendNotification);
+	addAndMakeVisible(m_MappingsHeadlineLabel.get());
+	m_Mapping1HeadlineLabel = std::make_unique<Label>();
+	m_Mapping1HeadlineLabel->setText("1", dontSendNotification);
+	addAndMakeVisible(m_Mapping1HeadlineLabel.get());
+	m_Mapping2HeadlineLabel = std::make_unique<Label>();
+	m_Mapping2HeadlineLabel->setText("2", dontSendNotification);
+	addAndMakeVisible(m_Mapping2HeadlineLabel.get());
+	m_Mapping3HeadlineLabel = std::make_unique<Label>();
+	m_Mapping3HeadlineLabel->setText("3", dontSendNotification);
+	addAndMakeVisible(m_Mapping3HeadlineLabel.get());
+	m_Mapping4HeadlineLabel = std::make_unique<Label>();
+	m_Mapping4HeadlineLabel->setText("4", dontSendNotification);
+	addAndMakeVisible(m_Mapping4HeadlineLabel.get());
+
+	m_activeObjectsListComponent = std::make_unique<ActiveObjectScrollContentsComponent>();
+	addAndMakeVisible(m_activeObjectsListComponent.get());
+	m_activeObjectsListScrollView = std::make_unique<Viewport>();
+	m_activeObjectsListScrollView->setViewedComponent(m_activeObjectsListComponent.get(), false);
+	addAndMakeVisible(m_activeObjectsListScrollView.get());
+
+	m_PollingIntervalLabel = std::make_unique<Label>();
+	addAndMakeVisible(m_PollingIntervalLabel.get());
+	m_PollingIntervalLabel->setText("Polling interval", dontSendNotification);
+	m_PollingIntervalEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_PollingIntervalEdit.get());
+}
+
+/**
+ * Class destructor.
+ */
+OSCProtocolConfigComponent::~OSCProtocolConfigComponent()
+{
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void OSCProtocolConfigComponent::resized()
+{
+	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s - m_activeObjectsListScrollView->getScrollBarThickness();
+	int remObjNameWidth = (int)(usableWidth*0.45);
+	int remObjEnableWidth = (int)(usableWidth*0.1);
+	int remObjChRngeWidth = (int)(usableWidth*0.2);
+	int remObjRecRngeWidth = (int)(usableWidth*0.2);
+
+	// port edits with labels
+	int yOffset = UIS_Margin_s;
+	m_HostPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_HostPortEdit->setBounds(Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_ClientPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_ClientPortEdit->setBounds(Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+	
+	// active objects headline
+	yOffset += 2*UIS_Margin_m + UIS_ElmSize;
+	m_Headline->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
+
+	// table headline labels
+	//yOffset += UIS_ElmSize + UIS_Margin_s;
+	m_MappingsHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
+
+	yOffset += UIS_ElmSize;
+	m_EnableHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
+	m_ChannelHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
+
+	m_Mapping1HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping2HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping3HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping4HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+
+	// component holding table items and corresp. scrollview
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	auto objectsListBounds = Rectangle<int>(getWidth() - m_activeObjectsListScrollView->getScrollBarThickness(), m_activeObjectsListComponent->getHeight());
+	m_activeObjectsListComponent->setBounds(objectsListBounds);
+	m_activeObjectsListScrollView->setBounds(Rectangle<int>(0 , yOffset, getWidth(), 8 * UIS_ElmSize));
+	yOffset += 8 * UIS_ElmSize;
+
+	// polling interval edit/label
+	yOffset += UIS_Margin_s + UIS_Margin_s;
+	m_PollingIntervalLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_PollingIntervalEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for button clicks on buttons.
+ * @param button	The button object that was pressed.
+ */
+void OSCProtocolConfigComponent::buttonClicked(Button* button)
+{
+	if(button == m_applyConfigButton.get())
+	{
+		if (m_parentListener)
+			m_parentListener->OnEditingFinished();
+	}
+}
+
+/**
+ * Method to add parent object as 'listener'.
+ * This is done in a way JUCE uses to connect child-parent relations for handling 'signal' calls
+ */
+void OSCProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
+{
+	m_parentListener = listener;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The list of objects to actively handle when running the engine.
+ */
+Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
+{
+	return m_activeObjectsListComponent->GetActiveRemoteObjects();
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with list of objects
+ *
+ * @param Objs	The list of objects to set as default.
+ */
+void OSCProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+{
+	m_activeObjectsListComponent->SetActiveRemoteObjects(Objs);
+}
+
+/**
  * Method to trigger dumping of state of button for if active object handling shall be used
  *
  * @return	True if active object handling shall be used.
  */
 bool OSCProtocolConfigComponent::DumpActiveHandlingUsed()
 {
-	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
-	{
-		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i) && m_RemObjEnableChecks.at(i)->getToggleState())
-			return true;
-	}
-	
-	return false;
+	return m_activeObjectsListComponent->IsActiveHandlingEnabled();
 }
 
 /**
@@ -1010,7 +1045,7 @@ const std::pair<int, int> OSCProtocolConfigComponent::GetSuggestedSize()
 					UIS_Margin_s + UIS_ElmSize + 
 					2 * UIS_Margin_m + UIS_ElmSize + 
 					UIS_ElmSize + 
-					((ROI_BridgingMAX - ROI_Invalid)*(UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
+					(8 * (UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
 					UIS_Margin_s + UIS_Margin_s + UIS_ElmSize +
 					UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
 					UIS_Margin_s;
@@ -1041,9 +1076,9 @@ std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
 		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement.get(), activeObjects);
 		auto existingActiveObjsXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
 		if (existingActiveObjsXmlElement)
-			m_protocolXmlElement->replaceChildElement(existingActiveObjsXmlElement, activeObjsXmlElement.release());
+			protocolStateXml->replaceChildElement(existingActiveObjsXmlElement, activeObjsXmlElement.release());
 		else
-			m_protocolXmlElement->addChildElement(activeObjsXmlElement.release());
+			protocolStateXml->addChildElement(activeObjsXmlElement.release());
 	}
 
 	auto pollingIntervalXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
@@ -1065,10 +1100,10 @@ std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
 bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 {
 	SetActiveHandlingUsed(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1);
-	Array<RemoteObject> activeObjects;
 	auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
 	if (activeObjsXmlElement)
 	{
+		Array<RemoteObject> activeObjects;
 		ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, activeObjects);
 		FillActiveRemoteObjects(activeObjects);
 	}
