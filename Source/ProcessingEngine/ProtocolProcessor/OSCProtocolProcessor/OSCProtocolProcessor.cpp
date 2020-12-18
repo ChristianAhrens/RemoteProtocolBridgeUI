@@ -555,7 +555,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 }
 
 /**
- * Private method to get OSC object specific ObjectName string
+ * static method to get OSC object specific ObjectName string
  *
  * @param id	The object id to get the OSC specific object name
  * @return		The OSC specific object name
@@ -681,6 +681,15 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 	default:
 		return "";
 	}
+}
+
+/**
+ * Getter for the internal array of muted object channels.
+ * @return	The muted remote object channels member array.
+ */
+const Array<int>& OSCProtocolProcessor::GetMutedRemoteObjectChannels()
+{
+	return m_mutedRemoteObjectChannels;
 }
 
 /**

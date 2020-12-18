@@ -52,7 +52,7 @@ class OSCProtocolProcessor : public SenderAwareOSCReceiver::SAOListener<OSCRecei
 {
 public:
 	OSCProtocolProcessor(const NodeId& parentNodeId, int listenerPortNumber);
-	~OSCProtocolProcessor();
+	virtual ~OSCProtocolProcessor() override;
 
 	bool setStateXml(XmlElement* stateXml) override;
 
@@ -69,18 +69,23 @@ public:
 	virtual void oscBundleReceived(const OSCBundle &bundle, const String& senderIPAddress, const int& senderPort) override;
 	virtual void oscMessageReceived(const OSCMessage &message, const String& senderIPAddress, const int& senderPort) override;
 
-private:
-	void timerCallback() override;
+protected:
+	const Array<int>& GetMutedRemoteObjectChannels();
 
-	void createIntMessageData(const OSCMessage &messageInput, RemoteObjectMessageData &newMessageData);
+	void createIntMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 	void createFloatMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 	void createStringMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 
 private:
+	void timerCallback() override;
+
+protected:
 	OSCSender				m_oscSender;					/**< An OSCSender object can connect to a network port. It then can send OSC
 															   * messages and bundles to a specified host over an UDP socket. */
 	SenderAwareOSCReceiver	m_oscReceiver;					/**< An OSCReceiver object can connect to a network port, receive incoming OSC packets from the network
 															   * via UDP, parse them, and forward the included OSCMessage and OSCBundle objects to its listeners. */
+
+private:
 	int						m_oscMsgRate;					/**< Interval at which OSC messages are sent to the host, in ms. */
 	Array<RemoteObject>		m_activeRemoteObjects;			/**< List of remote objects to be activly handled. */
 	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */

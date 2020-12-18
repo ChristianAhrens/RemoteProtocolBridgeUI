@@ -62,12 +62,13 @@ typedef std::int8_t		MappingId;
  */
 enum ProtocolType
 {
-	PT_Invalid = 0,		/**< Invalid protocol type value. */
-	PT_OCAProtocol,		/**< OCA protocol type value. */
-	PT_OSCProtocol,		/**< OSC protocol type value. */
-	PT_MidiProtocol,	/**< MIDI protocol type value. */
-	PT_RTTrPMProtocol,	/**< Blacktrax RTTrPMotion protocol type value. */
-	PT_UserMAX			/**< Value to mark enum max; For iteration purpose. */
+	PT_Invalid = 0,			/**< Invalid protocol type value. */
+	PT_OCAProtocol,			/**< OCA protocol type value. */
+	PT_OSCProtocol,			/**< OSC protocol type value. */
+	PT_MidiProtocol,		/**< MIDI protocol type value. */
+	PT_RTTrPMProtocol,		/**< Blacktrax RTTrPMotion protocol type value. */
+	PT_YamahaOSCProtocol,	/**< Yamaha OSC protocol type value. */
+	PT_UserMAX				/**< Value to mark enum max; For iteration purpose. */
 };
 
 /**
