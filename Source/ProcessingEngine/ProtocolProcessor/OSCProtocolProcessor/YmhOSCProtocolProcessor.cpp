@@ -203,7 +203,7 @@ void YmhOSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, cons
 		}
 
 		// If the received channel (source) is set to muted, return without further processing
-		if (GetMutedRemoteObjectChannels().contains(channelId))
+		if (IsChannelMuted(channelId))
 			return;
 
 		// Determine which parameter was changed depending on the incoming message's address pattern.

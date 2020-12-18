@@ -69,8 +69,6 @@ public:
 	virtual void oscMessageReceived(const OSCMessage &message, const String& senderIPAddress, const int& senderPort) override;
 
 protected:
-	const Array<int>& GetMutedRemoteObjectChannels();
-
 	void createIntMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 	void createFloatMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);
 	void createStringMessageData(const OSCMessage& messageInput, RemoteObjectMessageData& newMessageData);

@@ -672,15 +672,6 @@ String OSCProtocolProcessor::GetRemoteObjectString(RemoteObjectIdentifier id)
 }
 
 /**
- * Getter for the internal array of muted object channels.
- * @return	The muted remote object channels member array.
- */
-const Array<int>& OSCProtocolProcessor::GetMutedRemoteObjectChannels()
-{
-	return m_mutedRemoteObjectChannels;
-}
-
-/**
  * Timer callback function, which will be called at regular intervals to
  * send out OSC poll messages.
  */
