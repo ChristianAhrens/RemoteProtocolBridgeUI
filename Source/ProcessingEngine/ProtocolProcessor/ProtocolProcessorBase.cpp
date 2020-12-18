@@ -116,6 +116,27 @@ bool ProtocolProcessorBase::setStateXml(XmlElement* stateXml)
 }
 
 /**
+ * Setter for remote object channels to not forward for further processing.
+ * This uses a helper method from engine config to get a list of
+ * object ids into the corresponding internal member.
+ *
+ * @param mutedObjChsXmlElement	The xml element that has to be parsed to get the object data
+ */
+void ProtocolProcessorBase::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement)
+{
+	ProcessingEngineConfig::ReadMutedObjectChannels(mutedObjChsXmlElement, m_mutedRemoteObjectChannels);
+}
+
+/**
+ * Getter for the mute state of a given channel.
+ * @return	True if the channel is muted (contained in internal list of muted channels), false if not.
+ */
+bool ProtocolProcessorBase::IsChannelMuted(int channelNumber)
+{
+	return m_mutedRemoteObjectChannels.contains(channelNumber);
+}
+
+/**
  * Getter for the type of this protocol processing object
  *
  * @return The type of this protocol processing object

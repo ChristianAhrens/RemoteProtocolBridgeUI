@@ -60,7 +60,6 @@ public:
 	bool Stop() override;
 
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
-	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
 	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
@@ -88,8 +87,6 @@ protected:
 private:
 	int						m_oscMsgRate;					/**< Interval at which OSC messages are sent to the host, in ms. */
 	Array<RemoteObject>		m_activeRemoteObjects;			/**< List of remote objects to be activly handled. */
-	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
-
 
 	float m_floatValueBuffer[3] = { 0.0f, 0.0f, 0.0f };
 	int m_intValueBuffer[2] = { 0, 0 };

@@ -100,17 +100,6 @@ void OCAProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlEleme
 }
 
 /**
- * Setter for remote objects to not forward for further processing.
- * NOT YET IMPLEMENTED
- * 
- * @param mutedObjChsXmlElement	The xml element that has to be parsed to get the object data
- */
-void OCAProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement)
-{
-	ignoreUnused(mutedObjChsXmlElement);
-}
-
-/**
  * Method to trigger sending of a message
  * NOT YET IMPLEMENTED
  *

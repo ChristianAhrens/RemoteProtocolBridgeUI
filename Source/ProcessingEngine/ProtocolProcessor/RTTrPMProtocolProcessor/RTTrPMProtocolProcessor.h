@@ -67,7 +67,6 @@ public:
 	bool Stop() override;
 
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
-	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
 	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
 
@@ -76,8 +75,6 @@ public:
 private:
 	RTTrPMReceiver	m_rttrpmReceiver;				/**< A receiver object for BlackTrax RTTrPM protocol that binds to a network port to receive data
 													 * via UDP, parse it, and forwards the included RTTrPM packet modules to its listeners. */
-	Array<int>		m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
-
 	MappingAreaId	m_mappingAreaId{ MAI_Invalid };	/**< The DS100 mapping area to be used when converting incoming coords into relative messages. If this is MAI_Invalid, absolute messages will be generated. */
 
 	float m_floatValueBuffer[3] = { 0.0f, 0.0f, 0.0f };

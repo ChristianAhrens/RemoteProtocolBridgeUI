@@ -119,12 +119,16 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 			newMsgData.payload = &m_intValueBuffer;
 			newMsgData.payloadSize = sizeof(int);
 
-			if (m_currentNoteNumber > -1 && m_messageListener)
+			if (m_currentNoteNumber > -1 && m_messageListener && !IsChannelMuted(m_currentNoteNumber))
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 
 			if (midiMessage.isNoteOff())
 				m_currentNoteNumber = -1;
 		}
+
+		// If the received channel (source) is set to muted, return without further processing
+		if (IsChannelMuted(m_currentNoteNumber))
+			return;
 
 		// Pitchwheel or controllervalue (controller 1) is hardcoded as xy message trigger
 		if (midiMessage.isPitchWheel() || (midiMessage.isController() && midiMessage.getControllerNumber() == 1))
@@ -189,7 +193,6 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 			if (m_currentNoteNumber > -1 && m_messageListener)
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
 		}
-
 
 		// Controllervalue (controller 7) is hardcoded as delaymode message trigger
 		if (midiMessage.isController() && midiMessage.getControllerNumber() == 7)

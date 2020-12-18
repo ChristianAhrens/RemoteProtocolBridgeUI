@@ -161,18 +161,6 @@ void OSCProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlEleme
 }
 
 /**
- * Setter for remote object channels to not forward for further processing.
- * This uses a helper method from engine config to get a list of 
- * object ids into the corresponding internal member.
- * 
- * @param mutedObjChsXmlElement	The xml element that has to be parsed to get the object data
- */
-void OSCProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement)
-{
-	ProcessingEngineConfig::ReadMutedObjectChannels(mutedObjChsXmlElement, m_mutedRemoteObjectChannels);
-}
-
-/**
  * Method to trigger sending of a message
  *
  * @param Id		The id of the object to send a message for
@@ -472,7 +460,7 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 		}
 
 		// If the received channel (source) is set to muted, return without further processing
-		if (m_mutedRemoteObjectChannels.contains(channelId))
+		if (IsChannelMuted(channelId))
 			return;
 
 		newMsgData.addrVal.first = channelId;

@@ -121,18 +121,6 @@ void RTTrPMProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlEl
 }
 
 /**
- * Setter for remote object channels to not forward for further processing.
- * This uses a helper method from engine config to get a list of
- * object ids into the corresponding internal member.
- *
- * @param mutedObjChsXmlElement	The xml element that has to be parsed to get the object data
- */
-void RTTrPMProtocolProcessor::SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement)
-{
-	ProcessingEngineConfig::ReadMutedObjectChannels(mutedObjChsXmlElement, m_mutedRemoteObjectChannels);
-}
-
-/**
  * Method to trigger sending of a message
  *
  * @param Id		The id of the object to send a message for
@@ -243,7 +231,7 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 
 						// If the received channel (source) is set to muted, dont forward the message
 						auto sourceId = static_cast<int>(newMsgData.addrVal.first);
-						if (m_mutedRemoteObjectChannels.contains(sourceId))
+						if (IsChannelMuted(sourceId))
 							continue;
 
 						// provide the received message to parent node

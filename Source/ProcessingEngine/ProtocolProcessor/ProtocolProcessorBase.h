@@ -74,25 +74,32 @@ public:
 	ProtocolId GetId();
 	ProtocolRole GetRole();
 
+	//==============================================================================
+	virtual bool SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
+
 	virtual bool Start() = 0;
 	virtual bool Stop() = 0;
 
 	virtual void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) = 0;	/**< Objects that are to be handled actively (OSC polling, OCA subscribing). */
-	virtual void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) = 0;	/**< Object channels that are to be muted (not forwarded for further node processing). */
+	
 
 	//==============================================================================
 	std::unique_ptr<XmlElement> createStateXml() override { return nullptr; };
 	virtual bool setStateXml(XmlElement* stateXml) override;
 
-	virtual bool SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
+	//==============================================================================
+	virtual void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement);
+	bool IsChannelMuted(int channelNumber);										
 
 protected:
-	Listener				*m_messageListener;		/**< The parent node object. Needed for e.g. triggering receive notifications. */
-	ProtocolType			m_type;					/**< Processor type regarding the protocol being handled */
-	NodeId					m_parentNodeId;			/**< The id of the objects' parent node. */
-	ProtocolId				m_protocolProcessorId;	/**< The id of the processor object itself. */
-	ProtocolRole			m_protocolProcessorRole;
+	Listener				*m_messageListener;				/**< The parent node object. Needed for e.g. triggering receive notifications. */
+	ProtocolType			m_type;							/**< Processor type regarding the protocol being handled */
+	NodeId					m_parentNodeId;					/**< The id of the objects' parent node. */
+	ProtocolId				m_protocolProcessorId;			/**< The id of the processor object itself. */
+	ProtocolRole			m_protocolProcessorRole;		/**< The role (a/b) configured for this processor object. */
+	bool					m_IsRunning;					/**< Bool indication if the processor is successfully running. */
 
-	bool					m_IsRunning;			/**< Bool indication if the processor is successfully running. */
+private:
+	Array<int>				m_mutedRemoteObjectChannels;	/**< List of remote object channelss to be muted. */
 
 };
