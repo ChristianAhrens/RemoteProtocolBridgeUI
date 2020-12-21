@@ -189,14 +189,14 @@ void ProcessingEngine::SetLoggingTarget(LoggingTarget_Interface* logTarget)
  * @param objectId					The remote object id the message refers to
  * @param msgData				The remote object message data of the object that is currently sent by a node and therefor forwarded here to be logged
  */
-void ProcessingEngine::HandleNodeData(NodeId nodeId, ProtocolId senderProtocolId, ProtocolType senderProtocolType, RemoteObjectIdentifier objectId, RemoteObjectMessageData& msgData)
+void ProcessingEngine::HandleNodeData(const ProcessingEngineNode::NodeCallbackMessage* callbackMessage)
 {
 	if (!IsLoggingEnabled())
 		return;
 
 	if (m_logTarget)
 	{
-		m_logTarget->AddLogData(nodeId, senderProtocolId, senderProtocolType, objectId, msgData);
+		m_logTarget->AddLogData(callbackMessage->_nodeId, callbackMessage->_senderProtocolId, callbackMessage->_senderProtocolType, callbackMessage->_Id, callbackMessage->_msgData);
 	}
 }
 

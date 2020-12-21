@@ -47,9 +47,50 @@ class ProcessingEngine;
  * Class ProcessingEngineNode is a class to hold a processing element handled by engine class.
  */
 class ProcessingEngineNode :	public ProtocolProcessorBase::Listener,
-								public ProcessingEngineConfig::XmlConfigurableElement
+								public ProcessingEngineConfig::XmlConfigurableElement,
+								private MessageListener
 {
 public:
+	/**
+	 * Implementation of a node internal message.
+	 */
+	struct NodeCallbackMessage : public Message
+	{
+		/**
+		 * Constructor with default initialization.
+		 *
+		 * @param nodeId				The node id to initialize the member with.
+		 * @param senderProtocolId		The sender protocol id to initialize the member with.
+		 * @param senderProtocolType	The sender protocol type to initialize the member with.
+		 * @param Id					The remote object id to initialize the member with.
+		 * @param msgData				The message data to initialize the member with.
+		 */
+		NodeCallbackMessage(NodeId nodeId, ProtocolId senderProtocolId, ProtocolType senderProtocolType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) : 
+			_nodeId(nodeId),
+			_senderProtocolId(senderProtocolId),
+			_senderProtocolType(senderProtocolType),
+			_Id(Id),
+			_msgData(msgData) {}
+
+		/**
+		 * Constructor with default initialization.
+		 *
+		 * @param senderProtocolId		The sender protocol id to initialize the member with.
+		 * @param Id					The remote object id to initialize the member with.
+		 * @param msgData				The message data to initialize the member with.
+		 */
+		NodeCallbackMessage(ProtocolId senderProtocolId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) :
+			_senderProtocolId(senderProtocolId),
+			_Id(Id),
+			_msgData(msgData) {}
+
+		NodeId						_nodeId{ static_cast<NodeId>(INVALID_ADDRESS_VALUE) };
+		ProtocolId					_senderProtocolId{ static_cast<ProtocolId>(INVALID_ADDRESS_VALUE) };
+		ProtocolType				_senderProtocolType{ PT_Invalid };
+		RemoteObjectIdentifier		_Id{ ROI_Invalid };
+		RemoteObjectMessageData&	_msgData;
+	};
+
 	/**
 	 * Abstract embedded interface class for message data handling
 	 */
@@ -63,7 +104,7 @@ public:
 		 * Method to be overloaded by ancestors to act as an interface
 		 * for handling of received message data
 		 */
-		virtual void HandleNodeData(NodeId nodeId, ProtocolId senderProtocolId, ProtocolType senderProtocolType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
+		virtual void HandleNodeData(const NodeCallbackMessage* callbackMessage) = 0;
 	};
 
 public:
@@ -86,6 +127,9 @@ public:
 
 	//==============================================================================
 	void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
+
+	//==============================================================================
+	void handleMessage(const Message& msg) override;
 
 private:
 	ProtocolProcessorBase* CreateProtocolProcessor(ProtocolType type, int listenerPortNumber);

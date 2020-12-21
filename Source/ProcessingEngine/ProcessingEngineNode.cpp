@@ -109,6 +109,7 @@ NodeId ProcessingEngineNode::GetId()
  */
 bool ProcessingEngineNode::Start()
 {
+	// Startup protocols
 	bool successfullyStartedA = m_typeAProtocols.size() > 0;
 	bool successfullyStartedB = true;
 
@@ -120,14 +121,11 @@ bool ProcessingEngineNode::Start()
 
 	// if one of the protocol processors did not start successfully,
 	// enshure the other is not running without purpose
-	if (!successfullyStartedA || !successfullyStartedB)
-	{
+	m_protocolsRunning = successfullyStartedA && successfullyStartedB;
+	if (!m_protocolsRunning)
 		Stop();
-	}
-	else
-		m_isRunning = true;
 
-	return m_isRunning;
+	return m_protocolsRunning;
 }
 
 /**
@@ -380,10 +378,10 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
  */
 void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData)
 {
-	// broadcast received data to all listeners
-	for (auto listener : m_listeners)
-		listener->HandleNodeData(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData);
+	// send the message data to any listeners - asynchronous
+	postMessage(new NodeCallbackMessage(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData));
 	
+	// perform internal bridging forwarding of message - synchronous
 	auto isBridgingObject = (id < ROI_BridgingMAX);
 	if (m_dataHandling && isBridgingObject)
 		m_dataHandling->OnReceivedMessageFromProtocol(receiver->GetId(), id, msgData);
@@ -404,4 +402,18 @@ bool ProcessingEngineNode::SendMessageTo(ProtocolId PId, RemoteObjectIdentifier 
 		return m_typeBProtocols.at(PId)->SendRemoteObjectMessage(Id, msgData);
 	else
 		return false;
+}
+
+/**
+ * Reimplmented from MessageListener.
+ * @param msg	The message data to handle.
+ */
+void ProcessingEngineNode::handleMessage(const Message& msg)
+{
+	if (auto* callbackMessage = dynamic_cast<const NodeCallbackMessage*> (&msg))
+	{
+		// broadcast received data to all listeners
+		for (auto listener : m_listeners)
+			listener->HandleNodeData(callbackMessage);
+	}
 }

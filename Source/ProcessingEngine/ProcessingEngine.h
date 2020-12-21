@@ -66,7 +66,7 @@ public:
 	bool Stop();
 
 	// ============================================================
-	void HandleNodeData(NodeId nodeId, ProtocolId senderProtocolId, ProtocolType senderProtocolType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
+	void HandleNodeData(const ProcessingEngineNode::NodeCallbackMessage* callbackMessage) override;
 
 	// ============================================================
 	std::unique_ptr<XmlElement> createStateXml() override;
