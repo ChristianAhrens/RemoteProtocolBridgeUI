@@ -60,7 +60,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ProcessingEngineNode::ProcessingEngineNode()
 {
 	m_dataHandling	= nullptr;
-	m_isRunning = false;
+	m_protocolsRunning = false;
 }
 
 /**
@@ -137,18 +137,20 @@ bool ProcessingEngineNode::Start()
  */
 bool ProcessingEngineNode::Stop()
 {
+	// Shutdown protocols
 	bool successfullyStoppedA = true;
 	bool successfullyStoppedB = true;
 
-	for (auto const & typeAProtocol : m_typeAProtocols)
+	for (auto const& typeAProtocol : m_typeAProtocols)
 		successfullyStoppedA = successfullyStoppedA && typeAProtocol.second->Stop();
 
-	for (auto const & typeBProtocol : m_typeBProtocols)
+	for (auto const& typeBProtocol : m_typeBProtocols)
 		successfullyStoppedB = successfullyStoppedB && typeBProtocol.second->Stop();
 
-	m_isRunning = (successfullyStoppedA && successfullyStoppedB);
+	// reset the running bool indicator
+	m_protocolsRunning = !(successfullyStoppedA && successfullyStoppedB);
 
-	return m_isRunning;
+	return !m_protocolsRunning;
 }
 
 /**
@@ -178,7 +180,7 @@ std::unique_ptr<XmlElement> ProcessingEngineNode::createStateXml()
  */
 bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 {
-	bool shouldBeRunning = m_isRunning;
+	bool shouldBeRunning = m_protocolsRunning;
 
 	Stop();
 
