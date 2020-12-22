@@ -175,14 +175,14 @@ bool OSCProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, Re
 
 	String addressString = GetRemoteObjectString(Id);
 
-	if (msgData.addrVal.second != INVALID_ADDRESS_VALUE)
-		addressString += String::formatted("/%d", msgData.addrVal.second);
+	if (msgData._addrVal._second != INVALID_ADDRESS_VALUE)
+		addressString += String::formatted("/%d", msgData._addrVal._second);
 
-	if (msgData.addrVal.first != INVALID_ADDRESS_VALUE)
-		addressString += String::formatted("/%d", msgData.addrVal.first);
+	if (msgData._addrVal._first != INVALID_ADDRESS_VALUE)
+		addressString += String::formatted("/%d", msgData._addrVal._first);
 
 	uint16 valSize;
-	switch (msgData.valType)
+	switch (msgData._valType)
 	{
 	case ROVT_INT:
 		valSize = sizeof(int);
@@ -200,23 +200,23 @@ bool OSCProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, Re
 		break;
 	}
 
-	jassert((msgData.valCount*valSize) == msgData.payloadSize);
+	jassert((msgData._valCount * valSize) == msgData._payloadSize);
 
-	switch (msgData.valType)
+	switch (msgData._valType)
 	{
 	case ROVT_INT:
 		{
-		jassert(msgData.valCount < 4); // max known d&b OSC msg val cnt would be positioning xyz
+		jassert(msgData._valCount < 4); // max known d&b OSC msg val cnt would be positioning xyz
 		int multivalues[3];
 
-		for (int i = 0; i < msgData.valCount; ++i)
-			multivalues[i] = ((int*)msgData.payload)[i];
+		for (int i = 0; i < msgData._valCount; ++i)
+			multivalues[i] = ((int*)msgData._payload)[i];
 
-		if (msgData.valCount == 1)
+		if (msgData._valCount == 1)
 			sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0]));
-		else if (msgData.valCount == 2)
+		else if (msgData._valCount == 2)
 			sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1]));
-		else if (msgData.valCount == 3)
+		else if (msgData._valCount == 3)
 			sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1], multivalues[2]));
 		else
 			sendSuccess = m_oscSender.send(OSCMessage(addressString));
@@ -224,17 +224,17 @@ bool OSCProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, Re
 		break;
 	case ROVT_FLOAT:
 		{
-		jassert(msgData.valCount < 4); // max known d&b OSC msg val cnt would be positioning xyz
+		jassert(msgData._valCount < 4); // max known d&b OSC msg val cnt would be positioning xyz
 		float multivalues[3];
 
-		for (int i = 0; i < msgData.valCount; ++i)
-			multivalues[i] = ((float*)msgData.payload)[i];
+		for (int i = 0; i < msgData._valCount; ++i)
+			multivalues[i] = ((float*)msgData._payload)[i];
 
-		if (msgData.valCount == 1)
+		if (msgData._valCount == 1)
 			sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0]));
-		else if (msgData.valCount == 2)
+		else if (msgData._valCount == 2)
 			sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1]));
-		else if (msgData.valCount == 3)
+		else if (msgData._valCount == 3)
 			sendSuccess = m_oscSender.send(OSCMessage(addressString, multivalues[0], multivalues[1], multivalues[2]));
 		else
 			sendSuccess = m_oscSender.send(OSCMessage(addressString));
@@ -303,12 +303,12 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 	}
 
 	RemoteObjectMessageData newMsgData;
-	newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
-	newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
-	newMsgData.valType = ROVT_NONE;
-	newMsgData.valCount = 0;
-	newMsgData.payload = 0;
-	newMsgData.payloadSize = 0;
+	newMsgData._addrVal._first = INVALID_ADDRESS_VALUE;
+	newMsgData._addrVal._second = INVALID_ADDRESS_VALUE;
+	newMsgData._valType = ROVT_NONE;
+	newMsgData._valCount = 0;
+	newMsgData._payload = 0;
+	newMsgData._payloadSize = 0;
 
 	String addressString = message.getAddressPattern().toString();
 	// Check if the incoming message is a response to a sent "ping" heartbeat.
@@ -463,9 +463,9 @@ void OSCProtocolProcessor::oscMessageReceived(const OSCMessage &message, const S
 		if (IsChannelMuted(channelId))
 			return;
 
-		newMsgData.addrVal.first = channelId;
-		newMsgData.addrVal.second = recordId;
-		newMsgData.valType = ROVT_FLOAT;
+		newMsgData._addrVal._first = channelId;
+		newMsgData._addrVal._second = recordId;
+		newMsgData._valType = ROVT_FLOAT;
 
 		switch (newObjectId)
 		{
@@ -681,13 +681,13 @@ void OSCProtocolProcessor::timerCallback()
 	for (int i = 0; i < objectCount; i++)
 	{
 		RemoteObjectMessageData msgData;
-		msgData.addrVal = m_activeRemoteObjects[i].Addr;
-		msgData.valCount = 0;
-		msgData.valType = ROVT_NONE;
-		msgData.payload = 0;
-		msgData.payloadSize = 0;
+		msgData._addrVal = m_activeRemoteObjects[i]._Addr;
+		msgData._valCount = 0;
+		msgData._valType = ROVT_NONE;
+		msgData._payload = 0;
+		msgData._payloadSize = 0;
 		
-		SendRemoteObjectMessage(m_activeRemoteObjects[i].Id, msgData);
+		SendRemoteObjectMessage(m_activeRemoteObjects[i]._Id, msgData);
 	}
 }
 
@@ -703,18 +703,18 @@ void OSCProtocolProcessor::createFloatMessageData(const OSCMessage& messageInput
 	{
 		m_floatValueBuffer[0] = messageInput[0].getFloat32();
 
-		newMessageData.valCount = 1;
-		newMessageData.payload = m_floatValueBuffer;
-		newMessageData.payloadSize = sizeof(float);
+		newMessageData._valCount = 1;
+		newMessageData._payload = m_floatValueBuffer;
+		newMessageData._payloadSize = sizeof(float);
 	}
 	if (messageInput.size() == 2)
 	{
 		m_floatValueBuffer[0] = messageInput[0].getFloat32();
 		m_floatValueBuffer[1] = messageInput[1].getFloat32();
 
-		newMessageData.valCount = 2;
-		newMessageData.payload = m_floatValueBuffer;
-		newMessageData.payloadSize = 2 * sizeof(float);
+		newMessageData._valCount = 2;
+		newMessageData._payload = m_floatValueBuffer;
+		newMessageData._payloadSize = 2 * sizeof(float);
 	}
 	if (messageInput.size() == 3)
 	{
@@ -722,9 +722,9 @@ void OSCProtocolProcessor::createFloatMessageData(const OSCMessage& messageInput
 		m_floatValueBuffer[1] = messageInput[1].getFloat32();
 		m_floatValueBuffer[2] = messageInput[2].getFloat32();
 
-		newMessageData.valCount = 3;
-		newMessageData.payload = m_floatValueBuffer;
-		newMessageData.payloadSize = 3 * sizeof(float);
+		newMessageData._valCount = 3;
+		newMessageData._payload = m_floatValueBuffer;
+		newMessageData._payloadSize = 3 * sizeof(float);
 	}
 }
 
@@ -745,10 +745,10 @@ void OSCProtocolProcessor::createIntMessageData(const OSCMessage& messageInput, 
 		else if (messageInput[0].isFloat32())
 			m_intValueBuffer[0] = static_cast<int>(round(messageInput[0].getFloat32()));
 
-		newMessageData.valType = ROVT_INT;
-		newMessageData.valCount = 1;
-		newMessageData.payload = m_intValueBuffer;
-		newMessageData.payloadSize = sizeof(int);
+		newMessageData._valType = ROVT_INT;
+		newMessageData._valCount = 1;
+		newMessageData._payload = m_intValueBuffer;
+		newMessageData._payloadSize = sizeof(int);
 	}
 	else if (messageInput.size() == 2)
 	{
@@ -763,10 +763,10 @@ void OSCProtocolProcessor::createIntMessageData(const OSCMessage& messageInput, 
 		else if (messageInput[1].isFloat32())
 			m_intValueBuffer[1] = (int)round(messageInput[1].getFloat32());
 
-		newMessageData.valType = ROVT_INT;
-		newMessageData.valCount = 2;
-		newMessageData.payload = m_intValueBuffer;
-		newMessageData.payloadSize = 2 * sizeof(int);
+		newMessageData._valType = ROVT_INT;
+		newMessageData._valCount = 2;
+		newMessageData._payload = m_intValueBuffer;
+		newMessageData._payloadSize = 2 * sizeof(int);
 	}
 }
 
@@ -785,9 +785,9 @@ void OSCProtocolProcessor::createStringMessageData(const OSCMessage& messageInpu
 		if (messageInput[0].isString())
 			m_stringValueBuffer = messageInput[0].getString();
 
-		newMessageData.valType = ROVT_INT;
-		newMessageData.valCount = 1;
-		newMessageData.payload = m_stringValueBuffer.getCharPointer().getAddress();
-		newMessageData.payloadSize = m_stringValueBuffer.length();
+		newMessageData._valType = ROVT_STRING;
+		newMessageData._valCount = 1;
+		newMessageData._payload = m_stringValueBuffer.getCharPointer().getAddress();
+		newMessageData._payloadSize = m_stringValueBuffer.length();
 	}
 }

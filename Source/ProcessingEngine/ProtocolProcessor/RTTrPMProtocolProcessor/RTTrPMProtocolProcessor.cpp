@@ -159,12 +159,12 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 	}
 
 	RemoteObjectMessageData newMsgData;
-	newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
-	newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
-	newMsgData.valType = ROVT_NONE;
-	newMsgData.valCount = 0;
-	newMsgData.payload = 0;
-	newMsgData.payloadSize = 0;
+	newMsgData._addrVal._first = INVALID_ADDRESS_VALUE;
+	newMsgData._addrVal._second = INVALID_ADDRESS_VALUE;
+	newMsgData._valType = ROVT_NONE;
+	newMsgData._valCount = 0;
+	newMsgData._payload = 0;
+	newMsgData._payloadSize = 0;
 
 	RemoteObjectIdentifier newObjectId = ROI_Invalid;
 	
@@ -189,8 +189,8 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 
 						SourceId sourceId = String(trackableModule->GetName()).getIntValue();
 
-						newMsgData.addrVal.first = sourceId;
-						newMsgData.addrVal.second = static_cast<MappingId>(m_mappingAreaId);
+						newMsgData._addrVal._first = sourceId;
+						newMsgData._addrVal._second = static_cast<MappingId>(m_mappingAreaId);
 					}
 				}
 				break;
@@ -223,14 +223,14 @@ void RTTrPMProtocolProcessor::RTTrPMModuleReceived(const RTTrPMReceiver::RTTrPMM
 						newDualFloatValue[0] = static_cast<float>(trackedPointPositionModule->GetX());
 						newDualFloatValue[1] = static_cast<float>(trackedPointPositionModule->GetY());
 
-						newMsgData.valType = ROVT_FLOAT;
-						newMsgData.valCount = 2;
-						newMsgData.payload = &newDualFloatValue;
-						newMsgData.payloadSize = 2 * sizeof(float);
+						newMsgData._valType = ROVT_FLOAT;
+						newMsgData._valCount = 2;
+						newMsgData._payload = &newDualFloatValue;
+						newMsgData._payloadSize = 2 * sizeof(float);
 
 
 						// If the received channel (source) is set to muted, dont forward the message
-						auto sourceId = static_cast<int>(newMsgData.addrVal.first);
+						auto sourceId = static_cast<int>(newMsgData._addrVal._first);
 						if (IsChannelMuted(sourceId))
 							continue;
 

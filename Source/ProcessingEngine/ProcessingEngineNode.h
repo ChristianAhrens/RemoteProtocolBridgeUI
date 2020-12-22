@@ -48,14 +48,29 @@ class ProcessingEngine;
  */
 class ProcessingEngineNode :	public ProtocolProcessorBase::Listener,
 								public ProcessingEngineConfig::XmlConfigurableElement,
+								private Thread,
 								private MessageListener
 {
 public:
 	/**
-	 * Implementation of a node internal message.
+	 * Implementation of a message with contents to transport all relevant info from one
+	 * and inbetween several protocols.
 	 */
-	struct NodeCallbackMessage : public Message
+	struct InterProtocolMessage
 	{
+		/**
+		 * Default Constructor.
+		 */
+		InterProtocolMessage() {};
+
+		/**
+		 * Copy Constructor.
+		 */
+		InterProtocolMessage(const InterProtocolMessage& rhs)
+		{
+			*this = rhs;
+		}
+
 		/**
 		 * Constructor with default initialization.
 		 *
@@ -65,12 +80,14 @@ public:
 		 * @param Id					The remote object id to initialize the member with.
 		 * @param msgData				The message data to initialize the member with.
 		 */
-		NodeCallbackMessage(NodeId nodeId, ProtocolId senderProtocolId, ProtocolType senderProtocolType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) : 
+		InterProtocolMessage(NodeId nodeId, ProtocolId senderProtocolId, ProtocolType senderProtocolType, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData) :
 			_nodeId(nodeId),
 			_senderProtocolId(senderProtocolId),
 			_senderProtocolType(senderProtocolType),
-			_Id(Id),
-			_msgData(msgData) {}
+			_Id(Id)
+		{
+			_msgData.payloadCopy(msgData);
+		}
 
 		/**
 		 * Constructor with default initialization.
@@ -79,16 +96,50 @@ public:
 		 * @param Id					The remote object id to initialize the member with.
 		 * @param msgData				The message data to initialize the member with.
 		 */
-		NodeCallbackMessage(ProtocolId senderProtocolId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) :
+		InterProtocolMessage(ProtocolId senderProtocolId, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData) :
 			_senderProtocolId(senderProtocolId),
-			_Id(Id),
-			_msgData(msgData) {}
+			_Id(Id)
+		{
+			_msgData.payloadCopy(msgData);
+		}
+
+		/**
+		 * Assignment operator
+		 */
+		InterProtocolMessage& InterProtocolMessage::operator=(const InterProtocolMessage& rhs)
+		{
+			if (this != &rhs)
+			{
+				_nodeId = rhs._nodeId;
+				_senderProtocolId = rhs._senderProtocolId;
+				_senderProtocolType = rhs._senderProtocolType;
+				_Id = rhs._Id;
+				_msgData.payloadCopy(rhs._msgData);
+			}
+
+			return *this;
+		}
 
 		NodeId						_nodeId{ static_cast<NodeId>(INVALID_ADDRESS_VALUE) };
 		ProtocolId					_senderProtocolId{ static_cast<ProtocolId>(INVALID_ADDRESS_VALUE) };
 		ProtocolType				_senderProtocolType{ PT_Invalid };
 		RemoteObjectIdentifier		_Id{ ROI_Invalid };
-		RemoteObjectMessageData&	_msgData;
+		RemoteObjectMessageData		_msgData;
+	};
+
+	/**
+	 * Implementation of a node message to use with JUCE's message queue.
+	 */
+	struct NodeCallbackMessage : public Message
+	{
+		/**
+		 * Constructor with default initialization.
+		 * @param protocolMessage	The message data to encapsulate in this callback message
+		 */
+		NodeCallbackMessage(InterProtocolMessage protocolMessage) : 
+			_protocolMessage(protocolMessage) {}
+
+		InterProtocolMessage	_protocolMessage;
 	};
 
 	/**
@@ -131,10 +182,58 @@ public:
 	//==============================================================================
 	void handleMessage(const Message& msg) override;
 
+	//==============================================================================
+	void run() override;
+
+protected:
+	/**
+	 * Embedded class to safely handle message en-/dequeueing between protocol callbacks,
+	 * node thread and JUCE message queue.
+	 */
+	class InterProtocolMessageQueue
+	{
+	public:
+		InterProtocolMessageQueue() {};
+		~InterProtocolMessageQueue() {};
+
+		//==============================================================================
+		void enqueueMessage(const InterProtocolMessage& message) 
+		{
+			ScopedLock(m_messageQueue.getLock());
+
+			m_messageQueue.add(message);
+			m_protocolMessagesInQueue.signal();
+		};
+		const InterProtocolMessage dequeueMessage()
+		{
+			ScopedLock(m_messageQueue.getLock());
+
+			InterProtocolMessage message;
+			if (!m_messageQueue.isEmpty())
+				message = m_messageQueue.removeAndReturn(0);
+			if (m_messageQueue.isEmpty())
+				m_protocolMessagesInQueue.reset();
+
+			return message;
+		};
+
+		//==============================================================================
+		bool waitForMessage(int timeoutMilliseconds = -1) { return m_protocolMessagesInQueue.wait(timeoutMilliseconds); };
+
+	private:
+		//==============================================================================
+		WaitableEvent									m_protocolMessagesInQueue;
+		Array<InterProtocolMessage, CriticalSection>	m_messageQueue;
+
+	};
+
 private:
+	//==============================================================================
 	ProtocolProcessorBase* CreateProtocolProcessor(ProtocolType type, int listenerPortNumber);
+	//==============================================================================
 	ObjectDataHandling_Abstract* CreateObjectDataHandling(ObjectHandlingMode mode);
 
+	//==============================================================================
 	std::unique_ptr<ObjectDataHandling_Abstract>					m_dataHandling;		/**< The object data handling object (to be initialized with instance of derived class). */
 
 	NodeId															m_nodeId;			/**< The id of the bridging node object. */
@@ -144,6 +243,8 @@ private:
 
 	std::vector<ProcessingEngineNode::NodeListener*>				m_listeners;		/**< The listner objects, for e.g. logging message traffic. */
 
-	bool															m_protocolsRunning;
+	bool															m_nodeRunning;
+	WaitableEvent													m_threadRunning;
 
+	InterProtocolMessageQueue										m_messageQueue;
 };

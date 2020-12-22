@@ -109,7 +109,7 @@ public:
 
 
 	//==============================================================================
-	void AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
+	void AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData) override;
 	void SetLoggingMode(LoggingMode mode);
 
 	//==============================================================================
@@ -166,7 +166,7 @@ public:
 	~LoggingWindow();
 
 	//==============================================================================
-	void AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) override;
+	void AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData) override;
 
 	//==============================================================================
 	void AddListener(MainRemoteProtocolBridgeComponent* listener);

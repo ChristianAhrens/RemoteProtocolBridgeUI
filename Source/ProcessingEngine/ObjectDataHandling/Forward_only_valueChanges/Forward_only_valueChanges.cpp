@@ -58,32 +58,6 @@ Forward_only_valueChanges::Forward_only_valueChanges(ProcessingEngineNode* paren
  */
 Forward_only_valueChanges::~Forward_only_valueChanges()
 {
-	for (std::pair<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>> roi : m_currentValues)
-	{
-		for (std::pair<RemoteObjectAddressing, RemoteObjectMessageData> val : roi.second)
-		{
-            switch(val.second.valType)
-            {
-                case ROVT_INT:
-                    delete static_cast<int*>(val.second.payload);
-                    break;
-                case ROVT_FLOAT:
-                    delete static_cast<float*>(val.second.payload);
-                    break;
-                case ROVT_STRING:
-                    delete static_cast<char*>(val.second.payload);
-                    break;
-                default:
-                    break;
-            }
-	
-			val.second.payload = nullptr;
-			val.second.payloadSize = 0;
-			val.second.valCount = 0;
-		}
-	}
-	
-	m_currentValues.clear();
 }
 
 /**
@@ -167,23 +141,23 @@ bool Forward_only_valueChanges::IsChangedDataValue(const RemoteObjectIdentifier 
 	auto isChangedDataValue = false;
 
 	// if our hash does not yet contain our ROI, initialize it
-	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData.addrVal) == 0))
+	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(msgData._addrVal) == 0))
 	{
 		isChangedDataValue = true;
 	}
 	else
 	{
-		const RemoteObjectMessageData& currentVal = m_currentValues.at(Id).at(msgData.addrVal);
-		if ((currentVal.valType != msgData.valType) || (currentVal.valCount != msgData.valCount) || (currentVal.payloadSize != msgData.payloadSize))
+		const RemoteObjectMessageData& currentVal = m_currentValues.at(Id).at(msgData._addrVal);
+		if ((currentVal._valType != msgData._valType) || (currentVal._valCount != msgData._valCount) || (currentVal._payloadSize != msgData._payloadSize))
 		{
 			isChangedDataValue = true;
 		}
 		else
 		{
-			uint16 valCount = currentVal.valCount;
-			RemoteObjectValueType valType = currentVal.valType;
-			auto refData = currentVal.payload;
-			auto newData = msgData.payload;
+			uint16 valCount = currentVal._valCount;
+			RemoteObjectValueType valType = currentVal._valType;
+			auto refData = currentVal._payload;
+			auto newData = msgData._payload;
 	
 			auto referencePrecisionValue = 0;
 			auto newPrecisionValue = 0;
@@ -253,51 +227,33 @@ bool Forward_only_valueChanges::IsChangedDataValue(const RemoteObjectIdentifier 
  */
 void Forward_only_valueChanges::SetCurrentDataValue(const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
-	auto dataValAddr = msgData.addrVal;
+	auto dataValAddr = msgData._addrVal;
 
 	// Check if the new data value addressing is currently not present in internal hash
 	// or if it differs in its value size and needs to be reinitialized
 	if ((m_currentValues.count(Id) == 0) || (m_currentValues.at(Id).count(dataValAddr) == 0) || 
-		(m_currentValues.at(Id).at(dataValAddr).payloadSize != msgData.payloadSize))
+		(m_currentValues.at(Id).at(dataValAddr)._payloadSize != msgData._payloadSize))
 	{
 		// If the data value exists, but has wrong size, reinitialize it
 		if((m_currentValues.count(Id) != 0) && (m_currentValues.at(Id).count(dataValAddr) != 0) && 
-			(m_currentValues.at(Id).at(dataValAddr).payloadSize != msgData.payloadSize))
+			(m_currentValues.at(Id).at(dataValAddr)._payloadSize != msgData._payloadSize))
 		{
-            switch(m_currentValues.at(Id).at(msgData.addrVal).valType)
-            {
-                case ROVT_INT:
-                    delete static_cast<int*>(m_currentValues.at(Id).at(dataValAddr).payload);
-                    break;
-                case ROVT_FLOAT:
-                    delete static_cast<float*>(m_currentValues.at(Id).at(dataValAddr).payload);
-                    break;
-                case ROVT_STRING:
-                    delete static_cast<char*>(m_currentValues.at(Id).at(dataValAddr).payload);
-                    break;
-                default:
-                    break;
-            }
-    
-            m_currentValues.at(Id).at(dataValAddr).payload = nullptr;
-            m_currentValues.at(Id).at(dataValAddr).payloadSize = 0;
-            m_currentValues.at(Id).at(dataValAddr).valCount = 0;
+            m_currentValues.at(Id).at(dataValAddr)._payload = nullptr;
+            m_currentValues.at(Id).at(dataValAddr)._payloadSize = 0;
+            m_currentValues.at(Id).at(dataValAddr)._valCount = 0;
 		}
 	
-		RemoteObjectMessageData dataCopy = msgData;
+		auto dataCopy = 
 	
-		dataCopy.payload = new unsigned char[msgData.payloadSize];
-		memcpy(dataCopy.payload, msgData.payload, msgData.payloadSize);
-	
-		m_currentValues[Id][msgData.addrVal] = dataCopy;
+		m_currentValues[Id][msgData._addrVal].payloadCopy(msgData);
 	}
 	else
 	{
 		// do not copy entire data struct, since we need to keep our payload ptr
-		m_currentValues.at(Id).at(dataValAddr).addrVal = msgData.addrVal;
-		m_currentValues.at(Id).at(dataValAddr).valCount = msgData.valCount;
-		m_currentValues.at(Id).at(dataValAddr).valType = msgData.valType;
-		memcpy(m_currentValues.at(Id).at(dataValAddr).payload, msgData.payload, msgData.payloadSize);
+		m_currentValues.at(Id).at(dataValAddr)._addrVal = msgData._addrVal;
+		m_currentValues.at(Id).at(dataValAddr)._valCount = msgData._valCount;
+		m_currentValues.at(Id).at(dataValAddr)._valType = msgData._valType;
+		memcpy(m_currentValues.at(Id).at(dataValAddr)._payload, msgData._payload, msgData._payloadSize);
 	}
 }
 

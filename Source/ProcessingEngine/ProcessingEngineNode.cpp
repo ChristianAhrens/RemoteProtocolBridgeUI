@@ -58,9 +58,10 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Constructor
  */
 ProcessingEngineNode::ProcessingEngineNode()
+	: Thread("ProcessingEngingNode_Thread")
 {
 	m_dataHandling	= nullptr;
-	m_protocolsRunning = false;
+	m_nodeRunning = false;
 }
 
 /**
@@ -109,6 +110,9 @@ NodeId ProcessingEngineNode::GetId()
  */
 bool ProcessingEngineNode::Start()
 {
+	// start our thread loop
+	startThread();
+
 	// Startup protocols
 	bool successfullyStartedA = m_typeAProtocols.size() > 0;
 	bool successfullyStartedB = true;
@@ -121,11 +125,11 @@ bool ProcessingEngineNode::Start()
 
 	// if one of the protocol processors did not start successfully,
 	// enshure the other is not running without purpose
-	m_protocolsRunning = successfullyStartedA && successfullyStartedB;
-	if (!m_protocolsRunning)
+	m_nodeRunning = successfullyStartedA && successfullyStartedB && m_threadRunning.wait(1);
+	if (!m_nodeRunning)
 		Stop();
 
-	return m_protocolsRunning;
+	return m_nodeRunning;
 }
 
 /**
@@ -146,9 +150,14 @@ bool ProcessingEngineNode::Stop()
 		successfullyStoppedB = successfullyStoppedB && typeBProtocol.second->Stop();
 
 	// reset the running bool indicator
-	m_protocolsRunning = !(successfullyStoppedA && successfullyStoppedB);
+	auto protocolsRunning = !(successfullyStoppedA && successfullyStoppedB);
 
-	return !m_protocolsRunning;
+	// wait for thread termination
+	auto threadShutdownSuccess = stopThread(100);
+
+	m_nodeRunning = !(!protocolsRunning && threadShutdownSuccess);
+
+	return !m_nodeRunning;
 }
 
 /**
@@ -178,7 +187,7 @@ std::unique_ptr<XmlElement> ProcessingEngineNode::createStateXml()
  */
 bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 {
-	bool shouldBeRunning = m_protocolsRunning;
+	bool shouldBeRunning = m_nodeRunning;
 
 	Stop();
 
@@ -378,13 +387,7 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
  */
 void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData)
 {
-	// send the message data to any listeners - asynchronous
-	postMessage(new NodeCallbackMessage(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData));
-	
-	// perform internal bridging forwarding of message - synchronous
-	auto isBridgingObject = (id < ROI_BridgingMAX);
-	if (m_dataHandling && isBridgingObject)
-		m_dataHandling->OnReceivedMessageFromProtocol(receiver->GetId(), id, msgData);
+	m_messageQueue.enqueueMessage(InterProtocolMessage(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData));
 }
 
 /**
@@ -416,4 +419,30 @@ void ProcessingEngineNode::handleMessage(const Message& msg)
 		for (auto listener : m_listeners)
 			listener->HandleNodeData(callbackMessage);
 	}
+}
+
+/**
+ * Main thread loop reimplementation from JUCE thread.
+ */
+void ProcessingEngineNode::run()
+{
+	while (!threadShouldExit())
+	{
+		m_threadRunning.signal();
+		if (m_messageQueue.waitForMessage(10))
+		{
+			// get a message from queue
+			auto protocolMessage = m_messageQueue.dequeueMessage();
+
+			// send the message data to any listeners - asynchronous
+			postMessage(new NodeCallbackMessage(protocolMessage));
+
+			// perform internal bridging forwarding of message - synchronous
+			auto isBridgingObject = (protocolMessage._Id < ROI_BridgingMAX);
+			if (m_dataHandling && isBridgingObject)
+				m_dataHandling->OnReceivedMessageFromProtocol(protocolMessage._senderProtocolId, protocolMessage._Id, protocolMessage._msgData);
+		}
+	}
+
+	m_threadRunning.reset();
 }

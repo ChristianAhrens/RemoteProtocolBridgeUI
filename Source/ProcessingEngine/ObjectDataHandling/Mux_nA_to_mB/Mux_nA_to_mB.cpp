@@ -105,27 +105,27 @@ bool Mux_nA_to_mB::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIde
 	{
 		if (GetProtocolAIds().contains(PId))
 		{
-			jassert(msgData.addrVal.first <= m_protoChCntA);
-			int absChNr = GetProtocolAIds().indexOf(PId) * m_protoChCntA + msgData.addrVal.first;
+			jassert(msgData._addrVal._first <= m_protoChCntA);
+			int absChNr = GetProtocolAIds().indexOf(PId) * m_protoChCntA + msgData._addrVal._first;
 			int protocolBIndex = absChNr / (m_protoChCntB + 1);
 			int16 chForB = static_cast<int16>(absChNr % m_protoChCntB);
 			if (chForB == 0)
 				chForB = static_cast<int16>(m_protoChCntB);
 
-			msgData.addrVal.first = chForB;
+			msgData._addrVal._first = chForB;
 			if (GetProtocolBIds().size() >= protocolBIndex + 1)
 				return parentNode->SendMessageTo(GetProtocolBIds()[protocolBIndex], Id, msgData);
 		}
 		else if (GetProtocolBIds().contains(PId))
 		{
-			jassert(msgData.addrVal.first <= m_protoChCntB);
-			int absChNr = GetProtocolBIds().indexOf(PId) * m_protoChCntB + msgData.addrVal.first;
+			jassert(msgData._addrVal._first <= m_protoChCntB);
+			int absChNr = GetProtocolBIds().indexOf(PId) * m_protoChCntB + msgData._addrVal._first;
 			int protocolAIndex = absChNr / (m_protoChCntA + 1);
 			int16 chForA = static_cast<int16>(absChNr % m_protoChCntA);
 			if (chForA == 0)
 				chForA = static_cast<int16>(m_protoChCntA);
 
-			msgData.addrVal.first = chForA;
+			msgData._addrVal._first = chForA;
 			if (GetProtocolAIds().size() >= protocolAIndex + 1)
 				return parentNode->SendMessageTo(GetProtocolAIds()[protocolAIndex], Id, msgData);
 		}

@@ -343,7 +343,7 @@ void LoggingComponent::timerCallback()
  * @param Id			The message id of the data
  * @param msgData		The actual data that is to be logged
  */
-void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
 	if (m_mode == LM_Text)
 	{
@@ -352,40 +352,40 @@ void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType
 		{
 		case PT_OSCProtocol:
 			objectString += OSCProtocolProcessor::GetRemoteObjectString(Id) +
-				String::formatted(" | ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
+				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
 			break;
 		case PT_OCAProtocol:
 			objectString += OCAProtocolProcessor::GetRemoteObjectString(Id) +
-				String::formatted(" | ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
+				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
 			break;
 		case PT_RTTrPMProtocol:
 		case PT_MidiProtocol:
 			objectString += ProcessingEngineConfig::GetObjectShortDescription(Id) +
-				String::formatted(" | ch%d rec%d", msgData.addrVal.first, msgData.addrVal.second);
+				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
 			break;
 		default:
 			break;
 		}
 
-		if (msgData.payload != 0)
+		if (msgData._payload)
 		{
 			objectString += " |";
 
-			if (msgData.valType == ROVT_FLOAT)
+			if (msgData._valType == ROVT_FLOAT)
 			{
 				float fvalue;
-				for (int i = 0; i < msgData.valCount; ++i)
+				for (int i = 0; i < msgData._valCount; ++i)
 				{
-					fvalue = ((float*)msgData.payload)[i];
+					fvalue = (static_cast<float*>(msgData._payload))[i];
 					objectString += String::formatted(" %f", fvalue);
 				}
 			}
-			else if (msgData.valType == ROVT_INT)
+			else if (msgData._valType == ROVT_INT)
 			{
 				int ivalue;
-				for (int i = 0; i < msgData.valCount; ++i)
+				for (int i = 0; i < msgData._valCount; ++i)
 				{
-					ivalue = ((int*)msgData.payload)[i];
+					ivalue = (static_cast<int*>(msgData._payload))[i];
 					objectString += String::formatted(" %d", ivalue);
 				}
 			}
@@ -598,7 +598,7 @@ void LoggingWindow::closeButtonPressed()
 /**
  * 
  */
-void LoggingWindow::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+void LoggingWindow::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType SenderType, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
 	if (m_loggingComponent)
 	{

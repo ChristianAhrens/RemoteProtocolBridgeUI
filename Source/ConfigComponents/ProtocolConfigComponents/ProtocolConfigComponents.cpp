@@ -385,7 +385,7 @@ Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
 		//ToggleButton* c = m_RemObjEnableChecks[i];
 		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i) && m_RemObjEnableChecks.at(i)->getToggleState())
 		{
-			obj.Id = (RemoteObjectIdentifier)i;
+			obj._Id = static_cast<RemoteObjectIdentifier>(i);
 
 			// Since we expect the user to enter something like "1,4,6,8-12" to select
 			// channels 1 4 6 8 9 10 11 12, we need to do some parsing. First we split
@@ -448,15 +448,15 @@ Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
 				{
 					for (int k = 0; k < records.size(); ++k)
 					{
-						obj.Addr.first = static_cast<SourceId>(channels[j]);
-						obj.Addr.second = static_cast<MappingId>(records[k]);
+						obj._Addr._first = static_cast<SourceId>(channels[j]);
+						obj._Addr._second = static_cast<MappingId>(records[k]);
 						activeObjects.add(obj);
 					}
 				}
 				else
 				{
-					obj.Addr.first = int16(channels[j]);
-					obj.Addr.second = -1;
+					obj._Addr._first = int16(channels[j]);
+					obj._Addr._second = -1;
 					activeObjects.add(obj);
 				}
 			}
@@ -480,22 +480,22 @@ void BasicProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObj
 
 	for (int i = 0; i < Objs.size(); ++i)
 	{
-		Array<int> selChs = channelsPerObj[Objs[i].Id];
-		if (!selChs.contains(Objs[i].Addr.first))
+		Array<int> selChs = channelsPerObj[Objs[i]._Id];
+		if (!selChs.contains(Objs[i]._Addr._first))
 		{
-			selChs.add(Objs[i].Addr.first);
-			channelsPerObj.set(Objs[i].Id, selChs);
+			selChs.add(Objs[i]._Addr._first);
+			channelsPerObj.set(Objs[i]._Id, selChs);
 		}
 
-		Array<int> selRecs = recordsPerObj[Objs[i].Id];
-		if (!selRecs.contains(Objs[i].Addr.second))
+		Array<int> selRecs = recordsPerObj[Objs[i]._Id];
+		if (!selRecs.contains(Objs[i]._Addr._second))
 		{
-			selRecs.add(Objs[i].Addr.second);
-			recordsPerObj.set(Objs[i].Id, selRecs);
+			selRecs.add(Objs[i]._Addr._second);
+			recordsPerObj.set(Objs[i]._Id, selRecs);
 		}
 
-		if (!activeObjects.contains(Objs[i].Id))
-			activeObjects.add(Objs[i].Id);
+		if (!activeObjects.contains(Objs[i]._Id))
+			activeObjects.add(Objs[i]._Id);
 	}
 
 	for (int i = 0; i < activeObjects.size(); ++i)
@@ -668,7 +668,7 @@ Array<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects(
 		//ToggleButton* c = m_RemObjEnableChecks.at(i).get();
 		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i) && m_RemObjEnableChecks.at(i)->getToggleState())
 		{
-			obj.Id = (RemoteObjectIdentifier)i;
+			obj._Id = static_cast<RemoteObjectIdentifier>(i);
 
 			// Since we expect the user to enter something like "1,4,6,8-12" to select
 			// channels 1 4 6 8 9 10 11 12, we need to do some parsing. First we split
@@ -717,15 +717,15 @@ Array<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects(
 				{
 					for (int k = 0; k < records.size(); ++k)
 					{
-						obj.Addr.first = static_cast<SourceId>(channels[j]);
-						obj.Addr.second = static_cast<MappingId>(records[k]);
+						obj._Addr._first = static_cast<SourceId>(channels[j]);
+						obj._Addr._second = static_cast<MappingId>(records[k]);
 						activeObjects.add(obj);
 					}
 				}
 				else
 				{
-					obj.Addr.first = static_cast<SourceId>(channels[j]);
-					obj.Addr.second = -1;
+					obj._Addr._first = static_cast<SourceId>(channels[j]);
+					obj._Addr._second = -1;
 					activeObjects.add(obj);
 				}
 			}
@@ -747,22 +747,22 @@ void ActiveObjectScrollContentsComponent::SetActiveRemoteObjects(const Array<Rem
 
 	for (int i = 0; i < Objs.size(); ++i)
 	{
-		Array<int> selChs = channelsPerObj[Objs[i].Id];
-		if (!selChs.contains(Objs[i].Addr.first))
+		Array<int> selChs = channelsPerObj[Objs[i]._Id];
+		if (!selChs.contains(Objs[i]._Addr._first))
 		{
-			selChs.add(Objs[i].Addr.first);
-			channelsPerObj.set(Objs[i].Id, selChs);
+			selChs.add(Objs[i]._Addr._first);
+			channelsPerObj.set(Objs[i]._Id, selChs);
 		}
 
-		Array<int> selRecs = recordsPerObj[Objs[i].Id];
-		if (!selRecs.contains(Objs[i].Addr.second))
+		Array<int> selRecs = recordsPerObj[Objs[i]._Id];
+		if (!selRecs.contains(Objs[i]._Addr._second))
 		{
-			selRecs.add(Objs[i].Addr.second);
-			recordsPerObj.set(Objs[i].Id, selRecs);
+			selRecs.add(Objs[i]._Addr._second);
+			recordsPerObj.set(Objs[i]._Id, selRecs);
 		}
 
-		if (!activeObjects.contains(Objs[i].Id))
-			activeObjects.add(Objs[i].Id);
+		if (!activeObjects.contains(Objs[i]._Id))
+			activeObjects.add(Objs[i]._Id);
 	}
 
 	for (int i = 0; i < activeObjects.size(); ++i)

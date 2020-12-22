@@ -93,12 +93,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 		RemoteObjectIdentifier newObjectId = ROI_Invalid;
 		RemoteObjectMessageData newMsgData;
-		newMsgData.addrVal.first = INVALID_ADDRESS_VALUE;
-		newMsgData.addrVal.second = INVALID_ADDRESS_VALUE;
-		newMsgData.valType = ROVT_NONE;
-		newMsgData.valCount = 0;
-		newMsgData.payload = 0;
-		newMsgData.payloadSize = 0;
+		newMsgData._addrVal._first = INVALID_ADDRESS_VALUE;
+		newMsgData._addrVal._second = INVALID_ADDRESS_VALUE;
+		newMsgData._valType = ROVT_NONE;
+		newMsgData._valCount = 0;
+		newMsgData._payload = 0;
+		newMsgData._payloadSize = 0;
 
 		// NoteOn/Off is hardcoded as matrixinput select message trigger
 		if (midiMessage.isNoteOn() || midiMessage.isNoteOff())
@@ -112,12 +112,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 			newObjectId = ROI_MatrixInput_Select;
 
-			newMsgData.addrVal.first = m_currentNoteNumber;
-			newMsgData.addrVal.second = 0;
-			newMsgData.valType = ROVT_INT;
-			newMsgData.valCount = 1;
-			newMsgData.payload = &m_intValueBuffer;
-			newMsgData.payloadSize = sizeof(int);
+			newMsgData._addrVal._first = m_currentNoteNumber;
+			newMsgData._addrVal._second = 0;
+			newMsgData._valType = ROVT_INT;
+			newMsgData._valCount = 1;
+			newMsgData._payload = &m_intValueBuffer;
+			newMsgData._payloadSize = sizeof(int);
 
 			if (m_currentNoteNumber > -1 && m_messageListener && !IsChannelMuted(m_currentNoteNumber))
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
@@ -143,12 +143,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 			m_floatValueBuffer[0] = m_currentX;
 			m_floatValueBuffer[1] = m_currentY;
 
-			newMsgData.addrVal.first = m_currentNoteNumber;
-			newMsgData.addrVal.second = 1;
-			newMsgData.valType = ROVT_FLOAT;
-			newMsgData.valCount = 2;
-			newMsgData.payload = &m_floatValueBuffer;
-			newMsgData.payloadSize = 2 * sizeof(float);
+			newMsgData._addrVal._first = m_currentNoteNumber;
+			newMsgData._addrVal._second = 1;
+			newMsgData._valType = ROVT_FLOAT;
+			newMsgData._valCount = 2;
+			newMsgData._payload = &m_floatValueBuffer;
+			newMsgData._payloadSize = 2 * sizeof(float);
 
 			if (m_currentNoteNumber > -1 && m_messageListener)
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
@@ -163,12 +163,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 		
 			m_floatValueBuffer[0] = (normValue * 144.0f) - 120.0f; // -120 ... +24
 		
-			newMsgData.addrVal.first = m_currentNoteNumber;
-			newMsgData.addrVal.second = 1;
-			newMsgData.valType = ROVT_FLOAT;
-			newMsgData.valCount = 1;
-			newMsgData.payload = &m_floatValueBuffer;
-			newMsgData.payloadSize = sizeof(float);
+			newMsgData._addrVal._first = m_currentNoteNumber;
+			newMsgData._addrVal._second = 1;
+			newMsgData._valType = ROVT_FLOAT;
+			newMsgData._valCount = 1;
+			newMsgData._payload = &m_floatValueBuffer;
+			newMsgData._payloadSize = sizeof(float);
 		
 			if (m_currentNoteNumber > -1 && m_messageListener)
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
@@ -183,12 +183,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 			m_floatValueBuffer[0] = normValue;
 
-			newMsgData.addrVal.first = m_currentNoteNumber;
-			newMsgData.addrVal.second = 1;
-			newMsgData.valType = ROVT_FLOAT;
-			newMsgData.valCount = 1;
-			newMsgData.payload = &m_floatValueBuffer;
-			newMsgData.payloadSize = sizeof(float);
+			newMsgData._addrVal._first = m_currentNoteNumber;
+			newMsgData._addrVal._second = 1;
+			newMsgData._valType = ROVT_FLOAT;
+			newMsgData._valCount = 1;
+			newMsgData._payload = &m_floatValueBuffer;
+			newMsgData._payloadSize = sizeof(float);
 
 			if (m_currentNoteNumber > -1 && m_messageListener)
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
@@ -203,12 +203,12 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 			m_intValueBuffer[0] = 2 * static_cast<int>(normValue); // 0 - 2
 
-			newMsgData.addrVal.first = m_currentNoteNumber;
-			newMsgData.addrVal.second = 1;
-			newMsgData.valType = ROVT_INT;
-			newMsgData.valCount = 1;
-			newMsgData.payload = &m_intValueBuffer;
-			newMsgData.payloadSize = sizeof(float);
+			newMsgData._addrVal._first = m_currentNoteNumber;
+			newMsgData._addrVal._second = 1;
+			newMsgData._valType = ROVT_INT;
+			newMsgData._valCount = 1;
+			newMsgData._payload = &m_intValueBuffer;
+			newMsgData._payloadSize = sizeof(float);
 
 			if (m_currentNoteNumber > -1 && m_messageListener)
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);

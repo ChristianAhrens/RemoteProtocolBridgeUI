@@ -211,7 +211,7 @@ bool ProcessingEngineConfig::ReadActiveObjects(XmlElement* activeObjectsElement,
 			RemoteObjectIdentifier ROId = (RemoteObjectIdentifier)i;
 			if (objectChild->getTagName() == GetObjectDescription(ROId).removeCharacters(" "))
 			{
-				obj.Id = ROId;
+				obj._Id = ROId;
 	
 				// now that we have all channels and records, recursively iterate through both arrays
 				// to add an entry to our active objects list for every resulting ch/rec combi object
@@ -221,15 +221,15 @@ bool ProcessingEngineConfig::ReadActiveObjects(XmlElement* activeObjectsElement,
 					{
 						for (int k = 0; k < records.size(); ++k)
 						{
-							obj.Addr.first = static_cast<SourceId>(channels[j]);
-							obj.Addr.second = static_cast<MappingId>(records[k]);
+							obj._Addr._first = static_cast<SourceId>(channels[j]);
+							obj._Addr._second = static_cast<MappingId>(records[k]);
 							RemoteObjects.add(obj);
 						}
 					}
 					else
 					{
-						obj.Addr.first = (int16)channels[j];
-						obj.Addr.second = -1;
+						obj._Addr._first = (int16)channels[j];
+						obj._Addr._second = -1;
 						RemoteObjects.add(obj);
 					}
 				}
@@ -313,18 +313,18 @@ bool ProcessingEngineConfig::WriteActiveObjects(XmlElement* ActiveObjectsElement
 	HashMap<int, Array<int>> recordsPerObj;
 	for (int j = 0; j < RemoteObjectCount; ++j)
 	{
-		Array<int> selChs = channelsPerObj[RemoteObjects[j].Id];
-		if (!selChs.contains(RemoteObjects[j].Addr.first))
+		Array<int> selChs = channelsPerObj[RemoteObjects[j]._Id];
+		if (!selChs.contains(RemoteObjects[j]._Addr._first))
 		{
-			selChs.add(RemoteObjects[j].Addr.first);
-			channelsPerObj.set(RemoteObjects[j].Id, selChs);
+			selChs.add(RemoteObjects[j]._Addr._first);
+			channelsPerObj.set(RemoteObjects[j]._Id, selChs);
 		}
 
-		Array<int> selRecs = recordsPerObj[RemoteObjects[j].Id];
-		if (!selRecs.contains(RemoteObjects[j].Addr.second))
+		Array<int> selRecs = recordsPerObj[RemoteObjects[j]._Id];
+		if (!selRecs.contains(RemoteObjects[j]._Addr._second))
 		{
-			selRecs.add(RemoteObjects[j].Addr.second);
-			recordsPerObj.set(RemoteObjects[j].Id, selRecs);
+			selRecs.add(RemoteObjects[j]._Addr._second);
+			recordsPerObj.set(RemoteObjects[j]._Id, selRecs);
 		}
 	}
 
@@ -416,18 +416,18 @@ bool ProcessingEngineConfig::ReplaceActiveObjects(XmlElement* ActiveObjectsEleme
 	HashMap<int, Array<int>> recordsPerObj;
 	for (int j = 0; j < RemoteObjectCount; ++j)
 	{
-		Array<int> selChs = channelsPerObj[RemoteObjects[j].Id];
-		if (!selChs.contains(RemoteObjects[j].Addr.first))
+		Array<int> selChs = channelsPerObj[RemoteObjects[j]._Id];
+		if (!selChs.contains(RemoteObjects[j]._Addr._first))
 		{
-			selChs.add(RemoteObjects[j].Addr.first);
-			channelsPerObj.set(RemoteObjects[j].Id, selChs);
+			selChs.add(RemoteObjects[j]._Addr._first);
+			channelsPerObj.set(RemoteObjects[j]._Id, selChs);
 		}
 
-		Array<int> selRecs = recordsPerObj[RemoteObjects[j].Id];
-		if (!selRecs.contains(RemoteObjects[j].Addr.second))
+		Array<int> selRecs = recordsPerObj[RemoteObjects[j]._Id];
+		if (!selRecs.contains(RemoteObjects[j]._Addr._second))
 		{
-			selRecs.add(RemoteObjects[j].Addr.second);
-			recordsPerObj.set(RemoteObjects[j].Id, selRecs);
+			selRecs.add(RemoteObjects[j]._Addr._second);
+			recordsPerObj.set(RemoteObjects[j]._Id, selRecs);
 		}
 	}
 
@@ -568,16 +568,16 @@ std::unique_ptr<XmlElement> ProcessingEngineConfig::GetDefaultProtocol(ProtocolR
 	Array<RemoteObject> activeObjects;
 	RemoteObject objectX, objectY;
 
-	objectX.Id = ROI_CoordinateMapping_SourcePosition_X;
-	objectY.Id = ROI_CoordinateMapping_SourcePosition_Y;
+	objectX._Id = ROI_CoordinateMapping_SourcePosition_X;
+	objectY._Id = ROI_CoordinateMapping_SourcePosition_Y;
 	for (int16 i = 1; i <= 16; ++i)
 	{
 		RemoteObjectAddressing addr;
-		addr.first = i; //channel = source
-		addr.second = 1; //record = mapping
+		addr._first = i; //channel = source
+		addr._second = 1; //record = mapping
 
-		objectX.Addr = addr;
-		objectY.Addr = addr;
+		objectX._Addr = addr;
+		objectY._Addr = addr;
 
 		activeObjects.add(objectX);
 		activeObjects.add(objectY);

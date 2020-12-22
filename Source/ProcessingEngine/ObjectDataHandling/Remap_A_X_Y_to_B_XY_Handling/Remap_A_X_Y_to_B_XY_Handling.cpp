@@ -81,46 +81,46 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 			if (Id == ROI_CoordinateMapping_SourcePosition_X)
 			{
 				// special handling of merging separate x message to a combined xy one
-				jassert(msgData.valType == ROVT_FLOAT);
-				jassert(msgData.valCount == 1);
-				jassert(msgData.payloadSize == sizeof(float));
+				jassert(msgData._valType == ROVT_FLOAT);
+				jassert(msgData._valCount == 1);
+				jassert(msgData._payloadSize == sizeof(float));
 
-				uint32 addrId = msgData.addrVal.first + (msgData.addrVal.second << 16);
+				uint32 addrId = msgData._addrVal._first + (msgData._addrVal._second << 16);
 
 				xyzVals newVals = m_currentPosValue[addrId];
-				newVals.x = ((float*)msgData.payload)[0];
+				newVals.x = ((float*)msgData._payload)[0];
 				m_currentPosValue.set(addrId, newVals);
 
 				float newXYVal[2];
 				newXYVal[0] = m_currentPosValue[addrId].x;
 				newXYVal[1] = m_currentPosValue[addrId].y;
 
-				msgData.valCount = 2;
-				msgData.payload = &newXYVal;
-				msgData.payloadSize = 2 * sizeof(float);
+				msgData._valCount = 2;
+				msgData._payload = &newXYVal;
+				msgData._payloadSize = 2 * sizeof(float);
 
 				ObjIdToSend = ROI_CoordinateMapping_SourcePosition_XY;
 			}
 			else if (Id == ROI_CoordinateMapping_SourcePosition_Y)
 			{
 				// special handling of merging separate y message to a combined xy one
-				jassert(msgData.valType == ROVT_FLOAT);
-				jassert(msgData.valCount == 1);
-				jassert(msgData.payloadSize == sizeof(float));
+				jassert(msgData._valType == ROVT_FLOAT);
+				jassert(msgData._valCount == 1);
+				jassert(msgData._payloadSize == sizeof(float));
 
-				int32 addrId = msgData.addrVal.first + (msgData.addrVal.second << 16);
+				int32 addrId = msgData._addrVal._first + (msgData._addrVal._second << 16);
 
 				xyzVals newVals = m_currentPosValue[addrId];
-				newVals.y = ((float*)msgData.payload)[0];
+				newVals.y = ((float*)msgData._payload)[0];
 				m_currentPosValue.set(addrId, newVals);
 
 				float newXYVal[2];
 				newXYVal[0] = m_currentPosValue[addrId].x;
 				newXYVal[1] = m_currentPosValue[addrId].y;
 
-				msgData.valCount = 2;
-				msgData.payload = &newXYVal;
-				msgData.payloadSize = 2 * sizeof(float);
+				msgData._valCount = 2;
+				msgData._payload = &newXYVal;
+				msgData._payloadSize = 2 * sizeof(float);
 
 				ObjIdToSend = ROI_CoordinateMapping_SourcePosition_XY;
 			}
@@ -139,32 +139,32 @@ bool Remap_A_X_Y_to_B_XY_Handling::OnReceivedMessageFromProtocol(ProtocolId PId,
 			if (Id == ROI_CoordinateMapping_SourcePosition_XY)
 			{
 				// special handling of splitting a combined xy message to  separate x, y ones
-				jassert(msgData.valType == ROVT_FLOAT);
-				jassert(msgData.valCount == 2);
-				jassert(msgData.payloadSize == 2 * sizeof(float));
+				jassert(msgData._valType == ROVT_FLOAT);
+				jassert(msgData._valCount == 2);
+				jassert(msgData._payloadSize == 2 * sizeof(float));
 
-				int32 addrId = msgData.addrVal.first + (msgData.addrVal.second << 16);
+				int32 addrId = msgData._addrVal._first + (msgData._addrVal._second << 16);
 
 				xyzVals newVals = m_currentPosValue[addrId];
-				newVals.x = ((float*)msgData.payload)[0];
-				newVals.y = ((float*)msgData.payload)[1];
+				newVals.x = ((float*)msgData._payload)[0];
+				newVals.y = ((float*)msgData._payload)[1];
 				m_currentPosValue.set(addrId, newVals);
 
 				float newXVal = m_currentPosValue[addrId].x;
 				float newYVal = m_currentPosValue[addrId].y;
 
-				msgData.valCount = 1;
-				msgData.payloadSize = sizeof(float);
+				msgData._valCount = 1;
+				msgData._payloadSize = sizeof(float);
 
 				// Send to all typeA protocols
 				bool sendSuccess = true;
 				int typeAProtocolCount = GetProtocolAIds().size();
 				for (int i = 0; i < typeAProtocolCount; ++i)
 				{
-					msgData.payload = &newXVal;
+					msgData._payload = &newXVal;
 					sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], ROI_CoordinateMapping_SourcePosition_X, msgData);
 
-					msgData.payload = &newYVal;
+					msgData._payload = &newYVal;
 					sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], ROI_CoordinateMapping_SourcePosition_Y, msgData);
 				}
 

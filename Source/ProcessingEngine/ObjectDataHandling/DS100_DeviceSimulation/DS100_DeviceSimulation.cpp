@@ -62,32 +62,6 @@ DS100_DeviceSimulation::DS100_DeviceSimulation(ProcessingEngineNode* parentNode)
  */
 DS100_DeviceSimulation::~DS100_DeviceSimulation()
 {
-	for (auto const & idValuesKV : m_currentValues)
-	{
-		for (auto val : idValuesKV.second)
-		{
-            switch(val.second.valType)
-            {
-                case ROVT_INT:
-                    delete static_cast<int*>(val.second.payload);
-                    break;
-                case ROVT_FLOAT:
-                    delete static_cast<float*>(val.second.payload);
-                    break;
-                case ROVT_STRING:
-                    delete static_cast<char*>(val.second.payload);
-                    break;
-                default:
-                    break;
-            }
-    
-            val.second.payload = nullptr;
-            val.second.payloadSize = 0;
-            val.second.valCount = 0;
-		}
-	}
-	
-	m_currentValues.clear();
 }
 
 /**
@@ -141,7 +115,7 @@ bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, Remot
 	{
 		if (IsDataRequestPollMessage(Id, msgData))
 		{
-			return ReplyToDataRequest(PId, Id, msgData.addrVal);
+			return ReplyToDataRequest(PId, Id, msgData._addrVal);
 		}
 		else
 		{
@@ -207,7 +181,7 @@ bool DS100_DeviceSimulation::IsDataRequestPollMessage(const RemoteObjectIdentifi
 
 	if (remoteObjectRequiresReply)
 	{
-		if (msgData.valCount == 0)
+		if (msgData._valCount == 0)
 			return true;
 		else
 			return false;
@@ -227,22 +201,22 @@ void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdenti
 		DBG("Sending Pong reply.");
 		break;
 	case ROI_CoordinateMapping_SourcePosition_XY:
-		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + "Rec" + String(idDataKV.second.addrVal.second) + " XY position reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ", " + String(static_cast<float*>(idDataKV.second.payload)[1]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " XY position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ", " + String(static_cast<float*>(idDataKV.second._payload)[1]) + ").");
 		break;
 	case ROI_CoordinateMapping_SourcePosition_X:
-		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " X position reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " X position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	case ROI_CoordinateMapping_SourcePosition_Y:
-		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " Y position reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " Y position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	case ROI_Positioning_SourceSpread:
-		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " spread reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " spread reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	case ROI_MatrixInput_ReverbSendGain:
-		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " EnSpace gain reply (" + String(static_cast<float*>(idDataKV.second.payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " EnSpace gain reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	case ROI_Positioning_SourceDelayMode:
-		DBG("Sending Ch" + String(idDataKV.second.addrVal.first) + " delaymode reply (" + String(static_cast<int*>(idDataKV.second.payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " delaymode reply (" + String(static_cast<int*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	default:
 		return;
@@ -273,26 +247,26 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	switch (Id)
 	{
 	case ROI_HeartbeatPing:
-		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_NONE);
+		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_NONE);
 		dataReply.first = ROI_HeartbeatPong;
 		break;
 	case ROI_CoordinateMapping_SourcePosition_XY:
-		jassert(m_currentValues.at(Id).at(adressing).valCount == 2);
-		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
-		dataReply.second.addrVal = adressing;
+		jassert(m_currentValues.at(Id).at(adressing)._valCount == 2);
+		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_FLOAT);
+		dataReply.second._addrVal = adressing;
 		break;
 	case ROI_CoordinateMapping_SourcePosition_X:
 	case ROI_CoordinateMapping_SourcePosition_Y:
 	case ROI_Positioning_SourceSpread:
 	case ROI_MatrixInput_ReverbSendGain:
-		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
-		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_FLOAT);
-		dataReply.second.addrVal = adressing;
+		jassert(m_currentValues.at(Id).at(adressing)._valCount == 1);
+		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_FLOAT);
+		dataReply.second._addrVal = adressing;
 		break;
 	case ROI_Positioning_SourceDelayMode:
-		jassert(m_currentValues.at(Id).at(adressing).valCount == 1);
-		jassert(m_currentValues.at(Id).at(adressing).valType == ROVT_INT);
-		dataReply.second.addrVal = adressing;
+		jassert(m_currentValues.at(Id).at(adressing)._valCount == 1);
+		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_INT);
+		dataReply.second._addrVal = adressing;
 		break;
 	case ROI_HeartbeatPong:
 	case ROI_Invalid:
@@ -317,14 +291,14 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 void DS100_DeviceSimulation::InitDataValues()
 {
 	RemoteObjectMessageData emptyReplyMessageData;
-	emptyReplyMessageData.payload = nullptr;
-	emptyReplyMessageData.payloadSize = 0;
-	emptyReplyMessageData.valCount = 0;
-	emptyReplyMessageData.valType = ROVT_NONE;
-	emptyReplyMessageData.addrVal.first = INVALID_ADDRESS_VALUE;
-	emptyReplyMessageData.addrVal.second = INVALID_ADDRESS_VALUE;
-	m_currentValues[ROI_HeartbeatPing].insert(std::make_pair(emptyReplyMessageData.addrVal, emptyReplyMessageData));
-	m_currentValues[ROI_HeartbeatPong].insert(std::make_pair(emptyReplyMessageData.addrVal, emptyReplyMessageData));
+	emptyReplyMessageData._payload = nullptr;
+	emptyReplyMessageData._payloadSize = 0;
+	emptyReplyMessageData._valCount = 0;
+	emptyReplyMessageData._valType = ROVT_NONE;
+	emptyReplyMessageData._addrVal._first = INVALID_ADDRESS_VALUE;
+	emptyReplyMessageData._addrVal._second = INVALID_ADDRESS_VALUE;
+	m_currentValues[ROI_HeartbeatPing].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
+	m_currentValues[ROI_HeartbeatPong].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
 	{
@@ -341,38 +315,41 @@ void DS100_DeviceSimulation::InitDataValues()
 				switch (roi)
 				{
 				case ROI_CoordinateMapping_SourcePosition_XY:
-					remoteValue.valCount = 2;
-					remoteValue.valType = ROVT_FLOAT;
-					remoteValue.payload = new float[2];
-					static_cast<float*>(remoteValue.payload)[0] = 0.0f;
-					static_cast<float*>(remoteValue.payload)[1] = 0.0f;
-					remoteValue.payloadSize = 2 * sizeof(float);
+					remoteValue._valCount = 2;
+					remoteValue._valType = ROVT_FLOAT;
+					remoteValue._payload = new float[2];
+					remoteValue._payloadOwned = true;
+					static_cast<float*>(remoteValue._payload)[0] = 0.0f;
+					static_cast<float*>(remoteValue._payload)[1] = 0.0f;
+					remoteValue._payloadSize = 2 * sizeof(float);
 					break;
 				case ROI_CoordinateMapping_SourcePosition_X:
 				case ROI_CoordinateMapping_SourcePosition_Y:
 				case ROI_Positioning_SourceSpread:
 				case ROI_MatrixInput_ReverbSendGain:
-					remoteValue.valCount = 1;
-					remoteValue.valType = ROVT_FLOAT;
-					remoteValue.payload = new float;
-					*static_cast<float*>(remoteValue.payload) = 0.0f;
-					remoteValue.payloadSize = sizeof(float);
+					remoteValue._valCount = 1;
+					remoteValue._valType = ROVT_FLOAT;
+					remoteValue._payload = new float;
+					remoteValue._payloadOwned = true;
+					*static_cast<float*>(remoteValue._payload) = 0.0f;
+					remoteValue._payloadSize = sizeof(float);
 					break;
 				case ROI_Positioning_SourceDelayMode:
-					remoteValue.valCount = 1;
-					remoteValue.valType = ROVT_INT;
-					remoteValue.payload = new int;
-					*static_cast<int*>(remoteValue.payload) = 0;
-					remoteValue.payloadSize = sizeof(int);
+					remoteValue._valCount = 1;
+					remoteValue._valType = ROVT_INT;
+					remoteValue._payload = new int;
+					remoteValue._payloadOwned = true;
+					*static_cast<int*>(remoteValue._payload) = 0;
+					remoteValue._payloadSize = sizeof(int);
 					break;
 				case ROI_HeartbeatPing:
 				case ROI_HeartbeatPong:
 				case ROI_Invalid:
 				default:
-					remoteValue.valCount = 0;
-					remoteValue.valType = ROVT_NONE;
-					remoteValue.payload = nullptr;
-					remoteValue.payloadSize = 0;
+					remoteValue._valCount = 0;
+					remoteValue._valType = ROVT_NONE;
+					remoteValue._payload = nullptr;
+					remoteValue._payloadSize = 0;
 					break;
 				}
 
@@ -399,41 +376,23 @@ void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObje
 {
 	ignoreUnused(PId);
 
-	RemoteObjectMessageData newMsgData = msgData;
-	switch (msgData.valType)
-	{
-	case ROVT_INT:
-			newMsgData.payload = new int[msgData.valCount];
-			newMsgData.payloadSize = msgData.valCount * sizeof(int);
-			std::memcpy(newMsgData.payload, msgData.payload, newMsgData.payloadSize);
-			break;
-		case ROVT_FLOAT:
-			newMsgData.payload = new float[msgData.valCount];
-			newMsgData.payloadSize = msgData.valCount * sizeof(float);
-			std::memcpy(newMsgData.payload, msgData.payload, newMsgData.payloadSize);
-			break;
-		case ROVT_STRING:
-		case ROVT_NONE:
-			newMsgData.payload = nullptr;
-			newMsgData.payloadSize = 0;
-			break;
-	}
+	auto newMsgData = msgData;
 
 	if (m_currentValues.count(Id) > 0)
 	{
-		if (m_currentValues.at(Id).count(msgData.addrVal) > 0)
+		if (m_currentValues.at(Id).count(msgData._addrVal) > 0)
 		{
-			m_currentValues.at(Id).at(msgData.addrVal) = newMsgData;
+			m_currentValues.at(Id).at(msgData._addrVal) = newMsgData;
 		}
 		else
 		{
-			m_currentValues.at(Id).insert(std::make_pair(msgData.addrVal, newMsgData));
+			m_currentValues.at(Id).insert(std::make_pair(msgData._addrVal, newMsgData));
 		}
 	}
 	else
 	{
 		m_currentValues.insert(std::pair<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>(Id, std::map<RemoteObjectAddressing, RemoteObjectMessageData>()));
-		m_currentValues.at(Id).insert(std::make_pair(msgData.addrVal, newMsgData));
+		m_currentValues.at(Id).insert(std::make_pair(msgData._addrVal, newMsgData));
 	}
 }
 
@@ -459,37 +418,37 @@ void DS100_DeviceSimulation::timerCallback()
 				float val1 = (sin(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
 				float val2 = (cos(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
 
-				switch (remoteValue.valType)
+				switch (remoteValue._valType)
 				{
 				case ROVT_FLOAT:
-					if (remoteValue.valCount == 1)
+					if (remoteValue._valCount == 1)
 					{
 						if (roi == ROI_MatrixInput_ReverbSendGain)
 							val1 = (val1 * 100.0f) - 100.0f;
 
 						if (roi == ROI_CoordinateMapping_SourcePosition_Y)
-							static_cast<float*>(remoteValue.payload)[0] = val2;
+							static_cast<float*>(remoteValue._payload)[0] = val2;
 						else
-							static_cast<float*>(remoteValue.payload)[0] = val1;
+							static_cast<float*>(remoteValue._payload)[0] = val1;
 					}
-					else if (remoteValue.valCount == 2)
+					else if (remoteValue._valCount == 2)
 					{
-						static_cast<float*>(remoteValue.payload)[0] = val1;
-						static_cast<float*>(remoteValue.payload)[1] = val2;
+						static_cast<float*>(remoteValue._payload)[0] = val1;
+						static_cast<float*>(remoteValue._payload)[1] = val2;
 					}
 					break;
 				case ROVT_INT:
-					if (remoteValue.valCount == 1)
+					if (remoteValue._valCount == 1)
 					{
 						if (roi == ROI_Positioning_SourceDelayMode)
 							val1 = val1 * 3.0f;
 						
-						static_cast<int*>(remoteValue.payload)[0] = static_cast<int>(val1);
+						static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1);
 					}
-					else if (remoteValue.valCount == 2)
+					else if (remoteValue._valCount == 2)
 					{
-						static_cast<int*>(remoteValue.payload)[0] = static_cast<int>(val1);
-						static_cast<int*>(remoteValue.payload)[1] = static_cast<int>(val2);
+						static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1);
+						static_cast<int*>(remoteValue._payload)[1] = static_cast<int>(val2);
 					}
 					break;
 				case ROVT_STRING:

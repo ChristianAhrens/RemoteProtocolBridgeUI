@@ -196,7 +196,7 @@ void ProcessingEngine::HandleNodeData(const ProcessingEngineNode::NodeCallbackMe
 
 	if (m_logTarget)
 	{
-		m_logTarget->AddLogData(callbackMessage->_nodeId, callbackMessage->_senderProtocolId, callbackMessage->_senderProtocolType, callbackMessage->_Id, callbackMessage->_msgData);
+		m_logTarget->AddLogData(callbackMessage->_protocolMessage._nodeId, callbackMessage->_protocolMessage._senderProtocolId, callbackMessage->_protocolMessage._senderProtocolType, callbackMessage->_protocolMessage._Id, callbackMessage->_protocolMessage._msgData);
 	}
 }
 

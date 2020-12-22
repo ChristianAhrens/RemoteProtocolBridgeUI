@@ -183,16 +183,23 @@ enum RemoteObjectValueType
  */
 struct RemoteObjectAddressing
 {
-	SourceId	first;	/**< First address definition value. Equivalent to channels in d&b OCA world or SourceId for OSC positioning messages. */
-	MappingId	second;	/**< Second address definition value. Equivalent to records in d&b OCA world or MappingId for OSC positioning messages. */
+	SourceId	_first;	/**< First address definition value. Equivalent to channels in d&b OCA world or SourceId for OSC positioning messages. */
+	MappingId	_second;	/**< Second address definition value. Equivalent to records in d&b OCA world or MappingId for OSC positioning messages. */
 
 	/**
 	 * Constructor to initialize with invalid values
 	 */
 	RemoteObjectAddressing()
 	{
-		first = INVALID_ADDRESS_VALUE;
-		second = INVALID_ADDRESS_VALUE;
+		_first = INVALID_ADDRESS_VALUE;
+		_second = INVALID_ADDRESS_VALUE;
+	};
+	/**
+	 * Copy Constructor
+	 */
+	RemoteObjectAddressing(const RemoteObjectAddressing& rhs)
+	{
+		*this = rhs;
 	};
 	/**
 	 * Constructor to initialize with parameter values
@@ -202,36 +209,49 @@ struct RemoteObjectAddressing
 	 */
 	RemoteObjectAddressing(SourceId a, MappingId b)
 	{
-		first = a;
-		second = b;
+		_first = a;
+		_second = b;
 	};
 	/**
 	 * Equality comparison operator overload
 	 */
-	bool operator==(const RemoteObjectAddressing& o) const
+	bool operator==(const RemoteObjectAddressing& rhs) const
 	{
-		return (first == o.first) && (second == o.second);
+		return (_first == rhs._first) && (_second == rhs._second);
 	}
 	/**
 	 * Unequality comparison operator overload
 	 */
-	bool operator!=(const RemoteObjectAddressing& o) const
+	bool operator!=(const RemoteObjectAddressing& rhs) const
 	{
-		return !(*this == o);
+		return !(*this == rhs);
 	}
 	/**
 	 * Lesser than comparison operator overload
 	 */
-	bool operator<(const RemoteObjectAddressing& o) const
+	bool operator<(const RemoteObjectAddressing& rhs) const
 	{
-		return (!(*this > o) && (*this != o));
+		return (!(*this > rhs) && (*this != rhs));
 	}
 	/**
 	 * Greater than comparison operator overload
 	 */
-	bool operator>(const RemoteObjectAddressing& o) const
+	bool operator>(const RemoteObjectAddressing& rhs) const
 	{
-		return (first > o.first) || ((first == o.first) && (second > o.second));
+		return (_first > rhs._first) || ((_first == rhs._first) && (_second > rhs._second));
+	}
+	/**
+	 * Assignment operator
+	 */
+	RemoteObjectAddressing& RemoteObjectAddressing::operator=(const RemoteObjectAddressing& rhs)
+	{
+		if (this != &rhs)
+		{
+			_first = rhs._first;
+			_second = rhs._second;
+		}
+
+		return *this;
 	}
 };
 
@@ -240,13 +260,76 @@ struct RemoteObjectAddressing
  */
 struct RemoteObject
 {
-	RemoteObjectIdentifier	Id;		/**< The remote object id for the object. */
-	RemoteObjectAddressing	Addr;	/**< The remote object addressings (channel/record) for the object. */
+	RemoteObjectIdentifier	_Id;		/**< The remote object id for the object. */
+	RemoteObjectAddressing	_Addr;	/**< The remote object addressings (channel/record) for the object. */
 
+	/**
+	 * Constructor to initialize with invalid values
+	 */
+	RemoteObject()
+	{
+		_Id = ROI_Invalid;
+		_Addr = RemoteObjectAddressing(static_cast<SourceId>(INVALID_ADDRESS_VALUE), static_cast<MappingId>(INVALID_ADDRESS_VALUE));
+	};
+	/**
+	 * Copy Constructor
+	 */
+	RemoteObject(const RemoteObject& rhs)
+	{
+		*this = rhs;
+	};
+	/**
+	 * Constructor to initialize with parameter values
+	 *
+	 * @param Id	Remote object id value to initialize with.
+	 * @param Addr	Remote object addressing value to initialize with.
+	 */
+	RemoteObject(RemoteObjectIdentifier	Id, RemoteObjectAddressing Addr)
+	{
+		_Id = Id;
+		_Addr = Addr;
+	};
+	/**
+	 * Equality comparison operator overload
+	 */
 	bool operator==(const RemoteObject& rhs) const
 	{
-		return (Id == rhs.Id && Addr == rhs.Addr);
+		return (_Id == rhs._Id && _Addr == rhs._Addr);
 	};
+	/**
+	 * Unequality comparison operator overload
+	 */
+	bool operator!=(const RemoteObject& rhs) const
+	{
+		return !(*this == rhs);
+	}
+	/**
+	 * Lesser than comparison operator overload
+	 */
+	bool operator<(const RemoteObject& rhs) const
+	{
+		return (!(*this > rhs) && (*this != rhs));
+	}
+	/**
+	 * Greater than comparison operator overload
+	 */
+	bool operator>(const RemoteObject& rhs) const
+	{
+		return (_Id > rhs._Id) || ((_Id == rhs._Id) && (_Addr > rhs._Addr));
+	}
+	/**
+	 * Assignment operator
+	 */
+	RemoteObject& RemoteObject::operator=(const RemoteObject& rhs)
+	{
+		if (this != &rhs)
+		{
+			_Id = rhs._Id;
+			_Addr = rhs._Addr;
+		}
+
+		return *this;
+	}
 };
 
 /**
@@ -254,13 +337,133 @@ struct RemoteObject
  */
 struct RemoteObjectMessageData
 {
-	RemoteObjectAddressing	addrVal;		/**< Address definition value. Equivalent to channels/records in d&b OCA world or SourceId/MappingId for OSC positioning messages. */
+	RemoteObjectAddressing	_addrVal;		/**< Address definition value. Equivalent to channels/records in d&b OCA world or SourceId/MappingId for OSC positioning messages. */
 
-	RemoteObjectValueType	valType;		/**< Datatype used for data values of the remote object. */
-	std::uint16_t			valCount;		/**< Value count used by the remote object. */
+	RemoteObjectValueType	_valType;		/**< Datatype used for data values of the remote object. */
+	std::uint16_t			_valCount;		/**< Value count used by the remote object. */
 
-	void*					payload;		/**< Pointer to the actual payload data. */
-	std::uint64_t			payloadSize;	/**< Size of the payload data. */
+	void*					_payload;		/**< Pointer to the actual payload data. */
+	std::uint64_t			_payloadSize;	/**< Size of the payload data. */
+	bool					_payloadOwned;	/**< Indicator if the payload is owned by this object. */
+
+	/**
+	 * Constructor to initialize with invalid values
+	 */
+	RemoteObjectMessageData()
+	{
+		_addrVal = RemoteObjectAddressing();
+		_valType = ROVT_NONE;
+		_valCount = 0;
+		_payload = nullptr;
+		_payloadSize = 0;
+		_payloadOwned = false;
+	};
+	/**
+	 * Copy Constructor
+	 */
+	RemoteObjectMessageData(const RemoteObjectMessageData& rhs)
+	{
+		*this = rhs;
+	};
+	/**
+	 * Constructor to initialize with parameter values
+	 */
+	RemoteObjectMessageData(RemoteObjectAddressing addrVal, RemoteObjectValueType valType, std::uint16_t valCount, void* payload, std::uint64_t payloadSize)
+	{
+		_addrVal = addrVal;
+		_valType = valType;
+		_valCount = valCount;
+		_payload = payload;
+		_payloadSize = payloadSize;
+	};
+	/**
+	 * Destructor
+	 */
+	~RemoteObjectMessageData()
+	{
+		// do not let the unique_ptr delete the payload, since it is configured to not be internally owned.
+		if (_payloadOwned)
+		{
+			switch (_valType)
+			{
+			case ROVT_INT:
+				delete[] static_cast<int*>(_payload);
+				break;
+			case ROVT_FLOAT:
+				delete[] static_cast<float*>(_payload);
+				break;
+			case ROVT_STRING:
+				delete[] static_cast<char*>(_payload);
+				break;
+			default:
+				break;
+			}
+		}
+	};
+	/**
+	 * Equality comparison operator overload
+	 */
+	bool operator==(const RemoteObjectMessageData& rhs) const
+	{
+		return (_addrVal == rhs._addrVal && _valType == rhs._valType && _valCount == rhs._valCount && _payloadSize == rhs._payloadSize && _payload == rhs._payload);
+	};
+	/**
+	 * Unequality comparison operator overload
+	 */
+	bool operator!=(const RemoteObjectMessageData& rhs) const
+	{
+		return !(*this == rhs);
+	}
+	/**
+	 * Lesser than comparison operator overload
+	 */
+	bool operator<(const RemoteObjectMessageData& rhs) const
+	{
+		return (!(*this > rhs) && (*this != rhs));
+	}
+	/**
+	 * Greater than comparison operator overload
+	 */
+	bool operator>(const RemoteObjectMessageData& rhs) const
+	{
+		return (_payloadSize > rhs._payloadSize);
+	}
+	/**
+	 * Assignment operator
+	 */
+	RemoteObjectMessageData& RemoteObjectMessageData::operator=(const RemoteObjectMessageData& rhs)
+	{
+		if (this != &rhs)
+		{
+			_addrVal = rhs._addrVal;
+			_valType = rhs._valType;
+			_valCount = rhs._valCount;
+			_payloadSize = rhs._payloadSize;
+			_payload = rhs._payload;
+			_payloadOwned = false;
+		}
+
+		return *this;
+	}
+	/**
+	 * Method to assign a ROMD object with all members to this object, including copying data behind payload pointer.
+	 */
+	RemoteObjectMessageData& RemoteObjectMessageData::payloadCopy(const RemoteObjectMessageData& rhs)
+	{
+		if (this != &rhs)
+		{
+			_addrVal = rhs._addrVal;
+			_valType = rhs._valType;
+			_valCount = rhs._valCount;
+			_payloadSize = rhs._payloadSize;
+			delete[] _payload;
+			_payload = new unsigned char[rhs._payloadSize];
+			std::memcpy(_payload, rhs._payload, rhs._payloadSize);
+			_payloadOwned = true;
+		}
+
+		return *this;
+	}
 };
 
 /**
