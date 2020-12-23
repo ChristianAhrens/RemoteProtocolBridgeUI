@@ -243,7 +243,7 @@ struct RemoteObjectAddressing
 	/**
 	 * Assignment operator
 	 */
-	RemoteObjectAddressing& RemoteObjectAddressing::operator=(const RemoteObjectAddressing& rhs)
+	RemoteObjectAddressing& operator=(const RemoteObjectAddressing& rhs)
 	{
 		if (this != &rhs)
 		{
@@ -320,7 +320,7 @@ struct RemoteObject
 	/**
 	 * Assignment operator
 	 */
-	RemoteObject& RemoteObject::operator=(const RemoteObject& rhs)
+	RemoteObject& operator=(const RemoteObject& rhs)
 	{
 		if (this != &rhs)
 		{
@@ -431,7 +431,7 @@ struct RemoteObjectMessageData
 	/**
 	 * Assignment operator
 	 */
-	RemoteObjectMessageData& RemoteObjectMessageData::operator=(const RemoteObjectMessageData& rhs)
+	RemoteObjectMessageData& operator=(const RemoteObjectMessageData& rhs)
 	{
 		if (this != &rhs)
 		{
@@ -448,15 +448,31 @@ struct RemoteObjectMessageData
 	/**
 	 * Method to assign a ROMD object with all members to this object, including copying data behind payload pointer.
 	 */
-	RemoteObjectMessageData& RemoteObjectMessageData::payloadCopy(const RemoteObjectMessageData& rhs)
+	RemoteObjectMessageData& payloadCopy(const RemoteObjectMessageData& rhs)
 	{
 		if (this != &rhs)
 		{
+            switch (_valType)
+            {
+            case ROVT_INT:
+                delete[] static_cast<int*>(_payload);
+                break;
+            case ROVT_FLOAT:
+                delete[] static_cast<float*>(_payload);
+                break;
+            case ROVT_STRING:
+                delete[] static_cast<char*>(_payload);
+                break;
+            case ROVT_NONE:
+            default:
+                jassert(_payload == nullptr && _payloadSize == 0);
+                break;
+            }
+            
 			_addrVal = rhs._addrVal;
 			_valType = rhs._valType;
 			_valCount = rhs._valCount;
 			_payloadSize = rhs._payloadSize;
-			delete[] _payload;
 			_payload = new unsigned char[rhs._payloadSize];
 			std::memcpy(_payload, rhs._payload, rhs._payloadSize);
 			_payloadOwned = true;

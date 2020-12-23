@@ -106,7 +106,7 @@ public:
 		/**
 		 * Assignment operator
 		 */
-		InterProtocolMessage& InterProtocolMessage::operator=(const InterProtocolMessage& rhs)
+		InterProtocolMessage& operator=(const InterProtocolMessage& rhs)
 		{
 			if (this != &rhs)
 			{
