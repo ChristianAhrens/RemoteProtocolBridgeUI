@@ -163,9 +163,6 @@ void RTTrPMReceiver::run()
 {
 	int bufferSize = 512;
 	HeapBlock<unsigned char> rttrpmBuffer(bufferSize);
-
-	RTTrPMMessage receivedMessage;
-
 	String senderIPAddress;
 	int senderPortNumber;
 
@@ -185,6 +182,7 @@ void RTTrPMReceiver::run()
 
 		if(bytesRead >= 4)
 		{
+			RTTrPMMessage receivedMessage;
 			int moduleCount = HandleBuffer(rttrpmBuffer.getData(), bytesRead, receivedMessage);
 			if (moduleCount > 0)
 			{
