@@ -91,10 +91,16 @@ bool RTTrPMProtocolProcessor::Stop()
  */
 bool RTTrPMProtocolProcessor::setStateXml(XmlElement* stateXml)
 {
-	if (!NetworkProtocolProcessorBase::setStateXml(stateXml))
+	if (!ProtocolProcessorBase::setStateXml(stateXml))
 		return false;
 	else
 	{
+		auto hostPortXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+		if (hostPortXmlElement)
+			m_hostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
+		else
+			return false;
+
 		auto mappingAreaXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
 		if (mappingAreaXmlElement)
 		{
