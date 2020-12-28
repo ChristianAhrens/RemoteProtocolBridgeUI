@@ -68,7 +68,7 @@ public:
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
 	void SetRemoteObjectChannelsMuted(XmlElement* mutedObjChsXmlElement) override;
 
-	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
+	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, const RemoteObjectMessageData& msgData) override;
 
 	String GetMIDIRemoteObjectString(RemoteObjectIdentifier id);
 

@@ -167,7 +167,7 @@ public:
 
 	NodeId GetId();
 
-	bool SendMessageTo(ProtocolId PId, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) const;
+	bool SendMessageTo(ProtocolId PId, RemoteObjectIdentifier id, const RemoteObjectMessageData& msgData) const;
 
 	bool Start();
 	bool Stop();
@@ -177,7 +177,7 @@ public:
 	virtual bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
-	void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
+	void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, const RemoteObjectMessageData& msgData) override;
 
 	//==============================================================================
 	void handleMessage(const Message& msg) override;

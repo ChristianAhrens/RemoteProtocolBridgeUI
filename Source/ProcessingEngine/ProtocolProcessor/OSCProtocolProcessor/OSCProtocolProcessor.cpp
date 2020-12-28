@@ -166,7 +166,7 @@ void OSCProtocolProcessor::SetRemoteObjectsActive(XmlElement* activeObjsXmlEleme
  * @param Id		The id of the object to send a message for
  * @param msgData	The message payload and metadata
  */
-bool OSCProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
+bool OSCProtocolProcessor::SendRemoteObjectMessage(RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData)
 {
 	if (!m_IsRunning)
 		return false;

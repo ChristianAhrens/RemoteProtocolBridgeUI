@@ -62,7 +62,7 @@ public:
 		 * Method to be overloaded by ancestors to act as an interface
 		 * for handling of received message data
 		 */
-		virtual void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) = 0;
+		virtual void OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, const RemoteObjectMessageData& msgData) = 0;
 	};
 
 public:
@@ -75,7 +75,7 @@ public:
 	ProtocolRole GetRole();
 
 	//==============================================================================
-	virtual bool SendRemoteObjectMessage(RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) = 0;
+	virtual bool SendRemoteObjectMessage(RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData) = 0;
 
 	virtual bool Start() = 0;
 	virtual bool Stop() = 0;

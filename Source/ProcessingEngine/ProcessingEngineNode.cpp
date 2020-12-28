@@ -385,7 +385,7 @@ ObjectDataHandling_Abstract* ProcessingEngineNode::CreateObjectDataHandling(Obje
  * @param id		The message object id that corresponds to the received message
  * @param msgData	The actual message data that was received
  */
-void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, RemoteObjectMessageData& msgData)
+void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* receiver, RemoteObjectIdentifier id, const RemoteObjectMessageData& msgData)
 {
 	m_messageQueue.enqueueMessage(InterProtocolMessage(this->GetId(), receiver->GetId(), receiver->GetType(), id, msgData));
 }
@@ -397,7 +397,7 @@ void ProcessingEngineNode::OnProtocolMessageReceived(ProtocolProcessorBase* rece
  * @param Id		The message object id that corresponds to the message to be sent
  * @param msgData	The actual message data that was received
  */
-bool ProcessingEngineNode::SendMessageTo(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData) const
+bool ProcessingEngineNode::SendMessageTo(ProtocolId PId, RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData) const
 {
 	if (m_typeAProtocols.count(PId))
 		return m_typeAProtocols.at(PId)->SendRemoteObjectMessage(Id, msgData);

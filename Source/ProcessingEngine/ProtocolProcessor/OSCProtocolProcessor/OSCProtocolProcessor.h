@@ -61,7 +61,7 @@ public:
 
 	void SetRemoteObjectsActive(XmlElement* activeObjsXmlElement) override;
 
-	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, RemoteObjectMessageData& msgData) override;
+	bool SendRemoteObjectMessage(RemoteObjectIdentifier id, const RemoteObjectMessageData& msgData) override;
 
 	static String GetRemoteObjectString(RemoteObjectIdentifier id);
 
