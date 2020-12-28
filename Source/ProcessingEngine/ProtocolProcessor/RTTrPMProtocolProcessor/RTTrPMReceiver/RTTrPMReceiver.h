@@ -86,6 +86,20 @@ public:
 		virtual void RTTrPMModuleReceived(const RTTrPMMessage& module, const String& senderIPAddress, const int& senderPort) = 0;
 	};
 
+	//==============================================================================
+	/**
+	 * A class for receiving RTTrPM data in realtime (not through message queue, but direct callback) from RTTrPMReceiver.
+	 */
+	class RealtimeDataListener
+	{
+	public:
+		/** Destructor. */
+		virtual ~RealtimeDataListener() = default;
+
+		/** Called when the RTTrPMReceiver receives new RTTrPM module(s). */
+		virtual void RTTrPMModuleReceived(const RTTrPMMessage& module, const String& senderIPAddress, const int& senderPort) = 0;
+	};
+
 public:
 	RTTrPMReceiver(int portNumber);
 	~RTTrPMReceiver();
@@ -96,7 +110,9 @@ public:
 
 	//==============================================================================
 	void addListener(RTTrPMReceiver::DataListener* listenerToAdd);
+	void addListener(RTTrPMReceiver::RealtimeDataListener* listenerToAdd);
 	void removeListener(RTTrPMReceiver::DataListener* listenerToRemove);
+	void removeListener(RTTrPMReceiver::RealtimeDataListener* listenerToRemove);
 
 private:
 	//==============================================================================
@@ -108,13 +124,15 @@ private:
 	//==============================================================================
 	void handleMessage(const Message& msg) override;
 	void callListeners(const RTTrPMMessage& content, const String& senderIPAddress, const int& senderPort);
+	void callRealtimeListeners(const RTTrPMMessage& content, const String& senderIPAddress, const int& senderPort);
 
 	//==============================================================================
 	std::unique_ptr<DatagramSocket>	m_socket;
 
 	//==============================================================================
-	int											m_listeningPort{ 0 };
-	ListenerList<RTTrPMReceiver::DataListener>	m_listeners;
+	int													m_listeningPort{ 0 };
+	ListenerList<RTTrPMReceiver::DataListener>			m_listeners;
+	ListenerList<RTTrPMReceiver::RealtimeDataListener>	m_realtimeListeners;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RTTrPMReceiver)
 };

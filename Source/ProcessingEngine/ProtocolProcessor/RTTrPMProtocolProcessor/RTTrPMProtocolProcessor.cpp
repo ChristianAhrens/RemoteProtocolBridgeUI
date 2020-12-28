@@ -48,7 +48,7 @@ RTTrPMProtocolProcessor::RTTrPMProtocolProcessor(const NodeId& parentNodeId, int
 {
 	m_type = ProtocolType::PT_RTTrPMProtocol;
 
-	// RTTrPMProtocolProcessor derives from OSCReceiver::Listener
+	// RTTrPMProtocolProcessor derives from RTTrPMReceiver::RealtimeListener
 	m_rttrpmReceiver.addListener(this);
 }
 

@@ -66,12 +66,30 @@ void RTTrPMReceiver::addListener(RTTrPMReceiver::DataListener* listenerToAdd)
 }
 
 /**
+ * Method to add a Listener to internal list of realtime listeners.
+ * @param listenerToAdd	The realtime listener object to add.
+ */
+void RTTrPMReceiver::addListener(RTTrPMReceiver::RealtimeDataListener* listenerToAdd)
+{
+	m_realtimeListeners.add(listenerToAdd);
+}
+
+/**
  * Method to remove a Listener from internal list.
  * @param listenerToRemove	The listener object to remove.
  */
 void RTTrPMReceiver::removeListener(RTTrPMReceiver::DataListener* listenerToRemove)
 {
 	m_listeners.remove(listenerToRemove);
+}
+
+/**
+ * Method to remove a Listener from internal list of realtime listeners.
+ * @param listenerToRemove	The realtime listener object to remove.
+ */
+void RTTrPMReceiver::removeListener(RTTrPMReceiver::RealtimeDataListener* listenerToRemove)
+{
+	m_realtimeListeners.remove(listenerToRemove);
 }
 
 /**
@@ -170,7 +188,10 @@ void RTTrPMReceiver::run()
 			int moduleCount = HandleBuffer(rttrpmBuffer.getData(), bytesRead, receivedMessage);
 			if (moduleCount > 0)
 			{
-				if (m_listeners.size() > 0)
+				if (!m_realtimeListeners.isEmpty())
+					callRealtimeListeners(receivedMessage, senderIPAddress, senderPortNumber);
+
+				if (!m_listeners.isEmpty())
 					postMessage(std::make_unique<CallbackMessage>(receivedMessage, senderIPAddress, senderPortNumber).release());
 			}
 		}
@@ -222,4 +243,15 @@ void RTTrPMReceiver::handleMessage(const Message& msg)
 void RTTrPMReceiver::callListeners(const RTTrPMMessage& contentMessage, const String& senderIPAddress, const int& senderPort)
 {
 	m_listeners.call([&](RTTrPMReceiver::DataListener& l) { l.RTTrPMModuleReceived(contentMessage, senderIPAddress, senderPort); });
+}
+
+/**
+ * Helper method that handles distributing given message data to all registered realtime datamessage listeners.
+ * @param contentMessage	The message to distribute.
+ * @param senderIPAddress	The ip address the data message was received from.
+ * @param senderPort		The port the data message was received from.
+ */
+void RTTrPMReceiver::callRealtimeListeners(const RTTrPMMessage& contentMessage, const String& senderIPAddress, const int& senderPort)
+{
+	m_realtimeListeners.call([&](RTTrPMReceiver::RealtimeDataListener& l) { l.RTTrPMModuleReceived(contentMessage, senderIPAddress, senderPort); });
 }
