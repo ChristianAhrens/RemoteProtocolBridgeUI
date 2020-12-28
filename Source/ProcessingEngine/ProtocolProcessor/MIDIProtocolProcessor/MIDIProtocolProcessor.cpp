@@ -201,14 +201,18 @@ void MIDIProtocolProcessor::handleMessage(const Message& msg)
 
 			newObjectId = ROI_Positioning_SourceDelayMode;
 
-			m_intValueBuffer[0] = 2 * static_cast<int>(normValue); // 0 - 2
+			// values 0, 1, 2 are valid
+			auto numSteps = 3.0f;
+			auto maxVal = 2.0f;
+			auto stepVal = maxVal / numSteps;
+			m_intValueBuffer[0] = static_cast<int>(maxVal * normValue + stepVal);
 
 			newMsgData._addrVal._first = m_currentNoteNumber;
 			newMsgData._addrVal._second = 1;
 			newMsgData._valType = ROVT_INT;
 			newMsgData._valCount = 1;
 			newMsgData._payload = &m_intValueBuffer;
-			newMsgData._payloadSize = sizeof(float);
+			newMsgData._payloadSize = sizeof(int);
 
 			if (m_currentNoteNumber > -1 && m_messageListener)
 				m_messageListener->OnProtocolMessageReceived(this, newObjectId, newMsgData);
