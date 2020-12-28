@@ -253,6 +253,8 @@ struct RemoteObjectAddressing
 
 		return *this;
 	}
+
+	JUCE_LEAK_DETECTOR(RemoteObjectAddressing)
 };
 
 /**
@@ -330,6 +332,8 @@ struct RemoteObject
 
 		return *this;
 	}
+
+	JUCE_LEAK_DETECTOR(RemoteObject)
 };
 
 /**
@@ -480,6 +484,8 @@ struct RemoteObjectMessageData
 
 		return *this;
 	}
+
+	JUCE_LEAK_DETECTOR(RemoteObjectMessageData)
 };
 
 /**

@@ -79,4 +79,6 @@ private:
 
 	float m_floatValueBuffer[3] = { 0.0f, 0.0f, 0.0f };
 	int m_intValueBuffer[2] = { 0, 0 };
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RTTrPMProtocolProcessor)
 };
