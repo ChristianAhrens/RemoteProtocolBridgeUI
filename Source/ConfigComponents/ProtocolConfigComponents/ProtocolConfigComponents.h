@@ -67,12 +67,12 @@ public:
 
 protected:
 	//==============================================================================
-	virtual bool				DumpActiveHandlingUsed() = 0;
-	virtual Array<RemoteObject> DumpActiveRemoteObjects() = 0;
-	virtual std::pair<int, int> DumpProtocolPorts();
-	virtual void				SetActiveHandlingUsed(bool active);
-	virtual void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) = 0;
-	virtual void				FillProtocolPorts(const std::pair<int, int>& ports);
+	virtual bool						DumpActiveHandlingUsed() = 0;
+	virtual std::vector<RemoteObject>	DumpActiveRemoteObjects() = 0;
+	virtual std::pair<int, int>			DumpProtocolPorts();
+	virtual void						SetActiveHandlingUsed(bool active);
+	virtual void						FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs) = 0;
+	virtual void						FillProtocolPorts(const std::pair<int, int>& ports);
 
 private:
 	void paint(Graphics&) override;
@@ -115,9 +115,9 @@ public:
 protected:
 	//==============================================================================
 	bool				DumpActiveHandlingUsed() override;
-	Array<RemoteObject> DumpActiveRemoteObjects() override;
+	std::vector<RemoteObject> DumpActiveRemoteObjects() override;
 	void				SetActiveHandlingUsed(bool active) override;
-	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
+	void				FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs) override;
 
 private:
 	void resized() override;
@@ -150,9 +150,9 @@ public:
 	~ActiveObjectScrollContentsComponent();
 
 	//==============================================================================
-	bool				IsActiveHandlingEnabled();
-	Array<RemoteObject> GetActiveRemoteObjects();
-	void				SetActiveRemoteObjects(const Array<RemoteObject>& Objs);
+	bool IsActiveHandlingEnabled();
+	std::vector<RemoteObject> GetActiveRemoteObjects();
+	void SetActiveRemoteObjects(const std::vector<RemoteObject>& Objs);
 
 private:
 	void resized() override;
@@ -189,9 +189,9 @@ public:
 
 protected:
 	//==============================================================================
-	bool				DumpActiveHandlingUsed() override;
-	Array<RemoteObject> DumpActiveRemoteObjects() override;
-	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
+	bool						DumpActiveHandlingUsed() override;
+	std::vector<RemoteObject>	DumpActiveRemoteObjects() override;
+	void						FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs) override;
 
 private:
 	void resized() override;
@@ -240,9 +240,9 @@ public:
 
 protected:
 	//==============================================================================
-	bool				DumpActiveHandlingUsed() override;
-	Array<RemoteObject> DumpActiveRemoteObjects() override;
-	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
+	bool DumpActiveHandlingUsed() override;
+	std::vector<RemoteObject> DumpActiveRemoteObjects() override;
+	void FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs) override;
 
 private:
 	virtual void resized() override;
@@ -284,9 +284,9 @@ public:
 
 protected:
 	//==============================================================================
-	bool				DumpActiveHandlingUsed() override;
-	Array<RemoteObject> DumpActiveRemoteObjects() override;
-	void				FillActiveRemoteObjects(const Array<RemoteObject>& Objs) override;
+	bool DumpActiveHandlingUsed() override;
+	std::vector<RemoteObject> DumpActiveRemoteObjects() override;
+	void FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs) override;
 
 private:
 	virtual void resized() override;

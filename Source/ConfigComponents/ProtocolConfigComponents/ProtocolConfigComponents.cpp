@@ -374,9 +374,9 @@ void BasicProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
  *
  * @return	The list of objects to actively handle when running the engine.
  */
-Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
+std::vector<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
 {
-	Array<RemoteObject> activeObjects;
+	std::vector<RemoteObject> activeObjects;
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
@@ -450,14 +450,14 @@ Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
 					{
 						obj._Addr._first = static_cast<SourceId>(channels[j]);
 						obj._Addr._second = static_cast<MappingId>(records[k]);
-						activeObjects.add(obj);
+						activeObjects.push_back(obj);
 					}
 				}
 				else
 				{
 					obj._Addr._first = int16(channels[j]);
 					obj._Addr._second = -1;
-					activeObjects.add(obj);
+					activeObjects.push_back(obj);
 				}
 			}
 		}
@@ -472,7 +472,7 @@ Array<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects()
  *
  * @param Objs	The list of objects to set as default.
  */
-void BasicProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+void BasicProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
 {
 	Array<int> activeObjects;
 	HashMap<int, Array<int>> channelsPerObj;
@@ -657,9 +657,9 @@ bool ActiveObjectScrollContentsComponent::IsActiveHandlingEnabled()
  * Getter for the remote object listing of currently enabled remote objects.
  * @return The requested remote object listing.
  */
-Array<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects()
+std::vector<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects()
 {
-	Array<RemoteObject> activeObjects;
+	std::vector<RemoteObject> activeObjects;
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
@@ -719,14 +719,14 @@ Array<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects(
 					{
 						obj._Addr._first = static_cast<SourceId>(channels[j]);
 						obj._Addr._second = static_cast<MappingId>(records[k]);
-						activeObjects.add(obj);
+						activeObjects.push_back(obj);
 					}
 				}
 				else
 				{
 					obj._Addr._first = static_cast<SourceId>(channels[j]);
 					obj._Addr._second = -1;
-					activeObjects.add(obj);
+					activeObjects.push_back(obj);
 				}
 			}
 		}
@@ -739,7 +739,7 @@ Array<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteObjects(
  * Setter for the remote object listing of currently enabled remote objects.
  * @param Objs	The remote objects to set as to be shown enabled on ui.
  */
-void ActiveObjectScrollContentsComponent::SetActiveRemoteObjects(const Array<RemoteObject>& Objs)
+void ActiveObjectScrollContentsComponent::SetActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
 {
 	Array<int> activeObjects;
 	HashMap<int, Array<int>> channelsPerObj;
@@ -968,7 +968,7 @@ void OSCProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
  *
  * @return	The list of objects to actively handle when running the engine.
  */
-Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
+std::vector<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
 {
 	return m_activeObjectsListComponent->GetActiveRemoteObjects();
 }
@@ -979,7 +979,7 @@ Array<RemoteObject> OSCProtocolConfigComponent::DumpActiveRemoteObjects()
  *
  * @param Objs	The list of objects to set as default.
  */
-void OSCProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+void OSCProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
 {
 	m_activeObjectsListComponent->SetActiveRemoteObjects(Objs);
 }
@@ -1103,7 +1103,7 @@ bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 	auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
 	if (activeObjsXmlElement)
 	{
-		Array<RemoteObject> activeObjects;
+		std::vector<RemoteObject> activeObjects;
 		ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, activeObjects);
 		FillActiveRemoteObjects(activeObjects);
 	}
@@ -1214,11 +1214,9 @@ void RTTrPMProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
  *
  * @return	The list of objects to actively handle when running the engine.
  */
-Array<RemoteObject> RTTrPMProtocolConfigComponent::DumpActiveRemoteObjects()
+std::vector<RemoteObject> RTTrPMProtocolConfigComponent::DumpActiveRemoteObjects()
 {
-	Array<RemoteObject> activeObjects;
-
-	return activeObjects;
+	return std::vector<RemoteObject>();
 }
 
 /**
@@ -1227,7 +1225,7 @@ Array<RemoteObject> RTTrPMProtocolConfigComponent::DumpActiveRemoteObjects()
  *
  * @param Objs	The list of objects to set as default.
  */
-void RTTrPMProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+void RTTrPMProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
 {
 	ignoreUnused(Objs);
 }
@@ -1469,11 +1467,9 @@ void MIDIProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
  *
  * @return	The list of objects to actively handle when running the engine.
  */
-Array<RemoteObject> MIDIProtocolConfigComponent::DumpActiveRemoteObjects()
+std::vector<RemoteObject> MIDIProtocolConfigComponent::DumpActiveRemoteObjects()
 {
-	Array<RemoteObject> activeObjects;
-
-	return activeObjects;
+	return std::vector<RemoteObject>();
 }
 
 /**
@@ -1482,7 +1478,7 @@ Array<RemoteObject> MIDIProtocolConfigComponent::DumpActiveRemoteObjects()
  *
  * @param Objs	The list of objects to set as default.
  */
-void MIDIProtocolConfigComponent::FillActiveRemoteObjects(const Array<RemoteObject>& Objs)
+void MIDIProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
 {
 	ignoreUnused(Objs);
 }
