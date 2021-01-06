@@ -227,7 +227,7 @@ std::unique_ptr<XmlElement> GlobalConfigComponent::createStateXml()
 	if (engineXmlElement)
 		engineXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::AUTOSTART), DumpEngineStartOnAppStart() ? 1 : 0);
 
-	return std::move(globalConfigXmlElement);
+	return globalConfigXmlElement;
 }
 
 bool GlobalConfigComponent::setStateXml(XmlElement* stateXml)

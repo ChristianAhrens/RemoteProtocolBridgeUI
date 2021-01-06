@@ -1086,7 +1086,7 @@ std::unique_ptr<XmlElement> OSCProtocolConfigComponent::createStateXml()
 		pollingIntervalXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::POLLINGINTERVAL));
 	pollingIntervalXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), DumpPollingInterval());
 
-	return std::move(protocolStateXml);
+	return protocolStateXml;
 }
 
 /**
@@ -1311,7 +1311,7 @@ std::unique_ptr<XmlElement> RTTrPMProtocolConfigComponent::createStateXml()
 		mappingAreaXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
 	mappingAreaXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), DumpMappingAreaId());
 
-	return std::move(protocolStateXml);
+	return protocolStateXml;
 }
 
 /**
@@ -1560,7 +1560,7 @@ std::unique_ptr<XmlElement> MIDIProtocolConfigComponent::createStateXml()
 		midiInputIndexXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
 	midiInputIndexXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX), DumpSelectedMidiInputIndex());
 
-	return std::move(protocolStateXml);
+	return protocolStateXml;
 }
 
 /**

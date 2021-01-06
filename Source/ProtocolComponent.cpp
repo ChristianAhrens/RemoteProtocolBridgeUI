@@ -381,6 +381,7 @@ bool ProtocolComponent::setZeroConfProtocolType(ProtocolType type)
 				break;
 			case PT_RTTrPMProtocol:
 			case PT_MidiProtocol:
+            case PT_YamahaOSCProtocol:
 				m_ZeroconfIpDiscovery->clearServices();
 				m_ZeroconfIpDiscovery->setVisible(false);
 				break;
@@ -419,6 +420,7 @@ void ProtocolComponent::resized()
 			break;
 		case PT_RTTrPMProtocol:
 		case PT_MidiProtocol:
+        case PT_YamahaOSCProtocol:
 		case PT_UserMAX:
 		case PT_Invalid:
 			useZeroconf = false;
