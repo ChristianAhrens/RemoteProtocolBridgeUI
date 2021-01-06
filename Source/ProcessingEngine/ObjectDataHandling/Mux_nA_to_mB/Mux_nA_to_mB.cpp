@@ -103,27 +103,31 @@ bool Mux_nA_to_mB::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIde
 	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
 	if (parentNode && m_protoChCntA>0 && m_protoChCntB>0)
 	{
-		if (GetProtocolAIds().contains(PId))
+		auto PIdAIter = std::find(GetProtocolAIds().begin(), GetProtocolAIds().end(), PId);
+		auto PIdBIter = std::find(GetProtocolBIds().begin(), GetProtocolBIds().end(), PId);
+		if (PIdAIter != GetProtocolAIds().end())
 		{
 			jassert(msgData._addrVal._first <= m_protoChCntA);
-			int absChNr = GetProtocolAIds().indexOf(PId) * m_protoChCntA + msgData._addrVal._first;
-			int protocolBIndex = absChNr / (m_protoChCntB + 1);
-			int16 chForB = static_cast<int16>(absChNr % m_protoChCntB);
+			auto protocolAIndex = PIdAIter - GetProtocolAIds().begin();
+			auto absChNr = static_cast<int>(protocolAIndex * m_protoChCntA) + msgData._addrVal._first;
+			auto protocolBIndex = absChNr / (m_protoChCntB + 1);
+			auto chForB = static_cast<std::int32_t>(absChNr % m_protoChCntB);
 			if (chForB == 0)
-				chForB = static_cast<int16>(m_protoChCntB);
+				chForB = static_cast<std::int32_t>(m_protoChCntB);
 
 			msgData._addrVal._first = chForB;
 			if (GetProtocolBIds().size() >= protocolBIndex + 1)
 				return parentNode->SendMessageTo(GetProtocolBIds()[protocolBIndex], Id, msgData);
 		}
-		else if (GetProtocolBIds().contains(PId))
+		else if (PIdBIter != GetProtocolBIds().end())
 		{
 			jassert(msgData._addrVal._first <= m_protoChCntB);
-			int absChNr = GetProtocolBIds().indexOf(PId) * m_protoChCntB + msgData._addrVal._first;
-			int protocolAIndex = absChNr / (m_protoChCntA + 1);
-			int16 chForA = static_cast<int16>(absChNr % m_protoChCntA);
+			auto protocolBIndex = PIdBIter - GetProtocolBIds().begin();
+			auto absChNr = static_cast<int>(protocolBIndex * m_protoChCntB) + msgData._addrVal._first;
+			auto protocolAIndex = absChNr / (m_protoChCntA + 1);
+			auto chForA = static_cast<std::int32_t>(absChNr % m_protoChCntA);
 			if (chForA == 0)
-				chForA = static_cast<int16>(m_protoChCntA);
+				chForA = static_cast<std::int32_t>(m_protoChCntA);
 
 			msgData._addrVal._first = chForA;
 			if (GetProtocolAIds().size() >= protocolAIndex + 1)

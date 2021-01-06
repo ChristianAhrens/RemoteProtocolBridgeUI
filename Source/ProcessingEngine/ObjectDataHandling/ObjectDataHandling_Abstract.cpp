@@ -97,7 +97,7 @@ bool ObjectDataHandling_Abstract::setStateXml(XmlElement* stateXml)
  */
 void ObjectDataHandling_Abstract::AddProtocolAId(ProtocolId PAId)
 {
-	m_protocolAIds.add(PAId);
+	m_protocolAIds.push_back(PAId);
 }
 
 /**
@@ -107,7 +107,7 @@ void ObjectDataHandling_Abstract::AddProtocolAId(ProtocolId PAId)
  */
 void ObjectDataHandling_Abstract::AddProtocolBId(ProtocolId PBId)
 {
-	m_protocolBIds.add(PBId);
+	m_protocolBIds.push_back(PBId);
 }
 
 /**
@@ -157,7 +157,7 @@ NodeId ObjectDataHandling_Abstract::GetParentNodeId()
  * Getter for the type a protocols array member.
  * @return The type a protocols.
  */
-const Array<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolAIds()
+const std::vector<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolAIds()
 {
 	return m_protocolAIds;
 }
@@ -166,7 +166,7 @@ const Array<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolAIds()
  * Getter for the type b protocols array member.
  * @return The type b protocols.
  */
-const Array<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolBIds()
+const std::vector<ProtocolId>& ObjectDataHandling_Abstract::GetProtocolBIds()
 {
 	return m_protocolBIds;
 }

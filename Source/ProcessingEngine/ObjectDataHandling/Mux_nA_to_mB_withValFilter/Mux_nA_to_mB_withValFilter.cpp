@@ -109,18 +109,19 @@ bool Mux_nA_to_mB_withValFilter::OnReceivedMessageFromProtocol(ProtocolId PId, R
 	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
 	if (parentNode && m_protoChCntA > 0 && m_protoChCntB > 0)
 	{
-		if (ObjectDataHandling_Abstract::GetProtocolAIds().contains(PId))
+		if (std::find(GetProtocolAIds().begin(), GetProtocolAIds().end(), PId) != GetProtocolAIds().end())
 		{
-			ProtocolId protocolBId = MapObjectAddressing(PId, msgData);
+			auto protocolBId = MapObjectAddressing(PId, msgData);
 
 			if (protocolBId != INVALID_ADDRESS_VALUE && IsChangedDataValue(Id, msgData))
 				return parentNode->SendMessageTo(protocolBId, Id, msgData);
 			else
 				return false;
 		}
-		else if (ObjectDataHandling_Abstract::GetProtocolBIds().contains(PId))
+		else if (std::find(GetProtocolBIds().begin(), GetProtocolBIds().end(), PId) != GetProtocolBIds().end())
 		{
-			ProtocolId protocolAId = MapObjectAddressing(PId, msgData);
+			auto protocolAId = MapObjectAddressing(PId, msgData);
+
 			if (protocolAId != INVALID_ADDRESS_VALUE && IsChangedDataValue(Id, msgData))
 				return parentNode->SendMessageTo(protocolAId, Id, msgData);
 			else
@@ -142,14 +143,17 @@ bool Mux_nA_to_mB_withValFilter::OnReceivedMessageFromProtocol(ProtocolId PId, R
  */
 ProtocolId Mux_nA_to_mB_withValFilter::MapObjectAddressing(ProtocolId PId, RemoteObjectMessageData &msgData)
 {
-	if(GetProtocolAIds().contains(PId))
+	auto PIdAIter = std::find(GetProtocolAIds().begin(), GetProtocolAIds().end(), PId);
+	auto PIdBIter = std::find(GetProtocolBIds().begin(), GetProtocolBIds().end(), PId);
+	if (PIdAIter != GetProtocolAIds().end())
 	{
 		jassert(msgData._addrVal._first <= m_protoChCntA);
-		int absChNr		   = GetProtocolAIds().indexOf(PId) * m_protoChCntA + msgData._addrVal._first;
-		int protocolBIndex = absChNr / (m_protoChCntB + 1);
-		int16 chForB	   = static_cast<int16>(absChNr % m_protoChCntB);
+		auto protocolAIndex = PIdAIter - GetProtocolAIds().begin();
+		auto absChNr		= static_cast<int>(protocolAIndex * m_protoChCntA) + msgData._addrVal._first;
+		auto protocolBIndex = absChNr / (m_protoChCntB + 1);
+		auto chForB	   = static_cast<std::int32_t>(absChNr % m_protoChCntB);
 		if(chForB == 0)
-			chForB = static_cast<int16>(m_protoChCntB);
+			chForB = static_cast<std::int32_t>(m_protoChCntB);
 
 		msgData._addrVal._first = chForB;
 
@@ -158,14 +162,15 @@ ProtocolId Mux_nA_to_mB_withValFilter::MapObjectAddressing(ProtocolId PId, Remot
 		else
 			return static_cast<ProtocolId>(INVALID_ADDRESS_VALUE);
 	}
-	else if(GetProtocolBIds().contains(PId))
+	else if (PIdBIter != GetProtocolBIds().end())
 	{
 		jassert(msgData._addrVal._first <= m_protoChCntB);
-		int absChNr		   = GetProtocolBIds().indexOf(PId) * m_protoChCntB + msgData._addrVal._first;
-		int protocolAIndex = absChNr / (m_protoChCntA + 1);
-		int16 chForA	   = static_cast<int16>(absChNr % m_protoChCntA);
+		auto protocolBIndex = PIdBIter - GetProtocolBIds().begin();
+		auto absChNr		= static_cast<int>(protocolBIndex * m_protoChCntB) + msgData._addrVal._first;
+		auto protocolAIndex = absChNr / (m_protoChCntA + 1);
+		auto chForA	   = static_cast<std::int32_t>(absChNr % m_protoChCntA);
 		if(chForA == 0)
-			chForA = static_cast<int16>(m_protoChCntA);
+			chForA = static_cast<std::int32_t>(m_protoChCntA);
 
 		msgData._addrVal._first = chForA;
 

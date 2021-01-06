@@ -99,24 +99,21 @@ bool Forward_only_valueChanges::OnReceivedMessageFromProtocol(ProtocolId PId, Re
 		if (!IsChangedDataValue(Id, msgData))
 			return false;
 
-		if (GetProtocolAIds().contains(PId))
+		if (std::find(GetProtocolAIds().begin(), GetProtocolAIds().end(), PId) != GetProtocolAIds().end())
 		{
 			// Send to all typeB protocols
-			bool sendSuccess = true;
-			int typeBProtocolCount = GetProtocolBIds().size();
-			for (int i = 0; i < typeBProtocolCount; ++i)
-				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
+			auto sendSuccess = true;
+			for (auto const& protocolB : GetProtocolBIds())
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(protocolB, Id, msgData);
 
 			return sendSuccess;
-
 		}
-		if (GetProtocolBIds().contains(PId))
+		else if (std::find(GetProtocolBIds().begin(), GetProtocolBIds().end(), PId) != GetProtocolBIds().end())
 		{
 			// Send to all typeA protocols
-			bool sendSuccess = true;
-			int typeAProtocolCount = GetProtocolAIds().size();
-			for (int i = 0; i < typeAProtocolCount; ++i)
-				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], Id, msgData);
+			auto sendSuccess = true;
+			for (auto const& protocolA : GetProtocolAIds())
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(protocolA, Id, msgData);
 
 			return sendSuccess;
 		}

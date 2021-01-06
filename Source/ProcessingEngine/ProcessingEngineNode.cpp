@@ -423,6 +423,10 @@ void ProcessingEngineNode::handleMessage(const Message& msg)
 
 /**
  * Main thread loop reimplementation from JUCE thread.
+ * This implementation waits for InterprotocolMessages being posted to
+ * internal message queue, dequeues them and posts them as NodeCallbackMessage
+ * to JUCE's message queue to asynchronously be forwarded to subscribed listeners.
+ * Afterwards, the message is synchronously handed over to datahandling module.
  */
 void ProcessingEngineNode::run()
 {

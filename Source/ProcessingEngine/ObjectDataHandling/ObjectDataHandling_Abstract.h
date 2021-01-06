@@ -66,17 +66,17 @@ public:
 	virtual bool setStateXml(XmlElement* stateXml) override;
 
 protected:
-	const ProcessingEngineNode* GetParentNode();
-	void						SetMode(ObjectHandlingMode mode);
-	NodeId						GetParentNodeId();
-	const Array<ProtocolId>&	GetProtocolAIds();
-	const Array<ProtocolId>&	GetProtocolBIds();
+	const ProcessingEngineNode*		GetParentNode();
+	void							SetMode(ObjectHandlingMode mode);
+	NodeId							GetParentNodeId();
+	const std::vector<ProtocolId>&	GetProtocolAIds();
+	const std::vector<ProtocolId>&	GetProtocolBIds();
 
 private:
-	ProcessingEngineNode*	m_parentNode;			/**< The parent node object. Needed for e.g. triggering receive notifications. */
-	ObjectHandlingMode		m_mode;					/**< Mode identifier enabling resolving derived instance type. */
-	NodeId					m_parentNodeId;			/**< The id of the objects' parent node. */
-	Array<ProtocolId>		m_protocolAIds;			/**< Id list of protocols of type A that is active for the node and this handling module therefor. */
-	Array<ProtocolId>		m_protocolBIds;			/**< Id list of protocols of type B that is active for the node and this handling module therefor. */
+	ProcessingEngineNode*		m_parentNode;			/**< The parent node object. Needed for e.g. triggering receive notifications. */
+	ObjectHandlingMode			m_mode;					/**< Mode identifier enabling resolving derived instance type. */
+	NodeId						m_parentNodeId;			/**< The id of the objects' parent node. */
+	std::vector<ProtocolId>		m_protocolAIds;			/**< Id list of protocols of type A that is active for the node and this handling module therefor. */
+	std::vector<ProtocolId>		m_protocolBIds;			/**< Id list of protocols of type B that is active for the node and this handling module therefor. */
 
 };

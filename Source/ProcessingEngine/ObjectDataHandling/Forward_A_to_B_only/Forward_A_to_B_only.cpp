@@ -69,20 +69,19 @@ Forward_A_to_B_only::~Forward_A_to_B_only()
  */
 bool Forward_A_to_B_only::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
-	bool sendSuccess = false;
+	auto sendSuccess = false;
 
-	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	auto parentNode = ObjectDataHandling_Abstract::GetParentNode();
 	if (parentNode)
 	{
-		if (GetProtocolAIds().contains(PId))
+		if (std::find(GetProtocolAIds().begin(), GetProtocolAIds().end(), PId) != GetProtocolAIds().end())
 		{
+			// Send to all typeB protocols
 			sendSuccess = true;
-			// the message was received by a typeA protocol -> forward it to all typeB protocols
-			int typeBProtocolCount = GetProtocolBIds().size();
-			for (int i = 0; i < typeBProtocolCount; ++i)
-				sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
+			for (auto const& protocolB : GetProtocolBIds())
+				sendSuccess = sendSuccess && parentNode->SendMessageTo(protocolB, Id, msgData);
 		}
-		else if (GetProtocolBIds().contains(PId))
+		else if (std::find(GetProtocolBIds().begin(), GetProtocolBIds().end(), PId) != GetProtocolBIds().end())
 		{
 			sendSuccess = true;
 			// the message was received by a typeB protocol, which we do not want to forward in this OHM
