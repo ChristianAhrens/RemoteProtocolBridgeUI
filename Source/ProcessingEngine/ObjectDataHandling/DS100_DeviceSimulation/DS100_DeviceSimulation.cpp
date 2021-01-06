@@ -1,35 +1,11 @@
 /*
-===============================================================================
+  ==============================================================================
 
-Copyright (C) 2019 d&b audiotechnik GmbH & Co. KG. All Rights Reserved.
+	DS100_DeviceSimulation.cpp
+	Created: 4 Aug 2020 08:47:37am
+	Author:  Christian Ahrens
 
-This file is part of RemoteProtocolBridge.
-
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation
-and/or other materials provided with the distribution.
-
-3. The name of the author may not be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY d&b audiotechnik GmbH & Co. KG "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-===============================================================================
+  ==============================================================================
 */
 
 #include "DS100_DeviceSimulation.h"
@@ -51,8 +27,10 @@ DS100_DeviceSimulation::DS100_DeviceSimulation(ProcessingEngineNode* parentNode)
 {
 	SetMode(ObjectHandlingMode::OHM_DS100_DeviceSimulation);
 
+	ScopedLock l(m_currentValLock);
 	m_simulatedChCount = 0;
 	m_simulatedMappingsCount = 0;
+
 	m_refreshInterval = 50;
 	m_simulationBaseValue = 0.0f;
 }
@@ -62,6 +40,7 @@ DS100_DeviceSimulation::DS100_DeviceSimulation(ProcessingEngineNode* parentNode)
  */
 DS100_DeviceSimulation::~DS100_DeviceSimulation()
 {
+	stopTimerThread();
 }
 
 /**
@@ -78,24 +57,26 @@ bool DS100_DeviceSimulation::setStateXml(XmlElement* stateXml)
 	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(OHM_DS100_DeviceSimulation))
 		return false;
 
-	stopTimer();
+	stopTimerThread();
+	{
+		ScopedLock l(m_currentValLock);
 
-	auto simChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMCHCNT));
-	if (simChCntXmlElement)
-		m_simulatedChCount = simChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 64);
+		auto simChCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMCHCNT));
+		if (simChCntXmlElement)
+			m_simulatedChCount = simChCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 64);
 
-	auto simMapingsCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMMAPCNT));
-	if (simMapingsCntXmlElement)
-		m_simulatedMappingsCount = simMapingsCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 1);
+		auto simMapingsCntXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::SIMMAPCNT));
+		if (simMapingsCntXmlElement)
+			m_simulatedMappingsCount = simMapingsCntXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::COUNT), 1);
 
-	auto refreshIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::REFRESHINTERVAL));
-	if (refreshIntervalXmlElement)
-		m_refreshInterval = refreshIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), 50);
-
+		auto refreshIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::REFRESHINTERVAL));
+		if (refreshIntervalXmlElement)
+			m_refreshInterval = refreshIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), 50);
+	}
 	InitDataValues();
 
 	if (m_refreshInterval > 0)
-		startTimer(m_refreshInterval);
+		startTimerThread(m_refreshInterval, m_refreshInterval);
 
 	return true;
 }
@@ -110,7 +91,7 @@ bool DS100_DeviceSimulation::setStateXml(XmlElement* stateXml)
  */
 bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, RemoteObjectIdentifier Id, RemoteObjectMessageData& msgData)
 {
-	const ProcessingEngineNode* parentNode = ObjectDataHandling_Abstract::GetParentNode();
+	auto parentNode = ObjectDataHandling_Abstract::GetParentNode();
 	if (parentNode)
 	{
 		if (IsDataRequestPollMessage(Id, msgData))
@@ -121,24 +102,24 @@ bool DS100_DeviceSimulation::OnReceivedMessageFromProtocol(ProtocolId PId, Remot
 		{
 			SetDataValue(PId, Id, msgData);
 
-			if (GetProtocolAIds().contains(PId))
+			auto protocolAIter = std::find(GetProtocolAIds().begin(), GetProtocolAIds().end(), PId);
+			if (protocolAIter != GetProtocolAIds().end())
 			{
 				// Send to all typeB protocols
-				bool sendSuccess = true;
-				int typeBProtocolCount = GetProtocolBIds().size();
-				for (int i = 0; i < typeBProtocolCount; ++i)
-					sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolBIds()[i], Id, msgData);
+				auto sendSuccess = true;
+				for (auto const protocolB : GetProtocolBIds())
+					sendSuccess = sendSuccess && parentNode->SendMessageTo(protocolB, Id, msgData);
 
 				return sendSuccess;
 
 			}
-			if (GetProtocolBIds().contains(PId))
+			auto protocolBIter = std::find(GetProtocolBIds().begin(), GetProtocolBIds().end(), PId);
+			if (protocolBIter != GetProtocolBIds().end())
 			{
 				// Send to all typeA protocols
-				bool sendSuccess = true;
-				int typeAProtocolCount = GetProtocolAIds().size();
-				for (int i = 0; i < typeAProtocolCount; ++i)
-					sendSuccess = sendSuccess && parentNode->SendMessageTo(GetProtocolAIds()[i], Id, msgData);
+				auto sendSuccess = true;
+				for (auto const protocolA : GetProtocolAIds())
+					sendSuccess = sendSuccess && parentNode->SendMessageTo(protocolA, Id, msgData);
 
 				return sendSuccess;
 			}
@@ -237,6 +218,8 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	if (!parentNode)
 		return false;
 
+	ScopedLock l(m_currentValLock);
+	
 	if (m_currentValues.count(Id) == 0)
 		return false;
 	if (m_currentValues.at(Id).count(adressing) == 0)
@@ -291,14 +274,17 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 void DS100_DeviceSimulation::InitDataValues()
 {
 	RemoteObjectMessageData emptyReplyMessageData;
-	emptyReplyMessageData._payload = nullptr;
-	emptyReplyMessageData._payloadSize = 0;
-	emptyReplyMessageData._valCount = 0;
-	emptyReplyMessageData._valType = ROVT_NONE;
-	emptyReplyMessageData._addrVal._first = INVALID_ADDRESS_VALUE;
-	emptyReplyMessageData._addrVal._second = INVALID_ADDRESS_VALUE;
-	m_currentValues[ROI_HeartbeatPing].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
-	m_currentValues[ROI_HeartbeatPong].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
+	{
+		emptyReplyMessageData._payload = nullptr;
+		emptyReplyMessageData._payloadSize = 0;
+		emptyReplyMessageData._valCount = 0;
+		emptyReplyMessageData._valType = ROVT_NONE;
+		emptyReplyMessageData._addrVal._first = INVALID_ADDRESS_VALUE;
+		emptyReplyMessageData._addrVal._second = INVALID_ADDRESS_VALUE;
+		ScopedLock l(m_currentValLock);
+		m_currentValues[ROI_HeartbeatPing].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
+		m_currentValues[ROI_HeartbeatPong].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
+	}
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
 	{
@@ -357,6 +343,7 @@ void DS100_DeviceSimulation::InitDataValues()
 			}
 		}
 
+		ScopedLock l(m_currentValLock);
 		m_currentValues.insert(std::make_pair(roi, remoteAdressValueMap));
 	}
 
@@ -377,6 +364,8 @@ void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObje
 	ignoreUnused(PId);
 
 	auto newMsgData = msgData;
+
+	ScopedLock l(m_currentValLock);
 
 	if (m_currentValues.count(Id) > 0)
 	{
@@ -399,13 +388,18 @@ void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObje
 /**
  * Reimplemented from Timer to tick 
  */
-void DS100_DeviceSimulation::timerCallback()
+void DS100_DeviceSimulation::timerThreadCallback()
 {
-	m_simulationBaseValue += 0.1f;
+	{
+		ScopedLock l(m_currentValLock);
+		m_simulationBaseValue += 0.1f;
+	}
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
 	{
 		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
+
+		ScopedLock l(m_currentValLock);
 		auto & remoteAdressValueMap = m_currentValues.at(roi);
 
 		for (MappingId mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
