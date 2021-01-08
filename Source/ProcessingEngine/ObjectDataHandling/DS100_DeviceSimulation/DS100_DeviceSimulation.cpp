@@ -295,8 +295,8 @@ void DS100_DeviceSimulation::InitDataValues()
 		{
 			for (SourceId channel = 1; channel <= m_simulatedChCount; channel++)
 			{
-				RemoteObjectAddressing adressing(channel, mapping);
 				auto remoteValue = RemoteObjectMessageData{};
+				remoteValue._addrVal = RemoteObjectAddressing(channel, mapping);
 
 				switch (roi)
 				{
@@ -339,7 +339,7 @@ void DS100_DeviceSimulation::InitDataValues()
 					break;
 				}
 
-				remoteAdressValueMap.insert(std::make_pair(adressing, remoteValue));
+				remoteAdressValueMap.insert(std::make_pair(remoteValue._addrVal, remoteValue));
 			}
 		}
 
@@ -397,7 +397,7 @@ void DS100_DeviceSimulation::timerThreadCallback()
 
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
 	{
-		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
+		auto roi = static_cast<RemoteObjectIdentifier>(i);
 
 		ScopedLock l(m_currentValLock);
 		auto & remoteAdressValueMap = m_currentValues.at(roi);
@@ -409,37 +409,39 @@ void DS100_DeviceSimulation::timerThreadCallback()
 				RemoteObjectAddressing adressing(channel, mapping);
 				auto& remoteValue = remoteAdressValueMap.at(adressing);
 
-				float val1 = (sin(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
-				float val2 = (cos(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
+				auto val1 = (sin(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
+				auto val2 = (cos(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
+
+				jassert(remoteValue._payload != nullptr || remoteValue._valCount == 0);
 
 				switch (remoteValue._valType)
 				{
 				case ROVT_FLOAT:
-					if (remoteValue._valCount == 1)
+					if ((remoteValue._valCount == 1) && (remoteValue._payloadSize == sizeof(float)))
 					{
 						if (roi == ROI_MatrixInput_ReverbSendGain)
-							val1 = (val1 * 100.0f) - 100.0f;
-
+							val1 = (val1 * 144.0f) - 120.0f;
+						
 						if (roi == ROI_CoordinateMapping_SourcePosition_Y)
 							static_cast<float*>(remoteValue._payload)[0] = val2;
 						else
 							static_cast<float*>(remoteValue._payload)[0] = val1;
 					}
-					else if (remoteValue._valCount == 2)
+					else if ((remoteValue._valCount == 2) && (remoteValue._payloadSize == 2 * sizeof(float)))
 					{
 						static_cast<float*>(remoteValue._payload)[0] = val1;
 						static_cast<float*>(remoteValue._payload)[1] = val2;
 					}
 					break;
 				case ROVT_INT:
-					if (remoteValue._valCount == 1)
+					if ((remoteValue._valCount == 1) && (remoteValue._payloadSize == sizeof(int)))
 					{
 						if (roi == ROI_Positioning_SourceDelayMode)
 							val1 = val1 * 3.0f;
 						
 						static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1);
 					}
-					else if (remoteValue._valCount == 2)
+					else if ((remoteValue._valCount == 2) && (remoteValue._payloadSize == 2 * sizeof(int)))
 					{
 						static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1);
 						static_cast<int*>(remoteValue._payload)[1] = static_cast<int>(val2);
