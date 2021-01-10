@@ -72,6 +72,8 @@ bool DS100_DeviceSimulation::setStateXml(XmlElement* stateXml)
 		auto refreshIntervalXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::REFRESHINTERVAL));
 		if (refreshIntervalXmlElement)
 			m_refreshInterval = refreshIntervalXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::INTERVAL), 50);
+
+		m_simulatedRemoteObjects = std::vector<RemoteObjectIdentifier>{ ROI_CoordinateMapping_SourcePosition_XY, ROI_CoordinateMapping_SourcePosition_X, ROI_CoordinateMapping_SourcePosition_Y, ROI_Positioning_SourceSpread, ROI_Positioning_SourceDelayMode, ROI_MatrixInput_ReverbSendGain};
 	}
 	InitDataValues();
 
@@ -174,7 +176,7 @@ bool DS100_DeviceSimulation::IsDataRequestPollMessage(const RemoteObjectIdentifi
 /**
  * Helper method to create a string representation for a given message id/data pair
  */
-void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV)
+void DS100_DeviceSimulation::PrintMessageSendInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV)
 {
 	switch (idDataKV.first)
 	{
@@ -185,10 +187,10 @@ void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdenti
 		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " XY position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ", " + String(static_cast<float*>(idDataKV.second._payload)[1]) + ").");
 		break;
 	case ROI_CoordinateMapping_SourcePosition_X:
-		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " X position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " X position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	case ROI_CoordinateMapping_SourcePosition_Y:
-		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " Y position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
+		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " Y position reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	case ROI_Positioning_SourceSpread:
 		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " spread reply (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
@@ -198,6 +200,39 @@ void DS100_DeviceSimulation::PrintMessageInfo(const std::pair<RemoteObjectIdenti
 		break;
 	case ROI_Positioning_SourceDelayMode:
 		DBG("Sending Ch" + String(idDataKV.second._addrVal._first) + " delaymode reply (" + String(static_cast<int*>(idDataKV.second._payload)[0]) + ").");
+		break;
+	default:
+		return;
+	}
+}
+
+/**
+ * Helper method to create a string representation for a given message id/data pair
+ */
+void DS100_DeviceSimulation::PrintDataUpdateInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV)
+{
+	switch (idDataKV.first)
+	{
+	case ROI_HeartbeatPong:
+		DBG("Updating Pong value.");
+		break;
+	case ROI_CoordinateMapping_SourcePosition_XY:
+		DBG("Updating Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " XY position value (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ", " + String(static_cast<float*>(idDataKV.second._payload)[1]) + ").");
+		break;
+	case ROI_CoordinateMapping_SourcePosition_X:
+		DBG("Updating Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " X position value (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
+		break;
+	case ROI_CoordinateMapping_SourcePosition_Y:
+		DBG("Updating Ch" + String(idDataKV.second._addrVal._first) + "Rec" + String(idDataKV.second._addrVal._second) + " Y position value (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
+		break;
+	case ROI_Positioning_SourceSpread:
+		DBG("Updating Ch" + String(idDataKV.second._addrVal._first) + " spread value (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
+		break;
+	case ROI_MatrixInput_ReverbSendGain:
+		DBG("Updating Ch" + String(idDataKV.second._addrVal._first) + " EnSpace gain value (" + String(static_cast<float*>(idDataKV.second._payload)[0]) + ").");
+		break;
+	case ROI_Positioning_SourceDelayMode:
+		DBG("Updating Ch" + String(idDataKV.second._addrVal._first) + " delaymode value (" + String(static_cast<int*>(idDataKV.second._payload)[0]) + ").");
 		break;
 	default:
 		return;
@@ -258,7 +293,7 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	}
 
 #ifdef DEBUG
-	PrintMessageInfo(dataReply);
+	PrintMessageSendInfo(dataReply);
 #endif
 
 	return parentNode->SendMessageTo(PId, dataReply.first, dataReply.second);
@@ -286,14 +321,29 @@ void DS100_DeviceSimulation::InitDataValues()
 		m_currentValues[ROI_HeartbeatPong].insert(std::make_pair(emptyReplyMessageData._addrVal, emptyReplyMessageData));
 	}
 
-	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
+	for (auto const& roi : m_simulatedRemoteObjects)
 	{
-		RemoteObjectIdentifier roi = static_cast<RemoteObjectIdentifier>(i);
-		auto remoteAdressValueMap = std::map<RemoteObjectAddressing, RemoteObjectMessageData>{};
+		auto remoteAddressValueMap = std::map<RemoteObjectAddressing, RemoteObjectMessageData>{};
 
-		for (MappingId mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
+		MappingId mapping = 1;
+		auto mappingsCount = m_simulatedMappingsCount;
+		if (!ProcessingEngineConfig::IsRecordAddressingObject(roi))
 		{
-			for (SourceId channel = 1; channel <= m_simulatedChCount; channel++)
+			mapping = INVALID_ADDRESS_VALUE;
+			mappingsCount = 0;
+		}
+
+		for (; mapping <= mappingsCount && mapping != 0; mapping++)
+		{
+			SourceId channel = 1;
+			auto channelCount = m_simulatedChCount;
+			if (!ProcessingEngineConfig::IsChannelAddressingObject(roi))
+			{
+				channel = INVALID_ADDRESS_VALUE;
+				channelCount = 0;
+			}
+
+			for (; channel <= channelCount && channel != 0; channel++)
 			{
 				auto remoteValue = RemoteObjectMessageData{};
 				remoteValue._addrVal = RemoteObjectAddressing(channel, mapping);
@@ -339,12 +389,12 @@ void DS100_DeviceSimulation::InitDataValues()
 					break;
 				}
 
-				remoteAdressValueMap.insert(std::make_pair(remoteValue._addrVal, remoteValue));
+				remoteAddressValueMap.insert(std::make_pair(remoteValue._addrVal, remoteValue));
 			}
 		}
 
 		ScopedLock l(m_currentValLock);
-		m_currentValues.insert(std::make_pair(roi, remoteAdressValueMap));
+		m_currentValues.insert(std::make_pair(roi, remoteAddressValueMap));
 	}
 
 	return;
@@ -391,24 +441,43 @@ void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObje
 void DS100_DeviceSimulation::timerThreadCallback()
 {
 	{
+		// tick our simulation base value once to be ready to generate next set of simulation values
 		ScopedLock l(m_currentValLock);
 		m_simulationBaseValue += 0.1f;
 	}
 
-	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; i++)
+	// iterate through all simulation relevant remote object ids to update simulation value updates
+	for (auto const& roi : m_simulatedRemoteObjects)
 	{
-		auto roi = static_cast<RemoteObjectIdentifier>(i);
-
 		ScopedLock l(m_currentValLock);
-		auto & remoteAdressValueMap = m_currentValues.at(roi);
+		jassert(m_currentValues.count(roi) > 0);
+		auto& remoteAddressValueMap = m_currentValues.at(roi);
 
-		for (MappingId mapping = 1; mapping <= m_simulatedMappingsCount; mapping++)
+		MappingId mapping = 1;
+		auto mappingsCount = m_simulatedMappingsCount;
+		if (!ProcessingEngineConfig::IsRecordAddressingObject(roi))
 		{
-			for (SourceId channel = 1; channel <= m_simulatedChCount; channel++)
-			{
-				RemoteObjectAddressing adressing(channel, mapping);
-				auto& remoteValue = remoteAdressValueMap.at(adressing);
+			mapping = INVALID_ADDRESS_VALUE;
+			mappingsCount = 0;
+		}
 
+		for (; mapping <= mappingsCount && mapping != 0; mapping++)
+		{
+			SourceId channel = 1;
+			auto channelCount = m_simulatedChCount;
+			if (!ProcessingEngineConfig::IsChannelAddressingObject(roi))
+			{
+				channel = INVALID_ADDRESS_VALUE;
+				channelCount = 0;
+			}
+
+			for (; channel <= channelCount && channel != 0; channel++)
+			{
+				RemoteObjectAddressing addressing(channel, mapping);
+				jassert(remoteAddressValueMap.count(addressing) > 0);
+				auto& remoteValue = remoteAddressValueMap.at(addressing);
+
+				// update our two oscilating values
 				auto val1 = (sin(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
 				auto val2 = (cos(m_simulationBaseValue + (channel * 0.1f)) + 1.0f) * 0.5f;
 
@@ -419,10 +488,9 @@ void DS100_DeviceSimulation::timerThreadCallback()
 				case ROVT_FLOAT:
 					if ((remoteValue._valCount == 1) && (remoteValue._payloadSize == sizeof(float)))
 					{
-						if (roi == ROI_MatrixInput_ReverbSendGain)
-							val1 = (val1 * 144.0f) - 120.0f;
-						
-						if (roi == ROI_CoordinateMapping_SourcePosition_Y)
+						if (roi == ROI_MatrixInput_ReverbSendGain) // scale 0...1 value to gain specific -120...+24 dB range
+							static_cast<float*>(remoteValue._payload)[0] = (val1 * 144.0f) - 120.0f;
+						else if (roi == ROI_CoordinateMapping_SourcePosition_Y) // use second value (cosinus) for y, to get a circle movement when visualizing single x and y values on a 2d surface ui
 							static_cast<float*>(remoteValue._payload)[0] = val2;
 						else
 							static_cast<float*>(remoteValue._payload)[0] = val1;
@@ -437,9 +505,9 @@ void DS100_DeviceSimulation::timerThreadCallback()
 					if ((remoteValue._valCount == 1) && (remoteValue._payloadSize == sizeof(int)))
 					{
 						if (roi == ROI_Positioning_SourceDelayMode)
-							val1 = val1 * 3.0f;
-						
-						static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1);
+							static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1 * 3.0f);
+						else
+							static_cast<int*>(remoteValue._payload)[0] = static_cast<int>(val1);
 					}
 					else if ((remoteValue._valCount == 2) && (remoteValue._payloadSize == 2 * sizeof(int)))
 					{
@@ -452,6 +520,10 @@ void DS100_DeviceSimulation::timerThreadCallback()
 				default:
 					break;
 				}
+
+#ifdef DEBUG
+				PrintDataUpdateInfo(std::make_pair(roi, remoteValue));
+#endif
 			}
 		}
 	}

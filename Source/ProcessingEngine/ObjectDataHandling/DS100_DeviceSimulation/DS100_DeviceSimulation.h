@@ -45,15 +45,17 @@ private:
 	void InitDataValues();
 	void SetDataValue(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
 
-	void PrintMessageInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
+	void PrintMessageSendInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
+	void PrintDataUpdateInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
 	
-	CriticalSection			m_currentValLock;			/**< For securing access to current values map and other member variables. */
+	CriticalSection						m_currentValLock;			/**< For securing access to current values map and other member variables. */
 	std::map<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>	m_currentValues;	/**< Map of current value data to use to compare to incoming data regarding value changes. */
-	int						m_simulatedChCount;			/**< Count of channels that are currently simulated. */
-	int						m_simulatedMappingsCount;	/**< Count of mapping areas (mappings) that are currently simulated. */
-	int						m_refreshInterval;			/**< Refresh interval to update internal simulation. */
+	std::vector<RemoteObjectIdentifier>	m_simulatedRemoteObjects;	/**< The remote objects that are simulated. */
+	int									m_simulatedChCount;			/**< Count of channels that are currently simulated. */
+	int									m_simulatedMappingsCount;	/**< Count of mapping areas (mappings) that are currently simulated. */
+	int									m_refreshInterval;			/**< Refresh interval to update internal simulation. */
 
-	float					m_simulationBaseValue;		/**< Rolling value that is used as base for simulated object values. */
+	float								m_simulationBaseValue;		/**< Rolling value that is used as base for simulated object values. */
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DS100_DeviceSimulation)
 };
