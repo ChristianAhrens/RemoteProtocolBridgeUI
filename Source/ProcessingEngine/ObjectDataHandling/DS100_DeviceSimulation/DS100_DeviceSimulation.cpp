@@ -266,12 +266,13 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	{
 	case ROI_HeartbeatPing:
 		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_NONE);
+		jassert(dataReply.second._addrVal == adressing);
 		dataReply.first = ROI_HeartbeatPong;
 		break;
 	case ROI_CoordinateMapping_SourcePosition_XY:
 		jassert(m_currentValues.at(Id).at(adressing)._valCount == 2);
 		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_FLOAT);
-		dataReply.second._addrVal = adressing;
+		jassert(dataReply.second._addrVal == adressing);
 		break;
 	case ROI_CoordinateMapping_SourcePosition_X:
 	case ROI_CoordinateMapping_SourcePosition_Y:
@@ -279,12 +280,12 @@ bool DS100_DeviceSimulation::ReplyToDataRequest(const ProtocolId PId, const Remo
 	case ROI_MatrixInput_ReverbSendGain:
 		jassert(m_currentValues.at(Id).at(adressing)._valCount == 1);
 		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_FLOAT);
-		dataReply.second._addrVal = adressing;
+		jassert(dataReply.second._addrVal == adressing);
 		break;
 	case ROI_Positioning_SourceDelayMode:
 		jassert(m_currentValues.at(Id).at(adressing)._valCount == 1);
 		jassert(m_currentValues.at(Id).at(adressing)._valType == ROVT_INT);
-		dataReply.second._addrVal = adressing;
+		jassert(dataReply.second._addrVal == adressing);
 		break;
 	case ROI_HeartbeatPong:
 	case ROI_Invalid:
@@ -312,6 +313,7 @@ void DS100_DeviceSimulation::InitDataValues()
 	{
 		emptyReplyMessageData._payload = nullptr;
 		emptyReplyMessageData._payloadSize = 0;
+		emptyReplyMessageData._payloadOwned = false;
 		emptyReplyMessageData._valCount = 0;
 		emptyReplyMessageData._valType = ROVT_NONE;
 		emptyReplyMessageData._addrVal._first = INVALID_ADDRESS_VALUE;
@@ -345,8 +347,15 @@ void DS100_DeviceSimulation::InitDataValues()
 
 			for (; channel <= channelCount && channel != 0; channel++)
 			{
-				auto remoteValue = RemoteObjectMessageData{};
-				remoteValue._addrVal = RemoteObjectAddressing(channel, mapping);
+				// add the empty but already addressed remote data entry to map
+				auto remoteData = RemoteObjectMessageData();
+				remoteData._addrVal = RemoteObjectAddressing(channel, mapping);
+				remoteAddressValueMap.insert(std::make_pair(remoteData._addrVal, remoteData));
+
+				// Take a reference to the entry for further data generation.
+				// This avoids a local object with payload memory allocated to go out of scope 
+				// and due to _payloadOwned==true auto delete the memory. (See RemoteObjectMessageData destructor for details)
+				auto& remoteValue = remoteAddressValueMap.at(remoteData._addrVal);
 
 				switch (roi)
 				{
@@ -388,8 +397,6 @@ void DS100_DeviceSimulation::InitDataValues()
 					remoteValue._payloadSize = 0;
 					break;
 				}
-
-				remoteAddressValueMap.insert(std::make_pair(remoteValue._addrVal, remoteValue));
 			}
 		}
 
@@ -419,26 +426,25 @@ void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObje
 
 	if (m_currentValues.count(Id) > 0)
 	{
-		if (m_currentValues.at(Id).count(msgData._addrVal) > 0)
-		{
-			m_currentValues.at(Id).at(msgData._addrVal) = newMsgData;
-		}
-		else
-		{
-			m_currentValues.at(Id).insert(std::make_pair(msgData._addrVal, newMsgData));
-		}
+		// if the data entry does not exist, insert the incoming data as placeholder
+		if (m_currentValues.at(Id).count(msgData._addrVal) <= 0)
+			m_currentValues.at(Id).insert(std::make_pair(msgData._addrVal, msgData));
+
+		// if the entry existed or we just inserted the incoming data, perform a fully copy incl. payload anyways
+		m_currentValues.at(Id).at(msgData._addrVal).payloadCopy(newMsgData);
 	}
 	else
 	{
 		m_currentValues.insert(std::pair<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>(Id, std::map<RemoteObjectAddressing, RemoteObjectMessageData>()));
 		m_currentValues.at(Id).insert(std::make_pair(msgData._addrVal, newMsgData));
+		m_currentValues.at(Id).at(msgData._addrVal).payloadCopy(newMsgData);
 	}
 }
 
 /**
- * Reimplemented from Timer to tick 
+ * Method to be called cyclically to update the simulated values. 
  */
-void DS100_DeviceSimulation::timerThreadCallback()
+void DS100_DeviceSimulation::UpdateDataValues()
 {
 	{
 		// tick our simulation base value once to be ready to generate next set of simulation values
@@ -527,4 +533,12 @@ void DS100_DeviceSimulation::timerThreadCallback()
 			}
 		}
 	}
+}
+
+/**
+ * Reimplemented from Timer to tick
+ */
+void DS100_DeviceSimulation::timerThreadCallback()
+{
+	UpdateDataValues();
 }

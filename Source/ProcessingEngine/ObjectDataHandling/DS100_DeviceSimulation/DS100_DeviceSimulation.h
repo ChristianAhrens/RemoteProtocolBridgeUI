@@ -44,6 +44,7 @@ private:
 
 	void InitDataValues();
 	void SetDataValue(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
+	void UpdateDataValues();
 
 	void PrintMessageSendInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
 	void PrintDataUpdateInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
