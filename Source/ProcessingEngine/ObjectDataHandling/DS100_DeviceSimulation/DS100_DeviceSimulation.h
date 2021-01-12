@@ -46,8 +46,7 @@ private:
 	void SetDataValue(const ProtocolId PId, const RemoteObjectIdentifier Id, const RemoteObjectMessageData& msgData);
 	void UpdateDataValues();
 
-	void PrintMessageSendInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
-	void PrintDataUpdateInfo(const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
+	void PrintDataInfo(const String& actionName, const std::pair<RemoteObjectIdentifier, RemoteObjectMessageData>& idDataKV);
 	
 	CriticalSection						m_currentValLock;			/**< For securing access to current values map and other member variables. */
 	std::map<RemoteObjectIdentifier, std::map<RemoteObjectAddressing, RemoteObjectMessageData>>	m_currentValues;	/**< Map of current value data to use to compare to incoming data regarding value changes. */
