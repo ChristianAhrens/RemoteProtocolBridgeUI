@@ -422,6 +422,71 @@ void DS100_DeviceSimulation::SetDataValue(const ProtocolId PId, const RemoteObje
 
 	ScopedLock l(m_currentValLock);
 
+	// special handling for some remote objects - e.g. incoming x value shall also be inserted as new value to combined xy remote object
+	switch (Id)
+	{
+	case ROI_CoordinateMapping_SourcePosition_X:
+		// we require the xy object to already be present in current values for the ch/rec addressing to be able to set the single x value
+		if (m_currentValues.count(ROI_CoordinateMapping_SourcePosition_XY) > 0 
+			&& m_currentValues.at(ROI_CoordinateMapping_SourcePosition_XY).count(msgData._addrVal) > 0)
+		{
+			// check data sanity before accessing the payload and copying the x value to xy
+			auto& xyData = m_currentValues.at(ROI_CoordinateMapping_SourcePosition_XY).at(msgData._addrVal);
+			if ((xyData._valType == ROVT_FLOAT && msgData._valType == ROVT_FLOAT)
+				&& (xyData._valCount == 2 && msgData._valCount == 1)
+				&& (xyData._payloadSize == 2 *sizeof(float) && msgData._payloadSize == sizeof(float)))
+			{
+				static_cast<float*>(xyData._payload)[0] = static_cast<float*>(msgData._payload)[0];
+			}
+		}
+		break;
+	case ROI_CoordinateMapping_SourcePosition_Y:
+		// we require the xy object to already be present in current values for the ch/rec addressing to be able to set the single x value
+		if (m_currentValues.count(ROI_CoordinateMapping_SourcePosition_XY) > 0
+			&& m_currentValues.at(ROI_CoordinateMapping_SourcePosition_XY).count(msgData._addrVal) > 0)
+		{
+			// check data sanity before accessing the payload and copying the x value to xy
+			auto& xyData = m_currentValues.at(ROI_CoordinateMapping_SourcePosition_XY).at(msgData._addrVal);
+			if ((xyData._valType == ROVT_FLOAT && msgData._valType == ROVT_FLOAT)
+				&& (xyData._valCount == 2 && msgData._valCount == 1)
+				&& (xyData._payloadSize == 2 * sizeof(float) && msgData._payloadSize == sizeof(float)))
+			{
+				static_cast<float*>(xyData._payload)[1] = static_cast<float*>(msgData._payload)[0];
+			}
+		}
+		break;
+	case ROI_CoordinateMapping_SourcePosition_XY:
+		// we require both the x and y object to already be present in current values for the ch/rec addressing to be able to individually set the xy object's values
+		if (m_currentValues.count(ROI_CoordinateMapping_SourcePosition_X) > 0
+			&& m_currentValues.at(ROI_CoordinateMapping_SourcePosition_X).count(msgData._addrVal) > 0)
+		{
+			// check data sanity before accessing the payload and copying the value
+			auto& xData = m_currentValues.at(ROI_CoordinateMapping_SourcePosition_X).at(msgData._addrVal);
+			if ((xData._valType == ROVT_FLOAT && msgData._valType == ROVT_FLOAT)
+				&& (xData._valCount == 1 && msgData._valCount == 2)
+				&& (xData._payloadSize == sizeof(float) && msgData._payloadSize == 2 * sizeof(float)))
+			{
+				static_cast<float*>(xData._payload)[0] = static_cast<float*>(msgData._payload)[0];
+			}
+		}
+		if (m_currentValues.count(ROI_CoordinateMapping_SourcePosition_Y) > 0
+			&& m_currentValues.at(ROI_CoordinateMapping_SourcePosition_Y).count(msgData._addrVal) > 0)
+		{
+			// check data sanity before accessing the payload and copying the value
+			auto& yData = m_currentValues.at(ROI_CoordinateMapping_SourcePosition_Y).at(msgData._addrVal);
+			if ((yData._valType == ROVT_FLOAT && msgData._valType == ROVT_FLOAT)
+				&& (yData._valCount == 1 && msgData._valCount == 2)
+				&& (yData._payloadSize == sizeof(float) && msgData._payloadSize == 2 * sizeof(float)))
+			{
+				static_cast<float*>(yData._payload)[0] = static_cast<float*>(msgData._payload)[1];
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+	// set the data for the actual incoming remote object
 	if (m_currentValues.count(Id) > 0)
 	{
 		// if the data entry does not exist, insert the incoming data as placeholder
