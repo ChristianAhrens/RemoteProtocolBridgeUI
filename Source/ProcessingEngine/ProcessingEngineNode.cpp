@@ -220,8 +220,6 @@ bool ProcessingEngineNode::setStateXml(XmlElement* stateXml)
 		auto hostPortXmlElement = protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
 		if (hostPortXmlElement)
 			hostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
-		else
-			retVal = false;
 
 		auto protocolExistsAsA = (m_typeAProtocols.count(protocolId) != 0);
 		auto protocolExistsAsB = (m_typeBProtocols.count(protocolId) != 0);
