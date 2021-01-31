@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="RemoteProtocolBridgeUI" projectType="guiapp" version="0.1.0"
+<JUCERPROJECT name="RemoteProtocolBridgeUI" projectType="guiapp" version="0.1.1"
               bundleIdentifier="com.ChristianAhrens.RemoteProtocolBridgeUI"
               id="BLZw0l" jucerFormatVersion="1" headerPath="../../submodules/RemoteProtocolBridgeCore/Source/&#10;../../submodules/JUCE-AppBasics/Source/&#10;../../submodules/Servus/">
   <MAINGROUP id="NrfEgH" name="RemoteProtocolBridgeUI">
