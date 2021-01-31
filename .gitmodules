@@ -4,3 +4,6 @@
 [submodule "submodules/Servus"]
 	path = submodules/Servus
 	url = https://github.com/ChristianAhrens/Servus
+[submodule "submodules/RemoteProtocolBridgeCore"]
+	path = submodules/RemoteProtocolBridgeCore
+	url = https://github.com/ChristianAhrens/RemoteProtocolBridgeCore

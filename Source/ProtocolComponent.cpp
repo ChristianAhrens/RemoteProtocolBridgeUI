@@ -38,6 +38,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigComponents/ProtocolConfigComponents/ProtocolConfigComponents.h"
 #include "ProcessingEngine/ProcessingEngineConfig.h"
 
+#include <Image_utils.h>
+
 
 // **************************************************************************************
 //    class ProtocolGroupComponent
@@ -52,29 +54,22 @@ ProtocolGroupComponent::ProtocolGroupComponent(const ProtocolRole& role)
 	m_ProtocolRole = role;
 
 	/******************************************************/
-	m_AddProtocolButton = std::make_unique<ImageButton>();
+	m_AddProtocolButton = std::make_unique<DrawableButton>(String(), DrawableButton::ButtonStyle::ImageFitted);
 	m_AddProtocolButton->addListener(this);
 	addAndMakeVisible(m_AddProtocolButton.get());
-	Image AddNormalImage = ImageCache::getFromMemory(BinaryData::AddNormalImage_png, BinaryData::AddNormalImage_pngSize);
-	Image AddOverImage = ImageCache::getFromMemory(BinaryData::AddOverImage_png, BinaryData::AddOverImage_pngSize);
-	Image AddDownImage = ImageCache::getFromMemory(BinaryData::AddDownImage_png, BinaryData::AddDownImage_pngSize);
-	m_AddProtocolButton->setImages(false, true, true,
-		AddNormalImage, 1.0, Colours::transparentBlack,
-		AddOverImage, 1.0, Colours::transparentBlack,
-		AddDownImage, 1.0, Colours::transparentBlack);
+    
+    std::unique_ptr<juce::Drawable> NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage;
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::add_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    // set the images to button
+    m_AddProtocolButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 
-	m_RemoveProtocolButton = std::make_unique<ImageButton>();
+	m_RemoveProtocolButton = std::make_unique<DrawableButton>(String(), DrawableButton::ButtonStyle::ImageFitted);
 	m_RemoveProtocolButton->addListener(this);
 	addAndMakeVisible(m_RemoveProtocolButton.get());
-	Image RemoveNormalImage = ImageCache::getFromMemory(BinaryData::RemoveNormalImage_png, BinaryData::RemoveNormalImage_pngSize);
-	Image RemoveOverImage = ImageCache::getFromMemory(BinaryData::RemoveOverImage_png, BinaryData::RemoveOverImage_pngSize);
-	Image RemoveDownImage = ImageCache::getFromMemory(BinaryData::RemoveDownImage_png, BinaryData::RemoveDownImage_pngSize);
-	m_RemoveProtocolButton->setImages(false, true, true,
-		RemoveNormalImage, 1.0, Colours::transparentBlack,
-		RemoveOverImage, 1.0, Colours::transparentBlack,
-		RemoveDownImage, 1.0, Colours::transparentBlack);
-
-	/******************************************************/
+    
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::remove_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    // set the images to button
+    m_RemoveProtocolButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 }
 
 /**
@@ -106,11 +101,11 @@ void ProtocolGroupComponent::resized()
 	int yPositionAddRemButtons = getHeight() - UIS_ElmSize - UIS_Margin_s;
 	int xPositionAddRemButtons = getWidth() - UIS_ElmSize - UIS_Margin_s;
 	if (m_AddProtocolButton)
-		m_AddProtocolButton->setBounds(xPositionAddRemButtons, yPositionAddRemButtons, UIS_ElmSize - UIS_Margin_s, UIS_ElmSize - UIS_Margin_s);
+		m_AddProtocolButton->setBounds(xPositionAddRemButtons, yPositionAddRemButtons, UIS_ElmSize, UIS_ElmSize);
 
 	xPositionAddRemButtons -= UIS_ElmSize;
 	if (m_RemoveProtocolButton)
-		m_RemoveProtocolButton->setBounds(xPositionAddRemButtons, yPositionAddRemButtons, UIS_ElmSize - UIS_Margin_s, UIS_ElmSize - UIS_Margin_s);
+		m_RemoveProtocolButton->setBounds(xPositionAddRemButtons, yPositionAddRemButtons, UIS_ElmSize, UIS_ElmSize);
 
 	/*Dynamically sized elements*/
 	int yOffset = UIS_Margin_m;

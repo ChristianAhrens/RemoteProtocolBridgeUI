@@ -37,7 +37,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../MainRemoteProtocolBridgeComponent.h"
 #include "../../NodeComponent.h"
 #include "../../ProtocolComponent.h"
-#include "../../RemoteProtocolBridgeCommon.h"
+#include <RemoteProtocolBridgeCommon.h>
 
 //==============================================================================
 // Class GlobalConfigComponent

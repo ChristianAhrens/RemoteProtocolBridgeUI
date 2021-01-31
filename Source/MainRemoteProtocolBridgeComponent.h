@@ -80,8 +80,8 @@ private:
     //==============================================================================
 	std::map<NodeId, std::unique_ptr<NodeComponent>>	m_NodeBoxes;				/**< Map holding node components for all active bridging nodes. */
 
-	std::unique_ptr<ImageButton>						m_AddNodeButton;			/**< Button to add a node. */
-	std::unique_ptr<ImageButton>						m_RemoveNodeButton;			/**< Button to remove a node. */
+	std::unique_ptr<DrawableButton>						m_AddNodeButton;			/**< Button to add a node. */
+	std::unique_ptr<DrawableButton>						m_RemoveNodeButton;			/**< Button to remove a node. */
 
 	std::unique_ptr<TextButton>							m_TriggerOpenConfigButton;	/**< Button to trigger opening configuration. */
 	std::unique_ptr<TextButton>							m_TriggerOpenLoggingButton;	/**< Button to trigger opening logging. */

@@ -36,9 +36,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <JuceHeader.h>
 
-#include "../../RemoteProtocolBridgeCommon.h"
-#include "../../ProcessingEngine/ProcessingEngine.h"
-#include "../../ProcessingEngine/ProcessingEngineConfig.h"
+#include <RemoteProtocolBridgeCommon.h>
+#include <ProcessingEngine/ProcessingEngine.h>
+#include <ProcessingEngine/ProcessingEngineConfig.h>
 
 // Fwd. Declarations
 class ProtocolComponent;

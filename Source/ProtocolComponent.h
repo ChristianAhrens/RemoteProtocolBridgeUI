@@ -80,8 +80,8 @@ private:
 	ProtocolRole												m_ProtocolRole;
 	Array<ProtocolId>											m_ProtocolIds;			/**< The protocol id of this protocol config component. */
     
-	std::unique_ptr<ImageButton>								m_AddProtocolButton;	/**< Button to trigger adding another protocol to this group of protocols. */
-	std::unique_ptr<ImageButton>								m_RemoveProtocolButton;	/**< Button to trigger removing the last protocol of this group of protocols. */
+	std::unique_ptr<DrawableButton>								m_AddProtocolButton;	/**< Button to trigger adding another protocol to this group of protocols. */
+	std::unique_ptr<DrawableButton>								m_RemoveProtocolButton;	/**< Button to trigger removing the last protocol of this group of protocols. */
 
 	std::map<ProtocolId, std::unique_ptr<ProtocolComponent>>	m_ProtocolComponents;	/**< Map of protocols in this group of protocols. */
 

@@ -40,6 +40,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigComponents/GlobalConfigComponents/GlobalConfigComponents.h"
 #include "ProcessingEngine/ProcessingEngineConfig.h"
 
+#include <Image_utils.h>
+
 
 // **************************************************************************************
 //    class MainRemoteProtocolBridgeComponent
@@ -60,27 +62,22 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 	m_LoggingDialog = 0;
 
 	/******************************************************/
-	m_AddNodeButton = std::make_unique<ImageButton>();
+    m_AddNodeButton = std::make_unique<DrawableButton>(String(), DrawableButton::ButtonStyle::ImageFitted);
 	m_AddNodeButton->addListener(this);
 	addAndMakeVisible(m_AddNodeButton.get());
-	Image AddNormalImage = ImageCache::getFromMemory(BinaryData::AddNormalImage_png, BinaryData::AddNormalImage_pngSize);
-	Image AddOverImage = ImageCache::getFromMemory(BinaryData::AddOverImage_png, BinaryData::AddOverImage_pngSize);
-	Image AddDownImage = ImageCache::getFromMemory(BinaryData::AddDownImage_png, BinaryData::AddDownImage_pngSize);
-	m_AddNodeButton->setImages(false, true, true, 
-		AddNormalImage, 1.0, Colours::transparentBlack,
-		AddOverImage, 1.0, Colours::transparentBlack,
-		AddDownImage, 1.0, Colours::transparentBlack);
+    
+    std::unique_ptr<juce::Drawable> NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage;
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::add_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    // set the images to button
+    m_AddNodeButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 
-	m_RemoveNodeButton = std::make_unique<ImageButton>();
+    m_RemoveNodeButton = std::make_unique<DrawableButton>(String(), DrawableButton::ButtonStyle::ImageFitted);
 	m_RemoveNodeButton->addListener(this);
 	addAndMakeVisible(m_RemoveNodeButton.get());
-	Image RemoveNormalImage = ImageCache::getFromMemory(BinaryData::RemoveNormalImage_png, BinaryData::RemoveNormalImage_pngSize);
-	Image RemoveOverImage = ImageCache::getFromMemory(BinaryData::RemoveOverImage_png, BinaryData::RemoveOverImage_pngSize);
-	Image RemoveDownImage = ImageCache::getFromMemory(BinaryData::RemoveDownImage_png, BinaryData::RemoveDownImage_pngSize);
-	m_RemoveNodeButton->setImages(false, true, true,
-		RemoveNormalImage, 1.0, Colours::transparentBlack,
-		RemoveOverImage, 1.0, Colours::transparentBlack,
-		RemoveDownImage, 1.0, Colours::transparentBlack);
+    
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::remove_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    // set the images to button
+    m_RemoveNodeButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 
 	/******************************************************/
 	m_TriggerOpenConfigButton = std::make_unique<TextButton>();
@@ -295,9 +292,9 @@ void MainRemoteProtocolBridgeComponent::resized()
 	/*Add/Remove Buttons*/
 	int yPositionAddRemButts = yPositionConfTrafButtons - UIS_ElmSize;
 	if (m_AddNodeButton)
-		m_AddNodeButton->setBounds(windowWidth - 25, yPositionAddRemButts, UIS_ElmSize - UIS_Margin_s, UIS_ElmSize - UIS_Margin_s);
+		m_AddNodeButton->setBounds(windowWidth - 25, yPositionAddRemButts, UIS_ElmSize, UIS_ElmSize);
 	if (m_RemoveNodeButton)
-		m_RemoveNodeButton->setBounds(windowWidth - 45, yPositionAddRemButts, UIS_ElmSize - UIS_Margin_s, UIS_ElmSize - UIS_Margin_s);
+		m_RemoveNodeButton->setBounds(windowWidth - 45, yPositionAddRemButts, UIS_ElmSize, UIS_ElmSize);
 
 	/*Dynamically sized nodes*/
 	int nodeAreaWidth = windowWidth - 2 * UIS_Margin_s;
