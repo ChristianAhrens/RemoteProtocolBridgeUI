@@ -218,6 +218,14 @@
           <FILE id="MlyCT5" name="Image_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/Image_utils.h"/>
           <FILE id="k6Tzrm" name="iOS_utils.cpp" compile="1" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.cpp"/>
           <FILE id="OjG6Xr" name="iOS_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.h"/>
+          <FILE id="fx9pUr" name="MidiCommandRangeAssignment.cpp" compile="1"
+                resource="0" file="submodules/JUCE-AppBasics/Source/MidiCommandRangeAssignment.cpp"/>
+          <FILE id="CeggP6" name="MidiCommandRangeAssignment.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/MidiCommandRangeAssignment.h"/>
+          <FILE id="R4JklT" name="MidiLearnerComponent.cpp" compile="1" resource="0"
+                file="submodules/JUCE-AppBasics/Source/MidiLearnerComponent.cpp"/>
+          <FILE id="v9wtna" name="MidiLearnerComponent.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/MidiLearnerComponent.h"/>
           <FILE id="vQXPDe" name="ZeroconfDiscoverComponent.cpp" compile="1"
                 resource="0" file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.cpp"/>
           <FILE id="edKe8S" name="ZeroconfDiscoverComponent.h" compile="0" resource="0"
@@ -230,6 +238,7 @@
                 file="submodules/JUCE-AppBasics/Resources/Images/find_replace-24px.svg"/>
           <FILE id="iV2YJ5" name="remove_circle-24px.svg" compile="0" resource="1"
                 file="submodules/JUCE-AppBasics/Resources/Images/remove_circle-24px.svg"/>
+          <FILE id="gfWyzq" name="school-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/school-24px.svg"/>
         </GROUP>
       </GROUP>
     </GROUP>

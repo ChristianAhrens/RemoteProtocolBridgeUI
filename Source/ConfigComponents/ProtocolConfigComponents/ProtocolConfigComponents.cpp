@@ -1558,7 +1558,7 @@ std::unique_ptr<XmlElement> MIDIProtocolConfigComponent::createStateXml()
 	auto midiInputIndexXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
 	if (!midiInputIndexXmlElement)
 		midiInputIndexXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
-	midiInputIndexXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX), DumpSelectedMidiInputIndex());
+	midiInputIndexXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEIDENTIFIER), DumpSelectedMidiInputIndex());
 
 	return protocolStateXml;
 }
@@ -1580,7 +1580,7 @@ bool MIDIProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 
 	auto midiInputIndexXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::INPUTDEVICE));
 	if (midiInputIndexXmlElement)
-		FillSelectedMidiInputIndex(midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEINDEX)));
+		FillSelectedMidiInputIndex(midiInputIndexXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::DEVICEIDENTIFIER)));
 
 	return true;
 }
