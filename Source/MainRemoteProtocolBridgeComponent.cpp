@@ -67,7 +67,7 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 	addAndMakeVisible(m_AddNodeButton.get());
     
     std::unique_ptr<juce::Drawable> NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage;
-    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::add_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::add24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
     // set the images to button
     m_AddNodeButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 
@@ -75,7 +75,7 @@ MainRemoteProtocolBridgeComponent::MainRemoteProtocolBridgeComponent()
 	m_RemoveNodeButton->addListener(this);
 	addAndMakeVisible(m_RemoveNodeButton.get());
     
-    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::remove_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::remove24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
     // set the images to button
     m_RemoveNodeButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 

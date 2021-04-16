@@ -31,6 +31,12 @@
                 <FILE id="mLLoSz" name="Forward_A_to_B_only.h" compile="0" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Forward_A_to_B_only/Forward_A_to_B_only.h"/>
               </GROUP>
+              <GROUP id="{375C714E-F871-F071-A45F-E1F09B5F6BEC}" name="Mirror_dualA_withValFilter">
+                <FILE id="nNtJyR" name="Mirror_dualA_withValFilter.cpp" compile="1"
+                      resource="0" file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Mirror_dualA_withValFilter/Mirror_dualA_withValFilter.cpp"/>
+                <FILE id="REdXmx" name="Mirror_dualA_withValFilter.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Mirror_dualA_withValFilter/Mirror_dualA_withValFilter.h"/>
+              </GROUP>
               <GROUP id="{79CCFF4F-B9B6-7C64-734D-3636D81820E0}" name="DS100_DeviceSimulation">
                 <FILE id="l5nyOF" name="DS100_DeviceSimulation.cpp" compile="1" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/DS100_DeviceSimulation/DS100_DeviceSimulation.cpp"/>
@@ -232,12 +238,10 @@
                 file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.h"/>
         </GROUP>
         <GROUP id="{B66BC836-4285-43F0-22E7-22FCE8F8C73D}" name="Resources">
-          <FILE id="tUa5DG" name="add_circle-24px.svg" compile="0" resource="1"
-                file="submodules/JUCE-AppBasics/Resources/Images/add_circle-24px.svg"/>
+          <FILE id="sR2aJR" name="add-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/add-24px.svg"/>
           <FILE id="ondbRG" name="find_replace-24px.svg" compile="0" resource="1"
                 file="submodules/JUCE-AppBasics/Resources/Images/find_replace-24px.svg"/>
-          <FILE id="iV2YJ5" name="remove_circle-24px.svg" compile="0" resource="1"
-                file="submodules/JUCE-AppBasics/Resources/Images/remove_circle-24px.svg"/>
+          <FILE id="bS2OsY" name="remove-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/remove-24px.svg"/>
           <FILE id="gfWyzq" name="school-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/school-24px.svg"/>
         </GROUP>
       </GROUP>

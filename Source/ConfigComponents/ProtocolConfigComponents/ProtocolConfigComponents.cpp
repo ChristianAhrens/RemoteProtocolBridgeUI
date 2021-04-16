@@ -448,8 +448,8 @@ std::vector<RemoteObject> BasicProtocolConfigComponent::DumpActiveRemoteObjects(
 				{
 					for (int k = 0; k < records.size(); ++k)
 					{
-						obj._Addr._first = static_cast<SourceId>(channels[j]);
-						obj._Addr._second = static_cast<MappingId>(records[k]);
+						obj._Addr._first = static_cast<ChannelId>(channels[j]);
+						obj._Addr._second = static_cast<RecordId>(records[k]);
 						activeObjects.push_back(obj);
 					}
 				}
@@ -717,14 +717,14 @@ std::vector<RemoteObject> ActiveObjectScrollContentsComponent::GetActiveRemoteOb
 				{
 					for (int k = 0; k < records.size(); ++k)
 					{
-						obj._Addr._first = static_cast<SourceId>(channels[j]);
-						obj._Addr._second = static_cast<MappingId>(records[k]);
+						obj._Addr._first = static_cast<ChannelId>(channels[j]);
+						obj._Addr._second = static_cast<RecordId>(records[k]);
 						activeObjects.push_back(obj);
 					}
 				}
 				else
 				{
-					obj._Addr._first = static_cast<SourceId>(channels[j]);
+					obj._Addr._first = static_cast<ChannelId>(channels[j]);
 					obj._Addr._second = -1;
 					activeObjects.push_back(obj);
 				}
