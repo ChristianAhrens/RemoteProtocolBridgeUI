@@ -131,7 +131,7 @@ private:
 
 /**
  * Class OHForwardOnlyValueChangesConfigComponent is a container used to hold the GUI
- * specifically used to configure configuration of Forward_only_valueChanges protocol value filter precision.
+ * specifically used to configure configuration of Forward_only_valueChanges protocol.
  */
 class OHForwardOnlyValueChangesConfigComponent : public ObjectHandlingConfigComponent_Abstract,
 	public ComboBox::Listener
@@ -150,15 +150,20 @@ public:
 	~OHForwardOnlyValueChangesConfigComponent();
 
 	//==============================================================================
+	virtual void resized() override;
+
+	//==============================================================================
 	std::unique_ptr<XmlElement> createStateXml() override;
 	bool setStateXml(XmlElement* stateXml) override;
 
 	//==============================================================================
 	const std::pair<int, int> GetSuggestedSize() override;
 
-private:
-	virtual void resized() override;
+	//==============================================================================
+	double GetPrecision();
+	void SetPrecision(double precision);
 
+private:
 	void comboBoxChanged(ComboBox* comboBox) override;
 
 	static String PrecisionValToString(PrecVal pv);
@@ -169,8 +174,37 @@ private:
 };
 
 /**
- * Class OHForwardOnlyValueChangesConfigComponent is a container used to hold the GUI
- * specifically used to configure configuration of Forward_only_valueChanges protocol value filter precision.
+ * Class OHMirrorDualAwithValFilterConfigComponent is a container used to hold the GUI
+ * specifically used to configure configuration of Mirror_dualA_withValFilter protocol.
+ */
+class OHMirrorDualAwithValFilterConfigComponent : public OHForwardOnlyValueChangesConfigComponent,
+	public TextEditor::Listener
+{
+public:
+	OHMirrorDualAwithValFilterConfigComponent(ObjectHandlingMode mode);
+	~OHMirrorDualAwithValFilterConfigComponent();
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
+
+	//==============================================================================
+	const std::pair<int, int> GetSuggestedSize() override;
+
+private:
+	virtual void resized() override;
+
+	virtual void textEditorFocusLost(TextEditor&) override;
+	virtual void textEditorReturnKeyPressed(TextEditor&) override;
+
+	std::unique_ptr<Label>		m_failoverTimeLabel;	/**< Headlining Label for failover time edit. */
+	std::unique_ptr<TextEditor>	m_failoverTimeEdit;		/**< Headlining Label for failover time edit. */
+
+};
+
+/**
+ * Class OHDS100SimConfigComponent is a container used to hold the GUI
+ * specifically used to configure configuration of DS100_DeviceSimulation protocol value filter precision.
  */
 class OHDS100SimConfigComponent : public ObjectHandlingConfigComponent_Abstract,
 	public TextEditor::Listener

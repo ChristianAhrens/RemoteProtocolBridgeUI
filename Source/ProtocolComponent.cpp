@@ -59,7 +59,7 @@ ProtocolGroupComponent::ProtocolGroupComponent(const ProtocolRole& role)
 	addAndMakeVisible(m_AddProtocolButton.get());
     
     std::unique_ptr<juce::Drawable> NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage;
-    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::add_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::add24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
     // set the images to button
     m_AddProtocolButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 
@@ -67,7 +67,7 @@ ProtocolGroupComponent::ProtocolGroupComponent(const ProtocolRole& role)
 	m_RemoveProtocolButton->addListener(this);
 	addAndMakeVisible(m_RemoveProtocolButton.get());
     
-    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::remove_circle24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
+    JUCEAppBasics::Image_utils::getDrawableButtonImages(BinaryData::remove24px_svg, NormalImage, OverImage, DownImage, DisabledImage, NormalOnImage, OverOnImage, DownOnImage, DisabledOnImage);
     // set the images to button
     m_RemoveProtocolButton->setImages(NormalImage.get(), OverImage.get(), DownImage.get(), DisabledImage.get(), NormalOnImage.get(), OverOnImage.get(), DownOnImage.get(), DisabledOnImage.get());
 }

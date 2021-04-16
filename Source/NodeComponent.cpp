@@ -70,7 +70,10 @@ NodeComponent::NodeComponent(NodeId NId)
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Remap_A_X_Y_to_B_XY), OHM_Remap_A_X_Y_to_B_XY);
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Mux_nA_to_mB), OHM_Mux_nA_to_mB);
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Mux_nA_to_mB_withValFilter), OHM_Mux_nA_to_mB_withValFilter);
+	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Mirror_dualA_withValFilter), OHM_Mirror_dualA_withValFilter);
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Forward_only_valueChanges), OHM_Forward_only_valueChanges);
+	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_A1active_withValFilter), OHM_A1active_withValFilter);
+	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_A2active_withValFilter), OHM_A2active_withValFilter);
 	m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_DS100_DeviceSimulation), OHM_DS100_DeviceSimulation);
     m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Forward_A_to_B_only), OHM_Forward_A_to_B_only);
     m_NodeModeDrop->addItem(ProcessingEngineConfig::ObjectHandlingModeToString(OHM_Reverse_B_to_A_only), OHM_Reverse_B_to_A_only);

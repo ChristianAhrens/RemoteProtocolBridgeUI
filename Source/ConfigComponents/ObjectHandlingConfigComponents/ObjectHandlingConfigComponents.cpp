@@ -483,15 +483,11 @@ const std::pair<int, int> OHForwardOnlyValueChangesConfigComponent::GetSuggested
 }
 
 /**
- * Method to trigger dumping contents of configcomponent member
- * to list of objects to return to the app to initialize from
- *
- * @return	The object handling config data to use when running the engine.
+ * Getter for the current precision dropdown value
+ * @return	The current precision value
  */
-std::unique_ptr<XmlElement> OHForwardOnlyValueChangesConfigComponent::createStateXml()
+double OHForwardOnlyValueChangesConfigComponent::GetPrecision()
 {
-	auto ohXmlElement = ObjectHandlingConfigComponent_Abstract::createStateXml();
-
 	auto precision = 0.001;
 	if (m_PrecisionSelect)
 	{
@@ -513,15 +509,52 @@ std::unique_ptr<XmlElement> OHForwardOnlyValueChangesConfigComponent::createStat
 			break;
 		}
 	}
+
+	return precision;
+}
+
+/**
+ * Setter for the currently selected precision dropdown value
+ * @param	precision	The value to set as currently selected
+ */
+void OHForwardOnlyValueChangesConfigComponent::SetPrecision(double precision)
+{
+	if (!m_PrecisionSelect)
+		return;
+
+	if (precision == 1000)
+		m_PrecisionSelect->setSelectedId(PV_EVEN);
+	else if (precision == 100)
+		m_PrecisionSelect->setSelectedId(PV_CENTI);
+	else if (precision == 10)
+		m_PrecisionSelect->setSelectedId(PV_MILLI);
+	else if (precision == 1)
+		m_PrecisionSelect->setSelectedId(PV_MICRO);
+	else
+		m_PrecisionSelect->setSelectedId(PV_MICRO);
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The object handling config data to use when running the engine.
+ */
+std::unique_ptr<XmlElement> OHForwardOnlyValueChangesConfigComponent::createStateXml()
+{
+	auto ohXmlElement = ObjectHandlingConfigComponent_Abstract::createStateXml();
+
+	auto precision = GetPrecision();
+
 	auto precisionXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
-	if (precisionXmlElement)
-	{
-		auto cntXmlElement = precisionXmlElement->getFirstChildElement();
-		if (cntXmlElement && cntXmlElement->isTextElement())
-			cntXmlElement->setText(String(precision));
-		else
-			precisionXmlElement->addTextElement(String(precision));
-	}
+	if (!precisionXmlElement)
+		precisionXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+
+	auto valXmlElement = precisionXmlElement->getFirstChildElement();
+	if (valXmlElement && valXmlElement->isTextElement())
+		valXmlElement->setText(String(precision));
+	else
+		precisionXmlElement->addTextElement(String(precision));
 
 	return ohXmlElement;
 }
@@ -537,23 +570,11 @@ bool OHForwardOnlyValueChangesConfigComponent::setStateXml(XmlElement* stateXml)
 	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
 		return false;
 
-	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Forward_only_valueChanges))
-		return false;
-
 	auto precisionXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
 	if (precisionXmlElement && m_PrecisionSelect)
 	{
 		auto precision = std::round(1000.f * precisionXmlElement->getAllSubText().getFloatValue());
-		if (precision == 1000)
-			m_PrecisionSelect->setSelectedId(PV_EVEN);
-		else if (precision == 100)
-			m_PrecisionSelect->setSelectedId(PV_CENTI);
-		else if (precision == 10)
-			m_PrecisionSelect->setSelectedId(PV_MILLI);
-		else if (precision == 1)
-			m_PrecisionSelect->setSelectedId(PV_MICRO);
-		else
-			m_PrecisionSelect->setSelectedId(PV_MICRO);
+		SetPrecision(precision);
 	}
 	else
 		return false;
@@ -580,6 +601,145 @@ String OHForwardOnlyValueChangesConfigComponent::PrecisionValToString(PrecVal pv
 	default:
 		return "0.001";
 	}
+}
+
+//==============================================================================
+// Class OHMirrorDualAwithValFilterConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+OHMirrorDualAwithValFilterConfigComponent::OHMirrorDualAwithValFilterConfigComponent(ObjectHandlingMode mode)
+	: OHForwardOnlyValueChangesConfigComponent(mode)
+{
+	m_failoverTimeEdit = std::make_unique<TextEditor>();
+	addAndMakeVisible(m_failoverTimeEdit.get());
+	m_failoverTimeEdit->addListener(this);
+
+	m_failoverTimeLabel = std::make_unique<Label>();
+	m_failoverTimeLabel->setText("Failover Time", dontSendNotification);
+	addAndMakeVisible(m_failoverTimeLabel.get());
+	m_failoverTimeLabel->attachToComponent(m_failoverTimeEdit.get(), true);
+}
+
+/**
+ * Class destructor.
+ */
+OHMirrorDualAwithValFilterConfigComponent::~OHMirrorDualAwithValFilterConfigComponent()
+{
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void OHMirrorDualAwithValFilterConfigComponent::resized()
+{
+	double usableWidth = (double)(getWidth() - 2 * UIS_Margin_s);
+
+	OHForwardOnlyValueChangesConfigComponent::resized();
+	
+	// active objects headline
+	int yOffset = UIS_Margin_s + UIS_Margin_s + UIS_ElmSize + UIS_Margin_s + UIS_ElmSize;
+	m_failoverTimeEdit->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth - UIS_Margin_s, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for changes to our textEditors.
+ * @param textEditor	The TextEditor object whose content has just changed.
+ */
+void OHMirrorDualAwithValFilterConfigComponent::textEditorFocusLost(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Callback function for Enter key presses on textEditors.
+ * @param textEditor	The TextEditor object whose where enter key was pressed.
+ */
+void OHMirrorDualAwithValFilterConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
+{
+	ignoreUnused(textEditor);
+}
+
+/**
+ * Method to get the components' suggested size. This will be deprecated as soon as
+ * the primitive UI is refactored and uses dynamic / proper layouting
+ *
+ * @return	The pair of int representing the suggested size for this component
+ */
+const std::pair<int, int> OHMirrorDualAwithValFilterConfigComponent::GetSuggestedSize()
+{
+	auto baseSize = OHForwardOnlyValueChangesConfigComponent::GetSuggestedSize();
+
+	baseSize.second += UIS_Margin_s + UIS_ElmSize;
+
+	return baseSize;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The object handling config data to use when running the engine.
+ */
+std::unique_ptr<XmlElement> OHMirrorDualAwithValFilterConfigComponent::createStateXml()
+{
+	auto ohXmlElement = OHForwardOnlyValueChangesConfigComponent::createStateXml();
+	
+	auto failoverTime = 1000;
+	if (m_failoverTimeEdit)
+		failoverTime = m_failoverTimeEdit->getText().getIntValue();
+
+	auto failoverTimeXmlElement = ohXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::FAILOVERTIME));
+	if (!failoverTimeXmlElement)
+		failoverTimeXmlElement = ohXmlElement->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::FAILOVERTIME));
+
+	auto timeXmlElement = failoverTimeXmlElement->getFirstChildElement();
+	if (timeXmlElement && timeXmlElement->isTextElement())
+		timeXmlElement->setText(String(failoverTime));
+	else
+		failoverTimeXmlElement->addTextElement(String(failoverTime));
+	
+	return ohXmlElement;
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with ObjectHandling data
+ *
+ * @param ohData	The data to set into UI elms.
+ */
+bool OHMirrorDualAwithValFilterConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
+		return false;
+	
+	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Mirror_dualA_withValFilter))
+		return false;
+
+	auto precisionXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
+	if (precisionXmlElement)
+	{
+		auto precision = std::round(1000.f * precisionXmlElement->getAllSubText().getFloatValue());
+		SetPrecision(precision);
+	}
+	else
+		return false;
+
+	auto failoverTimeXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::FAILOVERTIME));
+	if (failoverTimeXmlElement && m_failoverTimeEdit)
+	{
+		auto failoverTime = failoverTimeXmlElement->getAllSubText().getIntValue();
+		m_failoverTimeEdit->setText(String(failoverTime), dontSendNotification);
+	}
+	else
+		return false;
+
+	return true;
 }
 
 
@@ -1085,7 +1245,12 @@ ObjectHandlingConfigWindow::ObjectHandlingConfigWindow(const String &name, Colou
 		m_configComponent = std::make_unique<OHMultiplexAtoBConfigComponent>(mode);
 		break;
 	case ObjectHandlingMode::OHM_Forward_only_valueChanges:
+	case ObjectHandlingMode::OHM_A1active_withValFilter:
+	case ObjectHandlingMode::OHM_A2active_withValFilter:
 		m_configComponent = std::make_unique<OHForwardOnlyValueChangesConfigComponent>(mode);
+		break;
+	case ObjectHandlingMode::OHM_Mirror_dualA_withValFilter:
+		m_configComponent = std::make_unique<OHMirrorDualAwithValFilterConfigComponent>(mode);
 		break;
 	case ObjectHandlingMode::OHM_DS100_DeviceSimulation:
 		m_configComponent = std::make_unique<OHDS100SimConfigComponent>(mode);

@@ -9,6 +9,18 @@
         <GROUP id="{AA691C90-BF22-E6BC-196D-46E84455CE63}" name="Source">
           <GROUP id="{21D03558-5B35-43A3-EDDF-110D5D5BEA11}" name="ProcessingEngine">
             <GROUP id="{4145EA77-15E8-D1A4-8BB5-A9D8D653E023}" name="ObjectDataHandling">
+              <GROUP id="{9BF69F59-E0E0-0734-6256-D79EDB813FEB}" name="A2active_withValFilter">
+                <FILE id="h1AZyR" name="A2active_withValFilter.cpp" compile="1" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A2active_withValFilter/A2active_withValFilter.cpp"/>
+                <FILE id="ZTQQNZ" name="A2active_withValFilter.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A2active_withValFilter/A2active_withValFilter.h"/>
+              </GROUP>
+              <GROUP id="{303706AD-6F91-4AF4-C5B0-22BEB730418E}" name="A1active_withValFilter">
+                <FILE id="jMaSbJ" name="A1active_withValFilter.cpp" compile="1" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A1active_withValFilter/A1active_withValFilter.cpp"/>
+                <FILE id="fpS8J2" name="A1active_withValFilter.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A1active_withValFilter/A1active_withValFilter.h"/>
+              </GROUP>
               <FILE id="QFFpeT" name="ObjectDataHandling_Abstract.cpp" compile="1"
                     resource="0" file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/ObjectDataHandling_Abstract.cpp"/>
               <FILE id="jjyVDl" name="ObjectDataHandling_Abstract.h" compile="0"
@@ -30,6 +42,12 @@
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Forward_A_to_B_only/Forward_A_to_B_only.cpp"/>
                 <FILE id="mLLoSz" name="Forward_A_to_B_only.h" compile="0" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Forward_A_to_B_only/Forward_A_to_B_only.h"/>
+              </GROUP>
+              <GROUP id="{375C714E-F871-F071-A45F-E1F09B5F6BEC}" name="Mirror_dualA_withValFilter">
+                <FILE id="nNtJyR" name="Mirror_dualA_withValFilter.cpp" compile="1"
+                      resource="0" file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Mirror_dualA_withValFilter/Mirror_dualA_withValFilter.cpp"/>
+                <FILE id="REdXmx" name="Mirror_dualA_withValFilter.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/Mirror_dualA_withValFilter/Mirror_dualA_withValFilter.h"/>
               </GROUP>
               <GROUP id="{79CCFF4F-B9B6-7C64-734D-3636D81820E0}" name="DS100_DeviceSimulation">
                 <FILE id="l5nyOF" name="DS100_DeviceSimulation.cpp" compile="1" resource="0"
@@ -218,18 +236,25 @@
           <FILE id="MlyCT5" name="Image_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/Image_utils.h"/>
           <FILE id="k6Tzrm" name="iOS_utils.cpp" compile="1" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.cpp"/>
           <FILE id="OjG6Xr" name="iOS_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.h"/>
+          <FILE id="fx9pUr" name="MidiCommandRangeAssignment.cpp" compile="1"
+                resource="0" file="submodules/JUCE-AppBasics/Source/MidiCommandRangeAssignment.cpp"/>
+          <FILE id="CeggP6" name="MidiCommandRangeAssignment.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/MidiCommandRangeAssignment.h"/>
+          <FILE id="R4JklT" name="MidiLearnerComponent.cpp" compile="1" resource="0"
+                file="submodules/JUCE-AppBasics/Source/MidiLearnerComponent.cpp"/>
+          <FILE id="v9wtna" name="MidiLearnerComponent.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/MidiLearnerComponent.h"/>
           <FILE id="vQXPDe" name="ZeroconfDiscoverComponent.cpp" compile="1"
                 resource="0" file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.cpp"/>
           <FILE id="edKe8S" name="ZeroconfDiscoverComponent.h" compile="0" resource="0"
                 file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.h"/>
         </GROUP>
         <GROUP id="{B66BC836-4285-43F0-22E7-22FCE8F8C73D}" name="Resources">
-          <FILE id="tUa5DG" name="add_circle-24px.svg" compile="0" resource="1"
-                file="submodules/JUCE-AppBasics/Resources/Images/add_circle-24px.svg"/>
+          <FILE id="sR2aJR" name="add-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/add-24px.svg"/>
           <FILE id="ondbRG" name="find_replace-24px.svg" compile="0" resource="1"
                 file="submodules/JUCE-AppBasics/Resources/Images/find_replace-24px.svg"/>
-          <FILE id="iV2YJ5" name="remove_circle-24px.svg" compile="0" resource="1"
-                file="submodules/JUCE-AppBasics/Resources/Images/remove_circle-24px.svg"/>
+          <FILE id="bS2OsY" name="remove-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/remove-24px.svg"/>
+          <FILE id="gfWyzq" name="school-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/school-24px.svg"/>
         </GROUP>
       </GROUP>
     </GROUP>
