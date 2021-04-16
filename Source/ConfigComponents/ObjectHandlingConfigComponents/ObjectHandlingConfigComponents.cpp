@@ -570,9 +570,6 @@ bool OHForwardOnlyValueChangesConfigComponent::setStateXml(XmlElement* stateXml)
 	if (!stateXml || stateXml->getTagName() != ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OBJECTHANDLING))
 		return false;
 
-	if (stateXml->getStringAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::MODE)) != ProcessingEngineConfig::ObjectHandlingModeToString(ObjectHandlingMode::OHM_Forward_only_valueChanges))
-		return false;
-
 	auto precisionXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::DATAPRECISION));
 	if (precisionXmlElement && m_PrecisionSelect)
 	{
@@ -1248,6 +1245,8 @@ ObjectHandlingConfigWindow::ObjectHandlingConfigWindow(const String &name, Colou
 		m_configComponent = std::make_unique<OHMultiplexAtoBConfigComponent>(mode);
 		break;
 	case ObjectHandlingMode::OHM_Forward_only_valueChanges:
+	case ObjectHandlingMode::OHM_A1active_withValFilter:
+	case ObjectHandlingMode::OHM_A2active_withValFilter:
 		m_configComponent = std::make_unique<OHForwardOnlyValueChangesConfigComponent>(mode);
 		break;
 	case ObjectHandlingMode::OHM_Mirror_dualA_withValFilter:

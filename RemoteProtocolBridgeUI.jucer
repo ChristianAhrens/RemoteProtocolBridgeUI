@@ -9,6 +9,18 @@
         <GROUP id="{AA691C90-BF22-E6BC-196D-46E84455CE63}" name="Source">
           <GROUP id="{21D03558-5B35-43A3-EDDF-110D5D5BEA11}" name="ProcessingEngine">
             <GROUP id="{4145EA77-15E8-D1A4-8BB5-A9D8D653E023}" name="ObjectDataHandling">
+              <GROUP id="{9BF69F59-E0E0-0734-6256-D79EDB813FEB}" name="A2active_withValFilter">
+                <FILE id="h1AZyR" name="A2active_withValFilter.cpp" compile="1" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A2active_withValFilter/A2active_withValFilter.cpp"/>
+                <FILE id="ZTQQNZ" name="A2active_withValFilter.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A2active_withValFilter/A2active_withValFilter.h"/>
+              </GROUP>
+              <GROUP id="{303706AD-6F91-4AF4-C5B0-22BEB730418E}" name="A1active_withValFilter">
+                <FILE id="jMaSbJ" name="A1active_withValFilter.cpp" compile="1" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A1active_withValFilter/A1active_withValFilter.cpp"/>
+                <FILE id="fpS8J2" name="A1active_withValFilter.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/A1active_withValFilter/A1active_withValFilter.h"/>
+              </GROUP>
               <FILE id="QFFpeT" name="ObjectDataHandling_Abstract.cpp" compile="1"
                     resource="0" file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ObjectDataHandling/ObjectDataHandling_Abstract.cpp"/>
               <FILE id="jjyVDl" name="ObjectDataHandling_Abstract.h" compile="0"
