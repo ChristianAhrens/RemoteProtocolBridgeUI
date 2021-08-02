@@ -154,6 +154,10 @@
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"/>
               </GROUP>
               <GROUP id="{4B0E7F91-CDF1-3163-F013-2C232E5A93A7}" name="OSCProtocolProcessor">
+                <FILE id="wdtyF9" name="ADMOSCProtocolProcessor.cpp" compile="1" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/ADMOSCProtocolProcessor.cpp"/>
+                <FILE id="WUlx7k" name="ADMOSCProtocolProcessor.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/ADMOSCProtocolProcessor.h"/>
                 <FILE id="n1kUaW" name="OSCProtocolProcessor.cpp" compile="1" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.cpp"/>
                 <FILE id="kCsjWB" name="OSCProtocolProcessor.h" compile="0" resource="0"

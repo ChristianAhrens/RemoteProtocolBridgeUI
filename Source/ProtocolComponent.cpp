@@ -309,9 +309,10 @@ ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId, c
 	m_ProtocolDrop->addListener(this);
 	addAndMakeVisible(m_ProtocolDrop.get());
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_OSCProtocol), PT_OSCProtocol);
-	//m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_OCAProtocol), PT_OCAProtocol); // not yet implemented, feel free to step in
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_RTTrPMProtocol), PT_RTTrPMProtocol);
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_MidiProtocol), PT_MidiProtocol);
+	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_YamahaOSCProtocol), PT_YamahaOSCProtocol);
+	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_ADMOSCProtocol), PT_ADMOSCProtocol);
 	m_ProtocolDrop->setColour(Label::textColourId, Colours::white);
 	m_ProtocolDrop->setJustificationType(Justification::right);
 
@@ -377,6 +378,7 @@ bool ProtocolComponent::setZeroConfProtocolType(ProtocolType type)
 			case PT_RTTrPMProtocol:
 			case PT_MidiProtocol:
             case PT_YamahaOSCProtocol:
+			case PT_ADMOSCProtocol:
 				m_ZeroconfIpDiscovery->clearServices();
 				m_ZeroconfIpDiscovery->setVisible(false);
 				break;
@@ -416,6 +418,7 @@ void ProtocolComponent::resized()
 		case PT_RTTrPMProtocol:
 		case PT_MidiProtocol:
         case PT_YamahaOSCProtocol:
+		case PT_ADMOSCProtocol:
 		case PT_UserMAX:
 		case PT_Invalid:
 			useZeroconf = false;
