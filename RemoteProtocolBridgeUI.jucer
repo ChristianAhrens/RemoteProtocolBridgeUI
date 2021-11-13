@@ -184,6 +184,10 @@
                   file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProcessingEngineNode.cpp"/>
             <FILE id="larcT3" name="ProcessingEngineNode.h" compile="0" resource="0"
                   file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProcessingEngineNode.h"/>
+            <FILE id="uvNHyD" name="RemoteObjectValueCache.cpp" compile="1" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/RemoteObjectValueCache.cpp"/>
+            <FILE id="UdPGX4" name="RemoteObjectValueCache.h" compile="0" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/RemoteObjectValueCache.h"/>
             <FILE id="mfYCVT" name="TimerThreadBase.cpp" compile="1" resource="0"
                   file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/TimerThreadBase.cpp"/>
             <FILE id="YbEzd0" name="TimerThreadBase.h" compile="0" resource="0"
