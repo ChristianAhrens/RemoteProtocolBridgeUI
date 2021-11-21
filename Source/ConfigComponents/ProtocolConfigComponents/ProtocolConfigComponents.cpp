@@ -1117,12 +1117,12 @@ bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 
 
 //==============================================================================
-// Class RTTrPMProtocolConfigComponent
+// Class MappingAreaProtocolConfigComponent
 //==============================================================================
 /**
  * Class constructor.
  */
-RTTrPMProtocolConfigComponent::RTTrPMProtocolConfigComponent(ProtocolRole role)
+MappingAreaProtocolConfigComponent::MappingAreaProtocolConfigComponent(ProtocolRole role)
 	: ProtocolConfigComponent_Abstract(role)
 {
 	m_MappingAreaIdLabel = std::make_unique<Label>();
@@ -1135,7 +1135,7 @@ RTTrPMProtocolConfigComponent::RTTrPMProtocolConfigComponent(ProtocolRole role)
 /**
  * Class destructor.
  */
-RTTrPMProtocolConfigComponent::~RTTrPMProtocolConfigComponent()
+MappingAreaProtocolConfigComponent::~MappingAreaProtocolConfigComponent()
 {
 
 }
@@ -1143,7 +1143,7 @@ RTTrPMProtocolConfigComponent::~RTTrPMProtocolConfigComponent()
 /**
  * Reimplemented to resize and re-postion controls on the overview window.
  */
-void RTTrPMProtocolConfigComponent::resized()
+void MappingAreaProtocolConfigComponent::resized()
 {
 	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s;
 	int labelWidth = (int)(usableWidth * 0.45);
@@ -1172,7 +1172,7 @@ void RTTrPMProtocolConfigComponent::resized()
  * Callback function for changes to our textEditors.
  * @param textEditor	The TextEditor object whose content has just changed.
  */
-void RTTrPMProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
+void MappingAreaProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
 {
 	ignoreUnused(textEditor);
 }
@@ -1181,7 +1181,7 @@ void RTTrPMProtocolConfigComponent::textEditorFocusLost(TextEditor& textEditor)
  * Callback function for Enter key presses on textEditors.
  * @param textEditor	The TextEditor object whose where enter key was pressed.
  */
-void RTTrPMProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
+void MappingAreaProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textEditor)
 {
 	ignoreUnused(textEditor);
 }
@@ -1190,7 +1190,7 @@ void RTTrPMProtocolConfigComponent::textEditorReturnKeyPressed(TextEditor& textE
  * Callback function for button clicks on buttons.
  * @param button	The button object that was pressed.
  */
-void RTTrPMProtocolConfigComponent::buttonClicked(Button* button)
+void MappingAreaProtocolConfigComponent::buttonClicked(Button* button)
 {
 	if (button == m_applyConfigButton.get())
 	{
@@ -1203,7 +1203,7 @@ void RTTrPMProtocolConfigComponent::buttonClicked(Button* button)
  * Method to add parent object as 'listener'.
  * This is done in a way JUCE uses to connect child-parent relations for handling 'signal' calls
  */
-void RTTrPMProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
+void MappingAreaProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
 {
 	m_parentListener = listener;
 }
@@ -1214,7 +1214,7 @@ void RTTrPMProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
  *
  * @return	The list of objects to actively handle when running the engine.
  */
-std::vector<RemoteObject> RTTrPMProtocolConfigComponent::DumpActiveRemoteObjects()
+std::vector<RemoteObject> MappingAreaProtocolConfigComponent::DumpActiveRemoteObjects()
 {
 	return std::vector<RemoteObject>();
 }
@@ -1225,7 +1225,7 @@ std::vector<RemoteObject> RTTrPMProtocolConfigComponent::DumpActiveRemoteObjects
  *
  * @param Objs	The list of objects to set as default.
  */
-void RTTrPMProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
+void MappingAreaProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
 {
 	ignoreUnused(Objs);
 }
@@ -1235,7 +1235,7 @@ void RTTrPMProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<Re
  *
  * @return	True if active object handling shall be used.
  */
-bool RTTrPMProtocolConfigComponent::DumpActiveHandlingUsed()
+bool MappingAreaProtocolConfigComponent::DumpActiveHandlingUsed()
 {
 	return false;
 }
@@ -1246,7 +1246,7 @@ bool RTTrPMProtocolConfigComponent::DumpActiveHandlingUsed()
  *
  * @return	MappingArea Id value.
  */
-int RTTrPMProtocolConfigComponent::DumpMappingAreaId()
+int MappingAreaProtocolConfigComponent::DumpMappingAreaId()
 {
 	int MappingAreaId = -1;
 
@@ -1266,7 +1266,7 @@ int RTTrPMProtocolConfigComponent::DumpMappingAreaId()
  *
  * @param MappingAreaId The id value
  */
-void RTTrPMProtocolConfigComponent::FillMappingAreaId(int MappingAreaId)
+void MappingAreaProtocolConfigComponent::FillMappingAreaId(int MappingAreaId)
 {
 	if (m_MappingAreaIdEdit)
 		m_MappingAreaIdEdit->setText(String(MappingAreaId));
@@ -1280,7 +1280,7 @@ void RTTrPMProtocolConfigComponent::FillMappingAreaId(int MappingAreaId)
  *
  * @return	The pair of int representing the suggested size for this component
  */
-const std::pair<int, int> RTTrPMProtocolConfigComponent::GetSuggestedSize()
+const std::pair<int, int> MappingAreaProtocolConfigComponent::GetSuggestedSize()
 {
 	int width = UIS_BasicConfigWidth;
 	int height =	UIS_Margin_m + UIS_ElmSize +
@@ -1302,7 +1302,7 @@ const std::pair<int, int> RTTrPMProtocolConfigComponent::GetSuggestedSize()
  * @param config	The global configuration object to dump data to
  * @return	True on success
  */
-std::unique_ptr<XmlElement> RTTrPMProtocolConfigComponent::createStateXml()
+std::unique_ptr<XmlElement> MappingAreaProtocolConfigComponent::createStateXml()
 {
 	auto protocolStateXml = ProtocolConfigComponent_Abstract::createStateXml();
 
@@ -1322,7 +1322,7 @@ std::unique_ptr<XmlElement> RTTrPMProtocolConfigComponent::createStateXml()
  * @param NId The id of the protocol to set the config for
  * @param config	The global configuration object.
  */
-bool RTTrPMProtocolConfigComponent::setStateXml(XmlElement* stateXml)
+bool MappingAreaProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 {
 	auto mappingAreaXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::MAPPINGAREA));
 	if (mappingAreaXmlElement)
@@ -1614,7 +1614,11 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 		m_configComponent = std::make_unique<OSCProtocolConfigComponent>(role);
 		break;
 	case ProtocolType::PT_RTTrPMProtocol:
-		m_configComponent = std::make_unique<RTTrPMProtocolConfigComponent>(role);
+		// intentionally no break to run into MappingAreaCfg
+	case ProtocolType::PT_YamahaOSCProtocol:
+		// intentionally no break to run into MappingAreaCfg
+	case ProtocolType::PT_ADMOSCProtocol:
+		m_configComponent = std::make_unique<MappingAreaProtocolConfigComponent>(role);
 		break;
 	case ProtocolType::PT_MidiProtocol:
 		m_configComponent = std::make_unique<MIDIProtocolConfigComponent>(role);

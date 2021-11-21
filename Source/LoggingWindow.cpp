@@ -42,6 +42,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
 #include "ProcessingEngine/ProtocolProcessor/RTTrPMProtocolProcessor/RTTrPMProtocolProcessor.h"
 #include "ProcessingEngine/ProtocolProcessor/MIDIProtocolProcessor/MIDIProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/YmhOSCProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/ADMOSCProtocolProcessor.h"
 
 
 constexpr int NODE = INT_MAX;
@@ -361,6 +363,14 @@ void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType
 		case PT_RTTrPMProtocol:
 		case PT_MidiProtocol:
 			objectString += ProcessingEngineConfig::GetObjectShortDescription(Id) +
+				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
+			break;
+		case PT_YamahaOSCProtocol:
+			objectString += YmhOSCProtocolProcessor::GetRemoteObjectString(Id) +
+				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
+			break;
+		case PT_ADMOSCProtocol:
+			objectString += ADMOSCProtocolProcessor::GetRemoteObjectString(Id) +
 				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
 			break;
 		default:

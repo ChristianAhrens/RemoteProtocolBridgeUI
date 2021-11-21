@@ -218,15 +218,16 @@ private:
 };
 
 /**
- * Class RTTrPMProtocolConfigComponent is a container used to hold the GUI controls
- * specifically used to configure Blacktrax RTTrPM protocol configuration.
+ * Class MappingAreaProtocolConfigComponent is a container used to hold the GUI controls
+ * specifically used to configure protocols that require a mapping area id in addition to
+ * client and host port (e.g. Blacktrax RTTrPM, YamahaOSC, ADM-OSC protocol configuration).
  */
-class RTTrPMProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
+class MappingAreaProtocolConfigComponent : public ProtocolConfigComponent_Abstract,
 	public TextEditor::Listener
 {
 public:
-	RTTrPMProtocolConfigComponent(ProtocolRole role);
-	~RTTrPMProtocolConfigComponent();
+	MappingAreaProtocolConfigComponent(ProtocolRole role);
+	~MappingAreaProtocolConfigComponent();
 
 	//==============================================================================
 	std::unique_ptr<XmlElement> createStateXml() override;
