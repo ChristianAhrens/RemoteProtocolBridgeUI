@@ -139,12 +139,6 @@
                 <FILE id="oDNqrN" name="MIDIProtocolProcessor.h" compile="0" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/MIDIProtocolProcessor/MIDIProtocolProcessor.h"/>
               </GROUP>
-              <GROUP id="{40B16987-AD8B-2FB0-EE39-116DBF8743B3}" name="OCAProtocolProcessor">
-                <FILE id="YGjvuE" name="OCAProtocolProcessor.cpp" compile="1" resource="0"
-                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.cpp"/>
-                <FILE id="XZlCdM" name="OCAProtocolProcessor.h" compile="0" resource="0"
-                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"/>
-              </GROUP>
               <GROUP id="{4B0E7F91-CDF1-3163-F013-2C232E5A93A7}" name="OSCProtocolProcessor">
                 <FILE id="wdtyF9" name="ADMOSCProtocolProcessor.cpp" compile="1" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/ADMOSCProtocolProcessor.cpp"/>
@@ -166,6 +160,12 @@
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/YmhOSCProtocolProcessor.cpp"/>
                 <FILE id="T8OtAI" name="YmhOSCProtocolProcessor.h" compile="0" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/YmhOSCProtocolProcessor.h"/>
+              </GROUP>
+              <GROUP id="{550F599D-29D5-1268-A7E9-829226DAA17A}" name="OCP1ProtocolProcessor">
+                <FILE id="RZkP9X" name="OCP1ProtocolProcessor.cpp" compile="1" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCP1ProtocolProcessor/OCP1ProtocolProcessor.cpp"/>
+                <FILE id="iTzg7m" name="OCP1ProtocolProcessor.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCP1ProtocolProcessor/OCP1ProtocolProcessor.h"/>
               </GROUP>
               <FILE id="uK1Nl6" name="NetworkProtocolProcessorBase.cpp" compile="1"
                     resource="0" file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/NetworkProtocolProcessorBase.cpp"/>

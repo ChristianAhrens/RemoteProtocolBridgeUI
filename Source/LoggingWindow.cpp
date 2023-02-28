@@ -39,7 +39,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RemoteProtocolBridgeCommon.h"
 
 #include "ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/OSCProtocolProcessor.h"
-#include "ProcessingEngine/ProtocolProcessor/OCAProtocolProcessor/OCAProtocolProcessor.h"
+#include "ProcessingEngine/ProtocolProcessor/OCP1ProtocolProcessor/OCP1ProtocolProcessor.h"
 #include "ProcessingEngine/ProtocolProcessor/RTTrPMProtocolProcessor/RTTrPMProtocolProcessor.h"
 #include "ProcessingEngine/ProtocolProcessor/MIDIProtocolProcessor/MIDIProtocolProcessor.h"
 #include "ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/YmhOSCProtocolProcessor.h"
@@ -356,8 +356,8 @@ void LoggingComponent::AddLogData(NodeId NId, ProtocolId SenderPId, ProtocolType
 			objectString += OSCProtocolProcessor::GetRemoteObjectString(Id) +
 				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
 			break;
-		case PT_OCAProtocol:
-			objectString += OCAProtocolProcessor::GetRemoteObjectString(Id) +
+		case PT_OCP1Protocol:
+			objectString += OCP1ProtocolProcessor::GetRemoteObjectString(Id) +
 				String::formatted(" | ch%d rec%d", msgData._addrVal._first, msgData._addrVal._second);
 			break;
 		case PT_RTTrPMProtocol:

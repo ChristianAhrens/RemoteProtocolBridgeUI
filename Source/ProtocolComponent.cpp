@@ -309,6 +309,7 @@ ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId, c
 	m_ProtocolDrop->addListener(this);
 	addAndMakeVisible(m_ProtocolDrop.get());
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_OSCProtocol), PT_OSCProtocol);
+	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_OCP1Protocol), PT_OCP1Protocol);
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_RTTrPMProtocol), PT_RTTrPMProtocol);
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_MidiProtocol), PT_MidiProtocol);
 	m_ProtocolDrop->addItem(ProcessingEngineConfig::ProtocolTypeToString(PT_YamahaOSCProtocol), PT_YamahaOSCProtocol);
@@ -361,12 +362,12 @@ bool ProtocolComponent::setZeroConfProtocolType(ProtocolType type)
 	{
 		switch (type)
 		{
-			case PT_OCAProtocol:
 		case PT_OSCProtocol:
 			m_ZeroconfIpDiscovery->clearServices();
 			m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OSC);
 			m_ZeroconfIpDiscovery->setVisible(true);
 			break;
+		case PT_OCP1Protocol:
 			m_ZeroconfIpDiscovery->clearServices();
 			m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA);
 			m_ZeroconfIpDiscovery->setVisible(true);
@@ -405,7 +406,7 @@ void ProtocolComponent::resized()
 		switch (selectedType)
 		{
 		case PT_OSCProtocol:
-		case PT_OCAProtocol:
+		case PT_OCP1Protocol:
 			useZeroconf = true;
 			break;
 		case PT_RTTrPMProtocol:
