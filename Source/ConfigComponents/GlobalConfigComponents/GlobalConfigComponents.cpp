@@ -98,13 +98,13 @@ void GlobalConfigComponent::resized()
 
 	// traffic logging / engine autostart toggles
 	int yOffset = UIS_Margin_s;
-	m_AllowTrafficLoggingCheck->setBounds(Rectangle<int>((int)usableWidth - UIS_ElmSize, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+	m_AllowTrafficLoggingCheck->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ElmSize, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_EnableEngineOnAppStartCheck->setBounds(Rectangle<int>((int)usableWidth - UIS_ElmSize, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+	m_EnableEngineOnAppStartCheck->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ElmSize, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
 
 	// ok button
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	m_applyConfigButton->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
 }
 
 /**
@@ -270,7 +270,7 @@ GlobalConfigWindow::GlobalConfigWindow(const String& name, Colour backgroundColo
 	m_configComponent = std::make_unique<GlobalConfigComponent>();
 	
 	// Component resizes automatically anyway, but need size > 0;
-	m_configComponent->setBounds(Rectangle<int>(1, 1));
+	m_configComponent->setBounds(juce::Rectangle<int>(1, 1));
 	m_configComponent->AddListener(this);
 	
 	setContentOwned(m_configComponent.get(), true);

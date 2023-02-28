@@ -255,7 +255,7 @@ BasicProtocolConfigComponent::BasicProtocolConfigComponent(ProtocolRole role)
 	addAndMakeVisible(m_UseActiveHandlingLabel.get());
 	m_UseActiveHandlingLabel->setText("Enable active object handling", dontSendNotification);
 
-	m_Headline->setText("Objects to activly handle (OSC polling, OCA subscriptions)", dontSendNotification);
+	m_Headline->setText("Objects to activly handle (OSC polling, OCP1 subscriptions)", dontSendNotification);
 
 	m_EnableHeadlineLabel = std::make_unique<Label>();
 	m_EnableHeadlineLabel->setText("active", dontSendNotification);
@@ -308,23 +308,23 @@ void BasicProtocolConfigComponent::resized()
 	int remObjRecRngeWidth = (int)(usableWidth*0.2);
 
 	int yOffset = UIS_Margin_s;
-	m_HostPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_HostPortEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+	m_HostPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_HostPortEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
 
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_ClientPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_ClientPortEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+	m_ClientPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_ClientPortEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
 
 	// active handling checkbox
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_UseActiveHandlingLabel->setBounds(Rectangle<int>(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize)));
-	m_UseActiveHandlingCheck->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
+	m_UseActiveHandlingLabel->setBounds(juce::Rectangle<int>(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize)));
+	m_UseActiveHandlingCheck->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
 
 	// table headline labels
 	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
-	m_EnableHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
-	m_ChannelHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
-	m_RecordHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
+	m_EnableHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
+	m_ChannelHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
+	m_RecordHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
 
 	// table items
 	yOffset += UIS_Margin_s;
@@ -332,18 +332,18 @@ void BasicProtocolConfigComponent::resized()
 	{
 		yOffset += UIS_Margin_s + UIS_ElmSize;
 		if (m_RemObjNameLabels.count(i) && m_RemObjNameLabels.at(i))
-			m_RemObjNameLabels.at(i)->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjNameLabels.at(i)->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i))
-			m_RemObjEnableChecks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjEnableChecks.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth - UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjActiveChannelEdits.count(i) && m_RemObjActiveChannelEdits.at(i))
-			m_RemObjActiveChannelEdits.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjActiveChannelEdits.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth - UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjActiveRecordEdits.count(i) && m_RemObjActiveRecordEdits.at(i))
-			m_RemObjActiveRecordEdits.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjActiveRecordEdits.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth - UIS_Margin_s, UIS_ElmSize));
 	}
 
 	// ok button
 	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
-	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	m_applyConfigButton->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
 }
 
 /**
@@ -813,19 +813,19 @@ void ActiveObjectScrollContentsComponent::resized()
 	for (int i = ROI_Invalid + 1; i < ROI_BridgingMAX; ++i)
 	{
 		if (m_RemObjNameLabels.count(i) && m_RemObjNameLabels.at(i))
-			m_RemObjNameLabels.at(i)->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjNameLabels.at(i)->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjEnableChecks.count(i) && m_RemObjEnableChecks.at(i))
-			m_RemObjEnableChecks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjEnableChecks.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth - UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjActiveChannelEdits.count(i) && m_RemObjActiveChannelEdits.at(i))
-			m_RemObjActiveChannelEdits.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth - UIS_Margin_s, UIS_ElmSize));
+			m_RemObjActiveChannelEdits.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth - UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjMappingArea1Checks.count(i) && m_RemObjMappingArea1Checks.at(i))
-			m_RemObjMappingArea1Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+			m_RemObjMappingArea1Checks.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjMappingArea2Checks.count(i) && m_RemObjMappingArea2Checks.at(i))
-			m_RemObjMappingArea2Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+			m_RemObjMappingArea2Checks.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjMappingArea3Checks.count(i) && m_RemObjMappingArea3Checks.at(i))
-			m_RemObjMappingArea3Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+			m_RemObjMappingArea3Checks.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
 		if (m_RemObjMappingArea4Checks.count(i) && m_RemObjMappingArea4Checks.at(i))
-			m_RemObjMappingArea4Checks.at(i)->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
+			m_RemObjMappingArea4Checks.at(i)->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize + UIS_Margin_s, UIS_ElmSize));
 		yOffset += UIS_Margin_s + UIS_ElmSize;
 	}
 }
@@ -899,45 +899,45 @@ void OSCProtocolConfigComponent::resized()
 
 	// port edits with labels
 	int yOffset = UIS_Margin_s;
-	m_HostPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_HostPortEdit->setBounds(Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+	m_HostPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_HostPortEdit->setBounds(juce::Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
 
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_ClientPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_ClientPortEdit->setBounds(Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+	m_ClientPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_ClientPortEdit->setBounds(juce::Rectangle<int>(2*UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
 	
 	// active objects headline
 	yOffset += 2*UIS_Margin_m + UIS_ElmSize;
-	m_Headline->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
+	m_Headline->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
 
 	// table headline labels
 	//yOffset += UIS_ElmSize + UIS_Margin_s;
-	m_MappingsHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
+	m_MappingsHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
 
 	yOffset += UIS_ElmSize;
-	m_EnableHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
-	m_ChannelHeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
+	m_EnableHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
+	m_ChannelHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
 
-	m_Mapping1HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize, UIS_ElmSize));
-	m_Mapping2HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
-	m_Mapping3HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
-	m_Mapping4HeadlineLabel->setBounds(Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping1HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping2HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping3HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping4HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
 
 	// component holding table items and corresp. scrollview
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	auto objectsListBounds = Rectangle<int>(getWidth() - m_activeObjectsListScrollView->getScrollBarThickness(), m_activeObjectsListComponent->getHeight());
+	auto objectsListBounds = juce::Rectangle<int>(getWidth() - m_activeObjectsListScrollView->getScrollBarThickness(), m_activeObjectsListComponent->getHeight());
 	m_activeObjectsListComponent->setBounds(objectsListBounds);
-	m_activeObjectsListScrollView->setBounds(Rectangle<int>(0 , yOffset, getWidth(), 8 * UIS_ElmSize));
+	m_activeObjectsListScrollView->setBounds(juce::Rectangle<int>(0 , yOffset, getWidth(), 8 * UIS_ElmSize));
 	yOffset += 8 * UIS_ElmSize;
 
 	// polling interval edit/label
 	yOffset += UIS_Margin_s + UIS_Margin_s;
-	m_PollingIntervalLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
-	m_PollingIntervalEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+	m_PollingIntervalLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_PollingIntervalEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
 
 	// ok button
 	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
-	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	m_applyConfigButton->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
 }
 
 /**
@@ -1151,21 +1151,21 @@ void MappingAreaProtocolConfigComponent::resized()
 
 	// port edits with labels
 	int yOffset = UIS_Margin_s;
-	m_HostPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
-	m_HostPortEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+	m_HostPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_HostPortEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
 
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_ClientPortLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
-	m_ClientPortEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+	m_ClientPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_ClientPortEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
 
 	// MappingArea Id edit/label
 	yOffset += UIS_Margin_s + UIS_ElmSize;
-	m_MappingAreaIdLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
-	m_MappingAreaIdEdit->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+	m_MappingAreaIdLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_MappingAreaIdEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
 
 	// ok button
 	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
-	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	m_applyConfigButton->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
 }
 
 /**
@@ -1413,12 +1413,12 @@ void MIDIProtocolConfigComponent::resized()
 
 	// MidiInput Index select/label
 	int yOffset = UIS_Margin_s;
-	m_midiInputListLabel->setBounds(Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
-	m_midiInputList->setBounds(Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
+	m_midiInputListLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, labelWidth - UIS_Margin_s, UIS_ElmSize));
+	m_midiInputList->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + labelWidth, yOffset, editWidth - UIS_Margin_m, UIS_ElmSize));
 
 	// ok button
 	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
-	m_applyConfigButton->setBounds(Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+	m_applyConfigButton->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
 }
 
 /**
@@ -1623,7 +1623,7 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	case ProtocolType::PT_MidiProtocol:
 		m_configComponent = std::make_unique<MIDIProtocolConfigComponent>(role);
 		break;
-	case ProtocolType::PT_OCAProtocol:
+	case ProtocolType::PT_OCP1Protocol:
 		// intentionally no break to run into default
 	case ProtocolType::PT_Invalid:
 		// intentionally no break to run into default
@@ -1633,7 +1633,7 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	}
 
 	// Component resizes automatically anyway, but need size > 0;
-	m_configComponent->setBounds(Rectangle<int>(1, 1));
+	m_configComponent->setBounds(juce::Rectangle<int>(1, 1));
 	m_configComponent->AddListener(this);
 
 	setContentOwned(m_configComponent.get(), true);

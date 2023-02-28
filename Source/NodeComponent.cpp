@@ -432,7 +432,7 @@ void NodeComponent::ToggleOpenCloseObjectHandlingConfig(Button* button)
 #else
 		const std::pair<int, int> size = m_OHMConfigDialog->GetSuggestedSize();
 		m_OHMConfigDialog->setResizeLimits(size.first, size.second, size.first, size.second);
-		m_OHMConfigDialog->setBounds(Rectangle<int>(getScreenBounds().getX(), getScreenBounds().getY(), size.first, size.second));
+		m_OHMConfigDialog->setBounds(juce::Rectangle<int>(getScreenBounds().getX(), getScreenBounds().getY(), size.first, size.second));
 #endif
 		button->setColour(TextButton::buttonColourId, Colours::lightblue);
 		button->setColour(Label::textColourId, Colours::dimgrey);

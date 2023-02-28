@@ -108,9 +108,9 @@ public:
 #if JUCE_IOS || JUCE_ANDROID
 			setFullScreen(true);
 #else
-			Rectangle<int> r = Desktop::getInstance().getDisplays().getMainDisplay().userArea;
+			auto rect = Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
 			setResizable(true, true);
-			setResizeLimits(UIS_MainComponentWidth, int(0.5 * UIS_MainComponentWidth), r.getWidth(), r.getHeight());
+			setResizeLimits(UIS_MainComponentWidth, int(0.5 * UIS_MainComponentWidth), rect.getWidth(), rect.getHeight());
 
 			centreWithSize(getWidth(), getHeight());
 #endif

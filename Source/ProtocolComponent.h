@@ -124,7 +124,7 @@ public:
 	bool setStateXml(XmlElement* stateXml) override;
     
     //==============================================================================
-    void handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info);
+    void handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info);
 
 private:
 

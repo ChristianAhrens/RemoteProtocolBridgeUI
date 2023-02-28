@@ -330,7 +330,7 @@ ProtocolComponent::ProtocolComponent(const NodeId& NId, const ProtocolId& PId, c
     
     m_ZeroconfIpDiscovery = std::make_unique<JUCEAppBasics::ZeroconfDiscoverComponent>(false, false);
     addAndMakeVisible(m_ZeroconfIpDiscovery.get());
-    m_ZeroconfIpDiscovery->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType type, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info) { handleOnServiceSelected(type, info); };
+    m_ZeroconfIpDiscovery->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType type, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info) { handleOnServiceSelected(type, info); };
 
 	m_ProtocolConfigEditButton = std::make_unique<TextButton>();
 	m_ProtocolConfigEditButton->addListener(this);
@@ -357,38 +357,31 @@ ProtocolComponent::~ProtocolComponent()
  */
 bool ProtocolComponent::setZeroConfProtocolType(ProtocolType type)
 {
-	auto hostPortXmlElement = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
-	if (hostPortXmlElement)
+	if (m_ZeroconfIpDiscovery)
 	{
-		auto protocolHostPort = hostPortXmlElement->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT));
-		if (m_ZeroconfIpDiscovery)
+		switch (type)
 		{
-			switch (type)
-			{
-			case PT_OSCProtocol:
-				m_ZeroconfIpDiscovery->clearServices();
-				m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OSC, static_cast<unsigned short>(protocolHostPort));
-				m_ZeroconfIpDiscovery->setVisible(true);
-				break;
 			case PT_OCAProtocol:
-				m_ZeroconfIpDiscovery->clearServices();
-				m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA, static_cast<unsigned short>(protocolHostPort));
-				m_ZeroconfIpDiscovery->setVisible(true);
-				break;
-			case PT_RTTrPMProtocol:
-			case PT_MidiProtocol:
-            case PT_YamahaOSCProtocol:
-			case PT_ADMOSCProtocol:
-				m_ZeroconfIpDiscovery->clearServices();
-				m_ZeroconfIpDiscovery->setVisible(false);
-				break;
-			case PT_UserMAX:
-			case PT_Invalid:
-				return false;
-			}
-		}
-		else
+		case PT_OSCProtocol:
+			m_ZeroconfIpDiscovery->clearServices();
+			m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OSC);
+			m_ZeroconfIpDiscovery->setVisible(true);
+			break;
+			m_ZeroconfIpDiscovery->clearServices();
+			m_ZeroconfIpDiscovery->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA);
+			m_ZeroconfIpDiscovery->setVisible(true);
+			break;
+		case PT_RTTrPMProtocol:
+		case PT_MidiProtocol:
+        case PT_YamahaOSCProtocol:
+		case PT_ADMOSCProtocol:
+			m_ZeroconfIpDiscovery->clearServices();
+			m_ZeroconfIpDiscovery->setVisible(false);
+			break;
+		case PT_UserMAX:
+		case PT_Invalid:
 			return false;
+		}
 	}
 	else
 		return false;
@@ -660,7 +653,7 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
 #else
 			const std::pair<int, int> size = m_ProtocolConfigDialog->GetSuggestedSize();
 			m_ProtocolConfigDialog->setResizeLimits(size.first, size.second, size.first, size.second);
-			m_ProtocolConfigDialog->setBounds(Rectangle<int>(getScreenBounds().getX(), getScreenBounds().getY(), size.first, size.second));
+			m_ProtocolConfigDialog->setBounds(juce::Rectangle<int>(getScreenBounds().getX(), getScreenBounds().getY(), size.first, size.second));
 #endif
 			button->setColour(TextButton::buttonColourId, Colours::lightblue);
 			button->setColour(Label::textColourId, Colours::dimgrey);
@@ -674,7 +667,7 @@ void ProtocolComponent::ToggleOpenCloseProtocolConfig(Button* button)
  * @param serviceType    The service that was selected
  * @param info     The detailled info on the selected service
  */
-void ProtocolComponent::handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, JUCEAppBasics::ZeroconfDiscoverComponent::ServiceInfo* info)
+void ProtocolComponent::handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info)
 {
 	ignoreUnused(serviceType);
 
