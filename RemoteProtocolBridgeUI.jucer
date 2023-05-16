@@ -2,10 +2,28 @@
 
 <JUCERPROJECT name="RemoteProtocolBridgeUI" projectType="guiapp" version="0.1.2"
               bundleIdentifier="com.ChristianAhrens.RemoteProtocolBridgeUI"
-              id="BLZw0l" jucerFormatVersion="1" headerPath="../../submodules/RemoteProtocolBridgeCore/Source/&#10;../../submodules/JUCE-AppBasics/Source/&#10;../../submodules/Servus/">
+              id="BLZw0l" jucerFormatVersion="1" headerPath="../../submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/&#10;../../submodules/RemoteProtocolBridgeCore/Source/&#10;../../submodules/JUCE-AppBasics/Source/&#10;../../submodules/Servus/">
   <MAINGROUP id="NrfEgH" name="RemoteProtocolBridgeUI">
     <GROUP id="{F2F4380C-8215-0655-C65F-B0ABBEE7B457}" name="submodules">
       <GROUP id="{45445CF7-00C2-93C8-5B1D-C5A9514DD95D}" name="RemoteProtocolBridgeCore">
+        <GROUP id="{B35135F5-503A-9C4E-0A9B-C4DAE7EB2820}" name="submodules">
+          <GROUP id="{EEC2C3A0-5E6F-4C37-5EDC-2600169122CC}" name="NanoOcp">
+            <FILE id="F4eKgc" name="NanoOcp1.cpp" compile="1" resource="0" file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/NanoOcp1.cpp"/>
+            <FILE id="ejuRjC" name="NanoOcp1.h" compile="0" resource="0" file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/NanoOcp1.h"/>
+            <FILE id="FfOO7p" name="Ocp1Connection.cpp" compile="1" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1Connection.cpp"/>
+            <FILE id="JFMXmP" name="Ocp1Connection.h" compile="0" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1Connection.h"/>
+            <FILE id="BxeKwA" name="Ocp1ConnectionServer.cpp" compile="1" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1ConnectionServer.cpp"/>
+            <FILE id="mw0zV4" name="Ocp1ConnectionServer.h" compile="0" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1ConnectionServer.h"/>
+            <FILE id="jTUTK8" name="Ocp1Message.cpp" compile="1" resource="0" file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1Message.cpp"/>
+            <FILE id="NRPkZu" name="Ocp1Message.h" compile="0" resource="0" file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1Message.h"/>
+            <FILE id="RZrAJN" name="Ocp1ObjectDefinitions.h" compile="0" resource="0"
+                  file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1ObjectDefinitions.h"/>
+          </GROUP>
+        </GROUP>
         <GROUP id="{AA691C90-BF22-E6BC-196D-46E84455CE63}" name="Source">
           <GROUP id="{21D03558-5B35-43A3-EDDF-110D5D5BEA11}" name="ProcessingEngine">
             <GROUP id="{4145EA77-15E8-D1A4-8BB5-A9D8D653E023}" name="ObjectDataHandling">

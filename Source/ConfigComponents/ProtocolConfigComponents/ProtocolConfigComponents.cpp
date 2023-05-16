@@ -1117,6 +1117,249 @@ bool OSCProtocolConfigComponent::setStateXml(XmlElement* stateXml)
 
 
 //==============================================================================
+// Class OCP1ProtocolConfigComponent
+//==============================================================================
+/**
+ * Class constructor.
+ */
+OCP1ProtocolConfigComponent::OCP1ProtocolConfigComponent(ProtocolRole role)
+	: ProtocolConfigComponent_Abstract(role)
+{
+	m_Headline->setText("Object subscriptions:", dontSendNotification);
+
+	m_isServerToggleLabel = std::make_unique<Label>();
+	m_isServerToggleLabel->setText("Ocp1 server mode", dontSendNotification);
+	addAndMakeVisible(m_isServerToggleLabel.get());
+
+	m_isServerToggleButton = std::make_unique<ToggleButton>();
+	addAndMakeVisible(m_isServerToggleButton.get());
+
+	m_EnableHeadlineLabel = std::make_unique<Label>();
+	m_EnableHeadlineLabel->setText("enable", dontSendNotification);
+	addAndMakeVisible(m_EnableHeadlineLabel.get());
+
+	m_ChannelHeadlineLabel = std::make_unique<Label>();
+	m_ChannelHeadlineLabel->setText("Object Nr.", dontSendNotification);
+	addAndMakeVisible(m_ChannelHeadlineLabel.get());
+
+	m_MappingsHeadlineLabel = std::make_unique<Label>();
+	m_MappingsHeadlineLabel->setText("Mapping", dontSendNotification);
+	addAndMakeVisible(m_MappingsHeadlineLabel.get());
+	m_Mapping1HeadlineLabel = std::make_unique<Label>();
+	m_Mapping1HeadlineLabel->setText("1", dontSendNotification);
+	addAndMakeVisible(m_Mapping1HeadlineLabel.get());
+	m_Mapping2HeadlineLabel = std::make_unique<Label>();
+	m_Mapping2HeadlineLabel->setText("2", dontSendNotification);
+	addAndMakeVisible(m_Mapping2HeadlineLabel.get());
+	m_Mapping3HeadlineLabel = std::make_unique<Label>();
+	m_Mapping3HeadlineLabel->setText("3", dontSendNotification);
+	addAndMakeVisible(m_Mapping3HeadlineLabel.get());
+	m_Mapping4HeadlineLabel = std::make_unique<Label>();
+	m_Mapping4HeadlineLabel->setText("4", dontSendNotification);
+	addAndMakeVisible(m_Mapping4HeadlineLabel.get());
+
+	m_activeObjectsListComponent = std::make_unique<ActiveObjectScrollContentsComponent>();
+	addAndMakeVisible(m_activeObjectsListComponent.get());
+	m_activeObjectsListScrollView = std::make_unique<Viewport>();
+	m_activeObjectsListScrollView->setViewedComponent(m_activeObjectsListComponent.get(), false);
+	addAndMakeVisible(m_activeObjectsListScrollView.get());
+}
+
+/**
+ * Class destructor.
+ */
+OCP1ProtocolConfigComponent::~OCP1ProtocolConfigComponent()
+{
+}
+
+/**
+ * Reimplemented to resize and re-postion controls on the overview window.
+ */
+void OCP1ProtocolConfigComponent::resized()
+{
+	double usableWidth = double(getWidth()) - 2 * UIS_Margin_s - m_activeObjectsListScrollView->getScrollBarThickness();
+	int remObjNameWidth = (int)(usableWidth * 0.45);
+	int remObjEnableWidth = (int)(usableWidth * 0.1);
+	int remObjChRngeWidth = (int)(usableWidth * 0.2);
+	int remObjRecRngeWidth = (int)(usableWidth * 0.2);
+
+	// port edits with labels
+	int yOffset = UIS_Margin_s;
+	m_isServerToggleLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_isServerToggleButton->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	m_ClientPortLabel->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, remObjNameWidth - UIS_Margin_s, UIS_ElmSize));
+	m_ClientPortEdit->setBounds(juce::Rectangle<int>(2 * UIS_Margin_s + remObjNameWidth, yOffset, remObjEnableWidth + remObjChRngeWidth - UIS_Margin_m, UIS_ElmSize));
+
+	// active objects headline
+	yOffset += 2 * UIS_Margin_m + UIS_ElmSize;
+	m_Headline->setBounds(juce::Rectangle<int>(UIS_Margin_s, yOffset, (int)usableWidth, UIS_ElmSize));
+
+	// table headline labels
+	//yOffset += UIS_ElmSize + UIS_Margin_s;
+	m_MappingsHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, remObjRecRngeWidth, UIS_ElmSize));
+
+	yOffset += UIS_ElmSize;
+	m_EnableHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s, yOffset, remObjEnableWidth, UIS_ElmSize));
+	m_ChannelHeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth, yOffset, remObjChRngeWidth, UIS_ElmSize));
+
+	m_Mapping1HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth, yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping2HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 1 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping3HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 2 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+	m_Mapping4HeadlineLabel->setBounds(juce::Rectangle<int>(remObjNameWidth + UIS_Margin_s + remObjEnableWidth + remObjChRngeWidth + 3 * (UIS_ElmSize + UIS_Margin_s), yOffset, UIS_ElmSize, UIS_ElmSize));
+
+	// component holding table items and corresp. scrollview
+	yOffset += UIS_Margin_s + UIS_ElmSize;
+	auto objectsListBounds = juce::Rectangle<int>(getWidth() - m_activeObjectsListScrollView->getScrollBarThickness(), m_activeObjectsListComponent->getHeight());
+	m_activeObjectsListComponent->setBounds(objectsListBounds);
+	m_activeObjectsListScrollView->setBounds(juce::Rectangle<int>(0, yOffset, getWidth(), 8 * UIS_ElmSize));
+	yOffset += 8 * UIS_ElmSize;
+
+	// ok button
+	yOffset += UIS_Margin_s + UIS_ElmSize + UIS_Margin_s;
+	m_applyConfigButton->setBounds(juce::Rectangle<int>((int)usableWidth - UIS_ButtonWidth, yOffset, UIS_ButtonWidth, UIS_ElmSize));
+}
+
+/**
+ * Callback function for button clicks on buttons.
+ * @param button	The button object that was pressed.
+ */
+void OCP1ProtocolConfigComponent::buttonClicked(Button* button)
+{
+	if (button == m_applyConfigButton.get())
+	{
+		if (m_parentListener)
+			m_parentListener->OnEditingFinished();
+	}
+}
+
+/**
+ * Method to add parent object as 'listener'.
+ * This is done in a way JUCE uses to connect child-parent relations for handling 'signal' calls
+ */
+void OCP1ProtocolConfigComponent::AddListener(ProtocolConfigWindow* listener)
+{
+	m_parentListener = listener;
+}
+
+/**
+ * Method to trigger dumping contents of configcomponent member
+ * to list of objects to return to the app to initialize from
+ *
+ * @return	The list of objects to actively handle when running the engine.
+ */
+std::vector<RemoteObject> OCP1ProtocolConfigComponent::DumpActiveRemoteObjects()
+{
+	return m_activeObjectsListComponent->GetActiveRemoteObjects();
+}
+
+/**
+ * Method to trigger filling contents of
+ * configcomponent member with list of objects
+ *
+ * @param Objs	The list of objects to set as default.
+ */
+void OCP1ProtocolConfigComponent::FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs)
+{
+	m_activeObjectsListComponent->SetActiveRemoteObjects(Objs);
+}
+
+/**
+ * Method to trigger dumping of state of button for if active object handling shall be used
+ *
+ * @return	True if active object handling shall be used.
+ */
+bool OCP1ProtocolConfigComponent::DumpActiveHandlingUsed()
+{
+	return m_activeObjectsListComponent->IsActiveHandlingEnabled();
+}
+
+/**
+ * Method to get the components' suggested size. This will be deprecated as soon as
+ * the primitive UI is refactored and uses dynamic / proper layouting
+ *
+ * @return	The pair of int representing the suggested size for this component
+ */
+const std::pair<int, int> OCP1ProtocolConfigComponent::GetSuggestedSize()
+{
+	int width = UIS_OSCConfigWidth;
+	int height = UIS_Margin_s +
+		UIS_Margin_s + UIS_ElmSize +
+		2 * UIS_Margin_m + UIS_ElmSize +
+		UIS_ElmSize +
+		(8 * (UIS_Margin_s + UIS_ElmSize + UIS_Margin_s)) +
+		UIS_Margin_s + UIS_Margin_s + UIS_ElmSize +
+		UIS_Margin_s + UIS_ElmSize + UIS_Margin_s +
+		UIS_Margin_s;
+
+	return std::pair<int, int>(width, height);
+}
+
+/**
+ * Reimplemented method to trigger dumping contents of configcomponent member
+ * to global config object
+ *
+ * @param NId The id of the node to dump the config for
+ * @param NId The id of the protocol to dump the config for
+ * @param config	The global configuration object to dump data to
+ * @return	True on success
+ */
+std::unique_ptr<XmlElement> OCP1ProtocolConfigComponent::createStateXml()
+{
+	auto protocolStateXml = ProtocolConfigComponent_Abstract::createStateXml();
+
+	auto activeHandlingUsed = DumpActiveHandlingUsed();
+	auto activeObjects = DumpActiveRemoteObjects();
+
+	protocolStateXml->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ), static_cast<int>(activeHandlingUsed ? 1 : 0));
+	auto activeObjsXmlElement = std::make_unique<XmlElement>(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	if (activeObjsXmlElement)
+	{
+		ProcessingEngineConfig::WriteActiveObjects(activeObjsXmlElement.get(), activeObjects);
+		auto existingActiveObjsXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+		if (existingActiveObjsXmlElement)
+			protocolStateXml->replaceChildElement(existingActiveObjsXmlElement, activeObjsXmlElement.release());
+		else
+			protocolStateXml->addChildElement(activeObjsXmlElement.release());
+	}
+
+	auto ocp1ConnectionModeXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OCP1CONNECTIONMODE));
+	if (!ocp1ConnectionModeXmlElement)
+		ocp1ConnectionModeXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OCP1CONNECTIONMODE));
+	ocp1ConnectionModeXmlElement->addTextElement(m_isServerToggleButton->getToggleState() ? "server" : "client");
+
+	return protocolStateXml;
+}
+
+/**
+ * Reimplemented setter method to trigger filling contents of
+ * configcomponent member with configuration contents
+ *
+ * @param NId The id of the node to set the config for
+ * @param NId The id of the protocol to set the config for
+ * @param config	The global configuration object.
+ */
+bool OCP1ProtocolConfigComponent::setStateXml(XmlElement* stateXml)
+{
+	SetActiveHandlingUsed(stateXml->getIntAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::USESACTIVEOBJ)) == 1);
+	auto activeObjsXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::ACTIVEOBJECTS));
+	if (activeObjsXmlElement)
+	{
+		std::vector<RemoteObject> activeObjects;
+		ProcessingEngineConfig::ReadActiveObjects(activeObjsXmlElement, activeObjects);
+		FillActiveRemoteObjects(activeObjects);
+	}
+
+	auto ocp1ConnectionModeXmlElement = stateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OCP1CONNECTIONMODE));
+	if (ocp1ConnectionModeXmlElement && m_isServerToggleButton)
+		m_isServerToggleButton->setToggleState(ocp1ConnectionModeXmlElement->getAllSubText() == "server", dontSendNotification);
+
+	return ProtocolConfigComponent_Abstract::setStateXml(stateXml);
+}
+
+
+//==============================================================================
 // Class MappingAreaProtocolConfigComponent
 //==============================================================================
 /**
@@ -1613,6 +1856,9 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	case ProtocolType::PT_OSCProtocol:
 		m_configComponent = std::make_unique<OSCProtocolConfigComponent>(role);
 		break;
+	case ProtocolType::PT_OCP1Protocol:
+		m_configComponent = std::make_unique<OCP1ProtocolConfigComponent>(role);
+		break;
 	case ProtocolType::PT_RTTrPMProtocol:
 		// intentionally no break to run into MappingAreaCfg
 	case ProtocolType::PT_YamahaOSCProtocol:
@@ -1623,8 +1869,6 @@ ProtocolConfigWindow::ProtocolConfigWindow(const String& name, Colour background
 	case ProtocolType::PT_MidiProtocol:
 		m_configComponent = std::make_unique<MIDIProtocolConfigComponent>(role);
 		break;
-	case ProtocolType::PT_OCP1Protocol:
-		// intentionally no break to run into default
 	case ProtocolType::PT_Invalid:
 		// intentionally no break to run into default
 	default:

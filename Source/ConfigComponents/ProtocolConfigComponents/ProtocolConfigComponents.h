@@ -218,6 +218,53 @@ private:
 };
 
 /**
+ * Class OCP1ProtocolConfigComponent is a container used to hold the GUI controls
+ * specifically used to configure d&b AES70/OCP1 protocol configuration.
+ */
+class OCP1ProtocolConfigComponent : public ProtocolConfigComponent_Abstract
+{
+public:
+	OCP1ProtocolConfigComponent(ProtocolRole role);
+	~OCP1ProtocolConfigComponent();
+
+	//==============================================================================
+	std::unique_ptr<XmlElement> createStateXml() override;
+	bool setStateXml(XmlElement* stateXml) override;
+
+	//==============================================================================
+	const std::pair<int, int> GetSuggestedSize() override;
+
+	//==============================================================================
+	void AddListener(ProtocolConfigWindow* listener) override;
+
+protected:
+	//==============================================================================
+	bool						DumpActiveHandlingUsed() override;
+	std::vector<RemoteObject>	DumpActiveRemoteObjects() override;
+	void						FillActiveRemoteObjects(const std::vector<RemoteObject>& Objs) override;
+
+private:
+	void resized() override;
+
+	void buttonClicked(Button* button) override;
+
+	std::unique_ptr<Label>			m_isServerToggleLabel;
+	std::unique_ptr<ToggleButton>	m_isServerToggleButton;
+
+	std::unique_ptr<Label>		m_EnableHeadlineLabel;		/**< Headlining Label for enable checks. */
+	std::unique_ptr<Label>		m_ChannelHeadlineLabel;		/**< Headlining Label for channel range edits. */
+	std::unique_ptr<Label>		m_MappingsHeadlineLabel;	/**< Headlining Label for mapping checks. */
+	std::unique_ptr<Label>		m_Mapping1HeadlineLabel;	/**< Headlining Label for mapping1 checks. */
+	std::unique_ptr<Label>		m_Mapping2HeadlineLabel;	/**< Headlining Label for mapping2 checks. */
+	std::unique_ptr<Label>		m_Mapping3HeadlineLabel;	/**< Headlining Label for mapping3 checks. */
+	std::unique_ptr<Label>		m_Mapping4HeadlineLabel;	/**< Headlining Label for mapping4 checks. */
+
+	std::unique_ptr<ActiveObjectScrollContentsComponent>	m_activeObjectsListComponent;
+	std::unique_ptr<Viewport>								m_activeObjectsListScrollView;
+
+};
+
+/**
  * Class MappingAreaProtocolConfigComponent is a container used to hold the GUI controls
  * specifically used to configure protocols that require a mapping area id in addition to
  * client and host port (e.g. Blacktrax RTTrPM, YamahaOSC, ADM-OSC protocol configuration).
