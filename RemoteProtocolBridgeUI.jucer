@@ -20,8 +20,6 @@
                   file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1ConnectionServer.h"/>
             <FILE id="jTUTK8" name="Ocp1Message.cpp" compile="1" resource="0" file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1Message.cpp"/>
             <FILE id="NRPkZu" name="Ocp1Message.h" compile="0" resource="0" file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1Message.h"/>
-            <FILE id="RZrAJN" name="Ocp1ObjectDefinitions.h" compile="0" resource="0"
-                  file="submodules/RemoteProtocolBridgeCore/submodules/NanoOcp/Source/Ocp1ObjectDefinitions.h"/>
           </GROUP>
         </GROUP>
         <GROUP id="{AA691C90-BF22-E6BC-196D-46E84455CE63}" name="Source">
@@ -180,6 +178,8 @@
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OSCProtocolProcessor/YmhOSCProtocolProcessor.h"/>
               </GROUP>
               <GROUP id="{550F599D-29D5-1268-A7E9-829226DAA17A}" name="OCP1ProtocolProcessor">
+                <FILE id="v2srce" name="Ocp1DS100ObjectDefinitions.h" compile="0" resource="0"
+                      file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCP1ProtocolProcessor/Ocp1DS100ObjectDefinitions.h"/>
                 <FILE id="RZkP9X" name="OCP1ProtocolProcessor.cpp" compile="1" resource="0"
                       file="submodules/RemoteProtocolBridgeCore/Source/ProcessingEngine/ProtocolProcessor/OCP1ProtocolProcessor/OCP1ProtocolProcessor.cpp"/>
                 <FILE id="iTzg7m" name="OCP1ProtocolProcessor.h" compile="0" resource="0"
