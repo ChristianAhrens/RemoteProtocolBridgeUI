@@ -1327,7 +1327,10 @@ std::unique_ptr<XmlElement> OCP1ProtocolConfigComponent::createStateXml()
 	auto ocp1ConnectionModeXmlElement = protocolStateXml->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OCP1CONNECTIONMODE));
 	if (!ocp1ConnectionModeXmlElement)
 		ocp1ConnectionModeXmlElement = protocolStateXml->createNewChildElement(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::OCP1CONNECTIONMODE));
-	ocp1ConnectionModeXmlElement->addTextElement(m_isServerToggleButton->getToggleState() ? "server" : "client");
+	if (ocp1ConnectionModeXmlElement->getFirstChildElement() && ocp1ConnectionModeXmlElement->getFirstChildElement()->isTextElement())
+		ocp1ConnectionModeXmlElement->getFirstChildElement()->setText(m_isServerToggleButton->getToggleState() ? "server" : "client");
+	else
+		ocp1ConnectionModeXmlElement->addTextElement(m_isServerToggleButton->getToggleState() ? "server" : "client");
 
 	return protocolStateXml;
 }

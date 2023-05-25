@@ -465,9 +465,20 @@ std::unique_ptr<XmlElement> ProtocolComponent::createStateXml()
 	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ID), static_cast<int>(m_ProtocolId));
 	m_protocolXmlElement->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::TYPE), ProcessingEngineConfig::ProtocolTypeToString(static_cast<ProtocolType>(m_ProtocolDrop->getSelectedId())));
 
-	auto ipAdressEdit = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::IPADDRESS));
-	if (ipAdressEdit)
-		ipAdressEdit->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS), m_IpEdit->getText());
+	juce::StringArray netAddrStr;
+	auto elmCnt = netAddrStr.addTokens(m_IpEdit->getText(), ";", "");
+	if (elmCnt > 0)
+	{
+		auto ipAdressElm = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::IPADDRESS));
+		if (ipAdressElm)
+			ipAdressElm->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::ADRESS), netAddrStr[0]);
+	}
+	if (elmCnt == 2)
+	{
+		auto portElm = m_protocolXmlElement->getChildByName(ProcessingEngineConfig::getTagName(ProcessingEngineConfig::TagID::HOSTPORT));
+		if (portElm)
+			portElm->setAttribute(ProcessingEngineConfig::getAttributeName(ProcessingEngineConfig::AttributeID::PORT), netAddrStr[1]);
+	}
 
 	return std::make_unique<XmlElement>(*m_protocolXmlElement);
 }
@@ -673,5 +684,5 @@ void ProtocolComponent::handleOnServiceSelected(JUCEAppBasics::ZeroconfDiscoverC
 	ignoreUnused(serviceType);
 
     if (info && m_IpEdit)
-        m_IpEdit->setText(info->ip);
+        m_IpEdit->setText(juce::String(info->ip) + ";" + juce::String(info->port));
 }
